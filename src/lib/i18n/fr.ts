@@ -2,6 +2,11 @@ import type { Dict } from "./en";
 
 const fr: Dict = {
   ui: {
+    importStep: "Importez vos parties", analysisStep: "Comprenez les moments clés", practiceStep: "Travaillez les coups manqués", startWorkflow: "Vos parties deviennent votre prochain progrès.",
+    chartRange: "Période de l’historique Elo", last30: "30 dernières parties", last100: "100 dernières parties", allHistory: "Toutes les parties", rating: "Elo", chartEmpty: "Votre historique Elo prend place ici.", chartEmptyHelp: "Importez des parties classées pour explorer l’évolution de votre jeu.",
+    practiceProgress: "Bilan d’entraînement", accuracyEngine: "Précision moteur", selectMoment: "Choisissez un moment clé.", selectedMoment: "Sélectionnez un coup signalé ci-dessous pour comprendre l’erreur et tenter une correction sur l’échiquier.",
+    classifications: { blunder: "Gaffe", mistake: "Erreur", inaccuracy: "Imprécision" }, boardThemes: { classic: "Classique", brown: "Bois", blue: "Océan", grey: "Graphite" },
+    check: "Échec", legalMove: "Coup légal", selectedSquare: "Sélectionnée", lastMove: "Dernier coup",
     yourGame: "Votre jeu", continueTraining: "Reprendre l’entraînement", sessionPrompt: "Une position. Retrouvez le coup manqué.", trainingClearTitle: "À jour. Restez affûté.", reviewFirst: "Votre première découverte commence ici.", recentlyReviewed: "Dernières analyses", focusAreas: "Axes de travail", ratingHistory: "sur cette période",
     chessboard: "Échiquier", emptySquare: "Case vide", pieces: { p: "pion", n: "cavalier", b: "fou", r: "tour", q: "dame", k: "roi" },
     boardTools: "Outils de l’échiquier",

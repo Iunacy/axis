@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { PageHeader } from "@/components/Workspace";
 import MasterGameView from "@/components/MasterGameView";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fetchChesscomGames } from "@/lib/fetchers/chesscom";
@@ -124,31 +125,29 @@ export default function MastersPage() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 flex flex-col gap-10">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold text-foreground">{t.masters.title}</h1>
-        <p className="text-sm text-muted-foreground max-w-2xl">{t.masters.sub}</p>
-      </div>
+    <main className="axis-route axis-masters">
+      <PageHeader title={t.masters.title} description={t.masters.sub}/>
 
       <label className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          aria-label={t.masters.search}
           placeholder={t.masters.search}
-          className="h-10 w-full rounded-lg border border-input bg-transparent pl-9 pr-3 text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 outline-none"
+          className="axis-field pl-9"
         />
       </label>
 
       {games.length === 0 ? (
         <p className="text-muted-foreground">{t.masters.noMatch}</p>
       ) : (
-        <ul className="grid sm:grid-cols-2 gap-4">
+        <ul className="axis-catalog">
           {games.map((g) => (
             <li key={g.id}>
               <Link
                 href={`/masters/${g.id}`}
-                className="block h-full rounded-xl border border-border bg-card p-5 hover:border-ring/60 transition"
+                className="axis-master-link"
               >
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="font-medium text-foreground">{g.title}</h2>
@@ -183,7 +182,7 @@ export default function MastersPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
-            <SelectTrigger className="h-9 w-[130px]">
+            <SelectTrigger aria-label={t.settings.aiProvider.replace("AI", "")} className="w-[130px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -195,13 +194,14 @@ export default function MastersPage() {
             value={handle}
             onChange={(e) => setHandle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && runImport()}
+            aria-label={t.masters.importPlaceholder}
             placeholder={t.masters.importPlaceholder}
             className="h-9 flex-1 min-w-[160px] rounded-lg border border-input bg-transparent px-3 text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 outline-none"
           />
           <button
             onClick={runImport}
             disabled={!handle.trim() || importing}
-            className="rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-4 h-9 text-sm font-medium transition"
+            className="axis-button"
           >
             {importing ? t.masters.importing : t.masters.importButton}
           </button>
@@ -212,14 +212,14 @@ export default function MastersPage() {
               key={p.handle}
               onClick={() => setHandle(p.handle)}
               title={p.handle}
-              className="rounded-full border border-input px-2.5 py-0.5 text-[11px] text-muted-foreground hover:border-ring/60 transition"
+              className="axis-choice"
             >
               {p.label}
             </button>
           ))}
         </div>
 
-        {importError && <p className="text-sm text-red-500">{importError}</p>}
+        {importError && <p role="alert" className="axis-feedback error">{importError}</p>}
 
         {imported && imported.length > 0 && (
           <ul className="grid sm:grid-cols-2 gap-2">

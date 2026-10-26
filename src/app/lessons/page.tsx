@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { BookOpen, Check } from "lucide-react";
+import { PageHeader, EmptyState } from "@/components/Workspace";
 import WorkspaceLoading from "@/components/WorkspaceLoading";
 import AiLessonGenerator from "@/components/AiLessonGenerator";
 import ApiKeyField from "@/components/ApiKeyField";
@@ -23,33 +25,25 @@ export default function LessonsPage() {
   if (!hydrated) return <WorkspaceLoading/>;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 flex flex-col gap-12">
-      <h1 className="text-2xl font-semibold text-foreground">{t.lessons.title}</h1>
+    <main className="axis-route axis-lessons">
+      <PageHeader title={t.lessons.title} description={t.lessons.classicSub} actions={<GenerateLessonsButton/>}/>
 
 
-      <section className="axis-panel flex flex-col gap-5">
-        <div className="flex items-end justify-between flex-wrap gap-4">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-medium text-foreground">{t.lessons.classic}</h2>
-            <p className="text-sm text-muted-foreground max-w-2xl">{t.lessons.classicSub}</p>
-          </div>
-          <GenerateLessonsButton />
-        </div>
-
+      <section className="flex flex-col gap-5">
         {lessons.length === 0 ? (
-          <div className="axis-empty"><h2>{t.lessons.empty}</h2><p>{t.axis.noTraining}</p><Link href="/games" className="axis-button w-fit">{t.ui.reviewGame}</Link></div>
+          <EmptyState icon={<BookOpen size={28}/>} title={t.lessons.empty} description={t.axis.noTraining}><Link href="/games" className="axis-button">{t.ui.reviewGame}</Link></EmptyState>
         ) : (
-          <ul className="grid sm:grid-cols-2 gap-4">
-            {lessons.map((l, i) => (
+          <ul className="axis-catalog">
+            {lessons.map((l) => (
               <li key={l.slug} className="relative">
                 <DeleteLessonButton onConfirm={() => removeLesson(l.slug)} />
                 <Link
                   href={`/lessons/${l.slug}`}
-                  className="block rounded-xl border border-border bg-card p-5 pr-10 hover:border-ring/60 transition h-full"
+                  className="axis-lesson-link"
                 >
                   <p className="text-xs text-muted-foreground mb-1">
-                    {t.lessons.lesson} {String(i + 1).padStart(2, "0")}
-                    {l.completed && <span className="text-emerald-600 dark:text-emerald-400 ml-2">✓ {t.lessons.completed}</span>}
+                    {t.lessons.lesson}
+                    {l.completed && <span className="text-emerald-600 dark:text-emerald-400 ml-2"><Check size={13} className="inline"/> {t.lessons.completed}</span>}
                   </p>
                   <h3 className="font-medium text-foreground">{lessonTitle(l.slug, locale)}</h3>
                   <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{lessonConcept(l.slug, locale)}</p>
@@ -69,17 +63,17 @@ export default function LessonsPage() {
         {!aiAvailable && <ApiKeyField />}
 
         {aiLessons.length > 0 && (
-          <ul className="grid sm:grid-cols-2 gap-4">
+          <ul className="axis-catalog">
             {aiLessons.map((l) => (
               <li key={l.id} className="relative">
                 <DeleteLessonButton onConfirm={() => removeAiLesson(l.id)} />
                 <Link
                   href={`/lessons/${l.id}`}
-                  className="block rounded-xl border border-violet-500/40 bg-violet-500/5 p-5 pr-10 hover:border-violet-500 transition h-full"
+                  className="axis-lesson-link"
                 >
                   <p className="text-xs text-violet-600 dark:text-violet-400 mb-1">
                     {new Date(l.created_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")}
-                    {l.completed && <span className="text-emerald-600 dark:text-emerald-400 ml-2">✓ {t.lessons.completed}</span>}
+                    {l.completed && <span className="text-emerald-600 dark:text-emerald-400 ml-2"><Check size={13} className="inline"/> {t.lessons.completed}</span>}
                   </p>
                   <h3 className="font-medium text-foreground">{l.title}</h3>
                   <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{l.content.concept}</p>

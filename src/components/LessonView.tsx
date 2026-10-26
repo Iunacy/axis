@@ -72,7 +72,7 @@ function LessonContentView({
   }
 
   return (
-    <article className="flex flex-col gap-10 max-w-3xl">
+    <article className="axis-reading">
       <header className="flex flex-col gap-4">
         {badge && (
           <span className="self-start rounded-full bg-violet-500/15 text-violet-600 dark:text-violet-300 border border-violet-500/40 px-3 py-1 text-xs font-medium">
@@ -251,7 +251,7 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-start justify-between gap-3">
             <p className="text-sm text-foreground/90 leading-relaxed">
-              <strong className="text-emerald-600 dark:text-emerald-400">📖 {t.lessons.theory}: </strong>
+              <strong className="text-emerald-600 dark:text-emerald-400">{t.lessons.theory}: </strong>
               {section.theory}
             </p>
             <SpeakButton text={section.theory} />

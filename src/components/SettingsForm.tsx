@@ -85,12 +85,7 @@ function SettingsFormInner() {
               aria-pressed={locale === l}
               type="button"
               onClick={() => setLocale(l)}
-              className={[
-                "rounded-lg border px-4 py-2 text-sm transition",
-                locale === l
-                  ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                  : "border-input text-muted-foreground hover:border-ring/60",
-              ].join(" ")}
+              className="axis-choice"
             >
               {l === "fr" ? "Français" : "English"}
             </button>
@@ -107,13 +102,14 @@ function SettingsFormInner() {
               <button
                 key={th.id}
                 type="button"
+                aria-pressed={active}
                 onClick={() => {
                   setForm({ ...form, boardTheme: th.id });
                   saveSettings({ ...loadSettings(), boardTheme: th.id });
                 }}
                 className={[
                   "flex flex-col items-center gap-1.5 rounded-lg border p-2 transition",
-                  active ? "border-emerald-500 bg-emerald-500/10" : "border-input hover:border-ring/60",
+                  active ? "border-ring bg-accent" : "border-input hover:border-ring/60",
                 ].join(" ")}
               >
                 <span className="grid grid-cols-2 w-10 h-10 rounded overflow-hidden ring-1 ring-black/30">
@@ -122,7 +118,7 @@ function SettingsFormInner() {
                   <span style={{ backgroundColor: th.darkSquare }} />
                   <span style={{ backgroundColor: th.lightSquare }} />
                 </span>
-                <span className={`text-[11px] ${active ? "text-emerald-600 dark:text-emerald-300" : "text-muted-foreground"}`}>{th.name}</span>
+                <span className={`text-[11px] ${active ? "text-foreground" : "text-muted-foreground"}`}>{t.ui.boardThemes[th.id as keyof typeof t.ui.boardThemes]}</span>
               </button>
             );
           })}
@@ -142,12 +138,7 @@ function SettingsFormInner() {
                   setForm({ ...form, soundEnabled: on });
                   saveSettings({ ...loadSettings(), soundEnabled: on });
                 }}
-                className={[
-                  "rounded-lg border px-4 py-2 text-sm transition",
-                  active
-                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                    : "border-input text-muted-foreground hover:border-ring/60",
-                ].join(" ")}
+                aria-pressed={active} className="axis-choice"
               >
                 {on ? t.settings.soundOn : t.settings.soundOff}
               </button>
@@ -169,12 +160,7 @@ function SettingsFormInner() {
                   setForm({ ...form, voiceEnabled: on });
                   saveSettings({ ...loadSettings(), voiceEnabled: on });
                 }}
-                className={[
-                  "rounded-lg border px-4 py-2 text-sm transition",
-                  active
-                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                    : "border-input text-muted-foreground hover:border-ring/60",
-                ].join(" ")}
+                aria-pressed={active} className="axis-choice"
               >
                 {on ? t.settings.soundOn : t.settings.soundOff}
               </button>
@@ -244,12 +230,7 @@ function SettingsFormInner() {
                   setForm({ ...form, analysisMode: m });
                   saveSettings({ ...loadSettings(), analysisMode: m });
                 }}
-                className={[
-                  "rounded-lg border px-4 py-2 text-sm transition",
-                  active
-                    ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                    : "border-input text-muted-foreground hover:border-ring/60",
-                ].join(" ")}
+                aria-pressed={active} className="axis-choice"
               >
                 {m === "fast" ? t.settings.analysisModeFast : t.settings.analysisModeDeep}
               </button>

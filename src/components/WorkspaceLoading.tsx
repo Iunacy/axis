@@ -5,5 +5,5 @@ import { useI18n } from "@/lib/i18n";
 
 export default function WorkspaceLoading() {
   const { t } = useI18n();
-  return <main><div className="axis-loading" role="status"><span className="axis-brand-symbol"><Logo/></span><p>{t.ui.loading}…</p></div></main>;
+  return <main><div className="axis-loading" role="status"><div className="axis-loading-status"><span className="axis-brand-symbol"><Logo/></span><p>{t.ui.loading}…</p></div><div className="axis-loading-preview" aria-hidden="true"><div className="axis-skeleton"/><div className="axis-skeleton"/></div></div></main>;
 }

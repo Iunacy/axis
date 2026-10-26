@@ -13,7 +13,7 @@ export const BOARD_THEMES: BoardTheme[] = [
   { id: "classic", name: "Classique", lightSquare: "#ebecd0", darkSquare: "#739552", selectedLight: "#f6f669", selectedDark: "#baca44", lastMoveLight: "#cdd26a", lastMoveDark: "#aaa23a" },
   { id: "brown", name: "Bois", lightSquare: "#f0d9b5", darkSquare: "#b58863", selectedLight: "#f6f669", selectedDark: "#baca44", lastMoveLight: "#cdd26a", lastMoveDark: "#aaa23a" },
   { id: "blue", name: "Océan", lightSquare: "#dee3e6", darkSquare: "#8ca2ad", selectedLight: "#aae7ff", selectedDark: "#6fb3d2", lastMoveLight: "#9cc9d4", lastMoveDark: "#6d97a8" },
-  { id: "grey", name: "Minimaliste", lightSquare: "#ffffff", darkSquare: "#b0b0b0", selectedLight: "#e8e8e8", selectedDark: "#999999", lastMoveLight: "#d0d0d0", lastMoveDark: "#909090" },
+  { id: "grey", name: "Minimaliste", lightSquare: "#ffffff", darkSquare: "#b0b0b0", selectedLight: "#c0ccda", selectedDark: "#8294a9", lastMoveLight: "#dce2e9", lastMoveDark: "#929ca8" },
 ];
 
 export function getBoardTheme(id: string): BoardTheme {

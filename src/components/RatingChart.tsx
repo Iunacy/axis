@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid,
-} from "recharts";
+import { ChartNoAxesCombined } from "lucide-react";
+import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { useI18n } from "@/lib/i18n";
+import { EmptyState } from "./Workspace";
 
 interface Point {
   date: string;
@@ -15,75 +15,40 @@ interface Point {
 
 export default function RatingChart({ series }: { series: Point[] }) {
   const { t, locale } = useI18n();
+  const [combo, setCombo] = useState<string | null>(null);
+  const [range, setRange] = useState("all");
   const combos = useMemo(() => {
-    const set = new Map<string, number>();
+    const counts = new Map<string, number>();
     for (const p of series) {
       const key = `${p.platform}:${p.timeClass}`;
-      set.set(key, (set.get(key) ?? 0) + 1);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
     }
-    return [...set.entries()].sort((a, b) => b[1] - a[1]).map(([k]) => k);
+    return [...counts].sort((a, b) => b[1] - a[1]).map(([key]) => key);
   }, [series]);
-
-  const [combo, setCombo] = useState<string | null>(null);
-  const active = combo ?? combos[0] ?? null;
-
+  const active = combo && combos.includes(combo) ? combo : combos[0];
   const data = useMemo(() => {
     if (!active) return [];
     const [platform, timeClass] = active.split(":");
-    return series
-      .filter((p) => p.platform === platform && p.timeClass === timeClass)
-      .map((p) => ({
-        date: new Date(p.date).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", {
-          day: "2-digit",
-          month: "short",
-        }),
-        rating: p.rating,
-      }));
-  }, [series, active, locale]);
-
-  if (!series.length) return <p className="text-sm text-muted-foreground">{t.dashboard.noRatedGames}</p>;
-
-  const latest = data[data.length - 1]?.rating;
+    const filtered = series.filter(p => p.platform === platform && p.timeClass === timeClass);
+    return (range === "all" ? filtered : filtered.slice(-Number(range))).map(p => ({ date: Date.parse(p.date), rating: p.rating }));
+  }, [series, active, range]);
+  const dateLabel = (value: number) => new Date(value).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB", { day: "2-digit", month: "short" });
+  const latest = data.at(-1)?.rating;
   const change = latest == null ? null : latest - data[0].rating;
-  return (
-    <div className="axis-rating-chart flex flex-col gap-3">
-      <div className="axis-rating-heading"><h2>{t.dashboard.progression}</h2><div><strong>{latest ?? "—"}</strong>{change != null && <span>{change > 0 ? "+" : ""}{change} <small>{t.ui.ratingHistory}</small></span>}</div></div>
-      <div className="flex flex-wrap gap-2">
-        {combos.slice(0, 6).map((c) => (
-          <button
-            key={c}
-            onClick={() => setCombo(c)}
-            className={[
-              "rounded-full px-3 py-1 text-xs border transition",
-              c === active
-                ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
-                : "border-input text-muted-foreground hover:border-ring/60",
-            ].join(" ")}
-          >
-            {c.replace(":", " · ")}
-          </button>
-        ))}
-      </div>
-      <div className="axis-rating-plot min-w-0">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 500, height: 200 }}>
-          <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
-            <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-            <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} minTickGap={40} />
-            <YAxis stroke="var(--muted-foreground)" fontSize={11} tickLine={false} domain={["dataMin - 30", "dataMax + 30"]} />
-            <Tooltip
-              contentStyle={{
-                background: "var(--popover)",
-                border: "1px solid var(--border)",
-                borderRadius: 8,
-                fontSize: 12,
-                color: "var(--foreground)",
-              }}
-              labelStyle={{ color: "var(--muted-foreground)" }}
-            />
-            <Line type="monotone" dataKey="rating" stroke="var(--chart-line)" strokeWidth={2} dot={false} isAnimationActive={false} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+  if (!series.length) return <div className="axis-chart-empty"><EmptyState icon={<ChartNoAxesCombined size={30}/>} title={t.ui.chartEmpty} description={t.ui.chartEmptyHelp}/></div>;
+  return <div className="axis-rating-chart">
+    <div className="axis-rating-heading"><div><h2>{t.dashboard.progression}</h2><strong>{latest}</strong><span className="axis-rating-delta">{change != null && `${change > 0 ? "+" : ""}${change}`} <small>{t.ui.ratingHistory}</small></span></div><select className="axis-field" aria-label={t.ui.chartRange} value={range} onChange={event => setRange(event.target.value)}><option value="all">{t.ui.allHistory}</option><option value="30">{t.ui.last30}</option><option value="100">{t.ui.last100}</option></select></div>
+    <div className="axis-chart-series" role="group" aria-label={t.dashboard.progression}>{combos.map(key => <button key={key} className="axis-choice" aria-pressed={key === active} onClick={() => setCombo(key)}>{key.replace("chesscom", "Chess.com").replace("lichess", "Lichess").replace(":", " · ")}</button>)}</div>
+    <div className="axis-rating-plot" role="img" aria-label={`${t.dashboard.progression}: ${latest}`}>
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 600, height: 250 }}>
+        <LineChart data={data} margin={{ top: 12, right: 10, bottom: 0, left: -12 }} accessibilityLayer>
+          <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="2 5"/>
+          <XAxis dataKey="date" tickFormatter={dateLabel} stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} minTickGap={44}/>
+          <YAxis stroke="var(--muted-foreground)" fontSize={11} tickLine={false} axisLine={false} domain={["dataMin - 30", "dataMax + 30"]} allowDecimals={false} width={50}/>
+          <Tooltip labelFormatter={value => new Date(Number(value)).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")} formatter={value => [value, t.ui.rating]} contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12, color: "var(--foreground)" }} labelStyle={{ color: "var(--muted-foreground)", marginBottom: 6 }} cursor={{ stroke: "var(--muted-foreground)", strokeDasharray: "3 3" }}/>
+          <Line type="linear" dataKey="rating" stroke="var(--chart-line)" strokeWidth={1.8} dot={data.length === 1 ? { r: 3 } : false} activeDot={{ r: 4, strokeWidth: 3, stroke: "var(--background)" }} isAnimationActive={false}/>
+        </LineChart>
+      </ResponsiveContainer>
     </div>
-  );
+  </div>;
 }

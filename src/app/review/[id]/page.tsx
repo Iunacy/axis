@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Chess } from "chess.js";
 import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import Board from "@/components/Board";
+import { EmptyState } from "@/components/Workspace";
 import AnalysisRunner from "@/components/AnalysisRunner";
 import WorkspaceLoading from "@/components/WorkspaceLoading";
 import { parsePgn } from "@/lib/pgn";
@@ -95,10 +96,11 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
         <div className="axis-evaluation"><span>{t.axis.engine}</span><strong>{evalText}</strong></div>
       </section>
       <section className="axis-review-panel">
+        {analysis && !issue && <EmptyState title={t.ui.selectMoment} description={t.ui.selectedMoment}/>}
         {game.analysis_status !== "done" && <AnalysisRunner pendingCount={1} gameId={game.id}/>}
         {!analysis && <p className="axis-muted">{t.axis.unanalysed}</p>}
         {issue && <div className="axis-issue-detail" aria-live="polite">
-          <span className="axis-tag">{t.axis.move} {Number(issue.fenBefore.split(" ")[5])} · {issue.severity}</span>
+          <span className={`axis-tag axis-classification ${issue.severity}`}>{t.axis.move} {Number(issue.fenBefore.split(" ")[5])} · {t.ui.classifications[issue.severity]}</span>
           <h2>{t.axis.findMove}</h2>
           <p>{t.axis.explain[issue.motif]}</p><small>{t.axis.heuristic}</small>
           {practiceState === "wrong" && <p className="axis-feedback error">{t.axis.wrong}</p>}
@@ -113,7 +115,7 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
         </div>}
         <h2>{t.axis.issues} <span className="axis-muted">{analysis?.issues.length ?? 0}</span></h2>
         {analysis && analysis.issues.length === 0 && <p className="axis-muted">{t.axis.noIssues}</p>}
-        {analysis && <div className="axis-issue-list">{analysis.issues.map(item => <button key={item.ply} onClick={() => selectIssue(item)} className={item.ply === issue?.ply ? "active" : ""}><span>{Number(item.fenBefore.split(" ")[5])}{item.fenBefore.split(" ")[1] === "w" ? "." : "..."} {item.san}</span><span>{item.severity} · {t.motifs[item.motif].split(" (")[0]}</span></button>)}</div>}
+        {analysis && <div className="axis-issue-list">{analysis.issues.map(item => <button key={item.ply} onClick={() => selectIssue(item)} className={item.ply === issue?.ply ? "active" : ""}><span>{Number(item.fenBefore.split(" ")[5])}{item.fenBefore.split(" ")[1] === "w" ? "." : "..."} {item.san}</span><span>{t.ui.classifications[item.severity]} · {t.motifs[item.motif].split(" (")[0]}</span></button>)}</div>}
         <h2>{t.ui.moves}</h2><div className="axis-move-labels"><span></span><span>{t.ui.moveWhite}</span><span>{t.ui.moveBlack}</span></div><div className="axis-moves">{moveRows.map(row => <Fragment key={row.number}><span>{row.number}</span>{(["w", "b"] as const).map(color => { const move = row[color]; return move ? <button key={color} onClick={() => { setPly(move.index + 1); setSelectedIssue(null); setShowVariation(false); }} aria-current={ply === move.index + 1 && !issue ? "step" : undefined} className={ply === move.index + 1 && !issue ? "active" : ""}>{move.san}</button> : <span key={color}>—</span>; })}</Fragment>)}</div>
 
       </section>
@@ -124,6 +126,6 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
 
 function EvaluationGraph({ evaluations, ply, onSelect, label }: { evaluations: number[]; ply: number; onSelect: (ply: number) => void; label: string }) {
   const width = 600;
-  const points = evaluations.map((value, index) => `${(index / Math.max(1, evaluations.length - 1)) * width},${80 - Math.max(-600, Math.min(600, value)) / 7.5}`).join(" ");
-  return <div className="axis-graph"><p>{label}</p><svg viewBox="0 0 600 160" role="img" aria-label={label}><line x1="0" y1="80" x2="600" y2="80" stroke="currentColor" opacity=".25"/><polyline fill="none" stroke="var(--chart-line)" strokeWidth="2.5" points={points}/><line x1={(ply / Math.max(1, evaluations.length - 1)) * width} y1="0" x2={(ply / Math.max(1, evaluations.length - 1)) * width} y2="160" stroke="currentColor" opacity=".7"/></svg><input aria-label={label} type="range" min="0" max={evaluations.length - 1} value={ply} onChange={e => onSelect(Number(e.target.value))}/></div>;
+  const points = evaluations.map((value, index) => `${(index / Math.max(1, evaluations.length - 1)) * width},${60 - Math.max(-600, Math.min(600, value)) / 10}`).join(" ");
+  return <div className="axis-graph"><p>{label}</p><svg viewBox="0 0 600 120" role="img" aria-label={label}><line x1="0" y1="60" x2="600" y2="60" stroke="currentColor" opacity=".25"/><polyline fill="none" stroke="var(--chart-line)" strokeWidth="2.5" points={points}/><line x1={(ply / Math.max(1, evaluations.length - 1)) * width} y1="0" x2={(ply / Math.max(1, evaluations.length - 1)) * width} y2="120" stroke="currentColor" opacity=".7"/></svg><input aria-label={label} type="range" min="0" max={evaluations.length - 1} value={ply} onChange={e => onSelect(Number(e.target.value))}/></div>;
 }

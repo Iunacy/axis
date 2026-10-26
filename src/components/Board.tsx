@@ -163,7 +163,7 @@ export default function Board({
 
   return (
     <div className={`flex flex-col gap-3 w-full ${maxW}`}>
-      <div role="group" aria-label={t.ui.chessboard} className="grid grid-cols-8 grid-rows-8 aspect-square w-full rounded-xl overflow-hidden border border-border select-none">
+      <div role="group" aria-label={t.ui.chessboard} className="axis-board-frame grid grid-cols-8 grid-rows-8 aspect-square w-full select-none">
         {ranks.map((r) =>
           files.map((f) => {
             const square = `${f}${r}` as Square;
@@ -175,6 +175,7 @@ export default function Board({
             const showW = showWhite && s.whiteAttackers > 0;
             const showB = showBlack && s.blackAttackers > 0;
 
+            const inCheck = s.piece?.type === "k" && s.piece.color === chess.turn() && chess.isCheck();
             const bg = isSel
               ? dark ? theme.selectedDark : theme.selectedLight
               : isLast
@@ -202,22 +203,22 @@ export default function Board({
                 style={{ backgroundColor: bg }}
                 className={[
                   "relative w-full h-full flex items-center justify-center",
-                  inBeam ? "shadow-[inset_0_0_0_3px_rgba(56,189,248,0.6)]" : "",
+                  inBeam ? "axis-board-beam" : "",
+                  isSel ? "axis-board-selected" : "",
+                  inCheck ? "axis-board-check" : "",
                 ].join(" ")}
               >
-                <span className="sr-only" id={`${boardId}-${square}`}>{s.piece ? `${s.piece.color === "w" ? t.axis.white : t.axis.black} ${t.ui.pieces[s.piece.type as keyof typeof t.ui.pieces]}` : t.ui.emptySquare}</span>
+                <span className="sr-only" id={`${boardId}-${square}`}>{s.piece ? `${s.piece.color === "w" ? t.axis.white : t.axis.black} ${t.ui.pieces[s.piece.type as keyof typeof t.ui.pieces]}` : t.ui.emptySquare}{inCheck ? ` · ${t.ui.check}` : ""}{legalTargets.has(square) ? ` · ${t.ui.legalMove}` : ""}{isSel ? ` · ${t.ui.selectedSquare}` : ""}{isLast ? ` · ${t.ui.lastMove}` : ""}</span>
                 {f === files[0] && (
                   <span
-                    className="absolute top-0.5 left-1 text-[9px] font-semibold pointer-events-none"
-                    style={{ color: dark ? theme.lightSquare : theme.darkSquare }}
+                    className="absolute top-0.5 left-1 axis-board-coordinate pointer-events-none"
                   >
                     {r}
                   </span>
                 )}
                 {r === ranks[7] && (
                   <span
-                    className="absolute bottom-0 right-1 text-[9px] font-semibold pointer-events-none"
-                    style={{ color: dark ? theme.lightSquare : theme.darkSquare }}
+                    className="absolute bottom-0 right-1 axis-board-coordinate pointer-events-none"
                   >
                     {f}
                   </span>
@@ -239,7 +240,7 @@ export default function Board({
                       "absolute pointer-events-none",
                       s.piece
                         ? "inset-0.5 rounded-full ring-[3px] ring-zinc-900/30"
-                        : "w-1/3 h-1/3 rounded-full bg-zinc-900/25",
+                        : "w-1/3 h-1/3 rounded-full bg-zinc-900/40",
                     ].join(" ")}
                   />
                 )}
@@ -318,6 +319,7 @@ function OverlayToggle({
   return (
     <button
       onClick={() => setOn(!on)}
+      aria-pressed={on}
       className={[
         "flex items-center gap-2 rounded-full border px-3 py-1.5 transition",
         on ? "border-ring/60 bg-accent text-accent-foreground" : "border-input text-muted-foreground hover:border-ring/60",

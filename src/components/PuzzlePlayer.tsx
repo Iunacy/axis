@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
-import { SlidersHorizontal } from "lucide-react";
+import { Check, X, SlidersHorizontal } from "lucide-react";
 import Board from "./Board";
 import { useI18n } from "@/lib/i18n";
 import { recordReview } from "@/lib/storage";
@@ -212,12 +212,12 @@ function SinglePuzzle({
         )}
         {state === "solved" && (
           <p className="rounded-lg bg-emerald-500/10 border border-emerald-600/40 px-4 py-3 text-emerald-600 dark:text-emerald-300 text-sm">
-            ✓ {t.puzzles.solved} — {puzzle.solution_san.join(", ")}
+            <Check size={16} className="inline mr-1"/> {t.puzzles.solved} — {puzzle.solution_san.join(", ")}
           </p>
         )}
         {state === "wrong" && (
           <p className="rounded-lg bg-red-500/10 border border-red-600/40 px-4 py-3 text-red-600 dark:text-red-300 text-sm">
-            ✗ {t.puzzles.wrong}
+            <X size={16} className="inline mr-1"/> {t.puzzles.wrong}
           </p>
         )}
         {state === "revealed" && (
