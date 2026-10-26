@@ -22,7 +22,7 @@ export default function DeleteLessonButton({ onConfirm }: { onConfirm: () => voi
         <button
           aria-label={t.lessons.delete}
           title={t.lessons.delete}
-          className="absolute top-3 right-3 z-10 rounded-md p-1.5 text-muted-foreground/60 hover:text-red-500 hover:bg-red-500/10 transition"
+          className="absolute top-2 right-0 z-10 rounded-md w-11 h-11 flex items-center justify-center text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition"
         >
           <Trash2 className="size-4" />
         </button>

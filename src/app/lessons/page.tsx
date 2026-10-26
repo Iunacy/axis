@@ -41,11 +41,8 @@ export default function LessonsPage() {
                   href={`/lessons/${l.slug}`}
                   className="axis-lesson-link"
                 >
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {t.lessons.lesson}
-                    {l.completed && <span className="text-emerald-600 dark:text-emerald-400 ml-2"><Check size={13} className="inline"/> {t.lessons.completed}</span>}
-                  </p>
                   <h3 className="font-medium text-foreground">{lessonTitle(l.slug, locale)}</h3>
+                  {l.completed && <span className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 mt-2"><Check size={13}/> {t.lessons.completed}</span>}
                   <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{lessonConcept(l.slug, locale)}</p>
                 </Link>
               </li>

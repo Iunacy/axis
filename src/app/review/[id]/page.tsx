@@ -96,7 +96,7 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
         <div className="axis-evaluation"><span>{t.axis.engine}</span><strong>{evalText}</strong></div>
       </section>
       <section className="axis-review-panel">
-        {analysis && !issue && <EmptyState title={t.ui.selectMoment} description={t.ui.selectedMoment}/>}
+        {analysis && analysis.issues.length > 0 && !issue && <EmptyState title={t.ui.selectMoment} description={t.ui.selectedMoment}/>}
         {game.analysis_status !== "done" && <AnalysisRunner pendingCount={1} gameId={game.id}/>}
         {!analysis && <p className="axis-muted">{t.axis.unanalysed}</p>}
         {issue && <div className="axis-issue-detail" aria-live="polite">

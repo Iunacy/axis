@@ -33,14 +33,14 @@ export default function GenerateLessonsButton({ onGenerated }: { onGenerated?: (
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-col items-start gap-3">
       <button
         onClick={generate}
-        className="rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition"
+        className="axis-button w-fit"
       >
         {t.lessons.generate}
       </button>
-      {msg && <span className="text-sm text-amber-600 dark:text-amber-400">{msg}</span>}
+      {msg && <span role="status" className="axis-muted text-sm">{msg}</span>}
     </div>
   );
 }

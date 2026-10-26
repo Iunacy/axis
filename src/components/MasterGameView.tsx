@@ -170,8 +170,8 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
   const studyingName = game.studySide === "w" ? game.white : game.black;
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-      <div className="flex flex-col gap-3 lg:w-[420px] lg:flex-none">
+    <div className="axis-master-workspace">
+      <div className="axis-master-board">
         <Board
           fen={fen}
           lastMove={lastMove}
@@ -310,7 +310,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
               <button
                 onClick={generate}
                 disabled={generating || !ai.available}
-                className="self-start inline-flex items-center rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-50 px-4 py-2 text-sm font-medium text-white transition gap-3"
+                className="axis-button w-fit"
               >
                 {generating ? (
                   <CometSpinner className="size-3" />
@@ -409,7 +409,7 @@ function StepBtn({
       onClick={onClick}
       disabled={disabled}
       aria-label={label}
-      className="flex w-9 h-9 items-center justify-center rounded-lg border border-input text-foreground/80 hover:border-ring/60 disabled:opacity-30 transition"
+      className="flex w-11 h-11 items-center justify-center rounded-lg border border-input text-foreground/80 hover:border-ring/60 disabled:opacity-30 transition"
     >
       {children}
     </button>

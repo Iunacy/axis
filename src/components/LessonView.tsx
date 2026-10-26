@@ -125,7 +125,7 @@ function LessonContentView({
         <button
           onClick={markDone}
           disabled={completed}
-          className="self-start rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 px-4 py-2 text-sm font-medium text-white transition"
+          className="axis-button w-fit"
         >
           {completed ? `✓ ${t.lessons.completed}` : t.lessons.markDone}
         </button>
@@ -351,7 +351,7 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
                   onClick={() => goTo(stepIdx - 1)}
                   disabled={stepIdx === 0}
                   aria-label={t.lessons.stepBack}
-                  className="flex w-8 h-8 items-center justify-center rounded-lg border border-input text-foreground/80 hover:border-ring/60 disabled:opacity-30 transition"
+                  className="flex w-11 h-11 items-center justify-center rounded-lg border border-input text-foreground/80 hover:border-ring/60 disabled:opacity-30 transition"
                 >
                   <ChevronLeft className="size-4" />
                 </button>
@@ -359,7 +359,7 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
                   onClick={() => goTo(stepIdx + 1)}
                   disabled={stepIdx === steps.length - 1}
                   aria-label={t.lessons.stepForward}
-                  className="flex w-8 h-8 items-center justify-center rounded-lg border border-input text-foreground/80 hover:border-ring/60 disabled:opacity-30 transition"
+                  className="flex w-11 h-11 items-center justify-center rounded-lg border border-input text-foreground/80 hover:border-ring/60 disabled:opacity-30 transition"
                 >
                   <ChevronRight className="size-4" />
                 </button>
