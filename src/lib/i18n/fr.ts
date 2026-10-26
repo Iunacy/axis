@@ -1,6 +1,17 @@
 import type { Dict } from "./en";
 
 const fr: Dict = {
+  ui: {
+    boardTools: "Outils de l’échiquier",
+    brandSub: "Analyse & pratique", workspace: "Espace de travail", localOnly: "Enregistré sur cet appareil", menu: "Menu", appearance: "Apparence", system: "Système", dark: "Sombre", light: "Clair",
+    overviewHelp: "Comprenez votre jeu. Préparez votre prochain coup.", gamesHelp: "Vos parties terminées, prêtes à être étudiées.", settingsHelp: "Un espace de travail à votre image.", trainingHelp: "Trouvez le coup. Comprenez l’idée. Retenez-la.",
+    startTitle: "Chaque partie est un point de départ.", startHelp: "Connectez un profil public ou importez un PGN terminé. AXIS transforme vos décisions en exercices ciblés.", connect: "Importer mes parties", importInstead: "Importer un PGN", accounts: "Profils publics", accountHelp: "Un pseudo suffit. Aucun mot de passe ni connexion nécessaire.",
+    nextSession: "Votre prochaine séance", ready: (n: number) => `${n} ${n === 1 ? "position prête" : "positions prêtes"}`, startPractice: "S’entraîner", reviewGame: "Étudier une partie", trainingEmpty: "Analysez une partie pour créer votre première séance.", trainingClear: "Vos révisions sont terminées. Étudiez vos parties ou revenez à la prochaine séance.",
+    search: "Rechercher un adversaire ou une ouverture", allResults: "Tous les résultats", noMatches: "Aucune partie ne correspond à votre recherche.", results: (n: number) => `${n} ${n === 1 ? "partie" : "parties"}`, page: (n: number, total: number) => `Page ${n} sur ${total}`, viewAll: "Toutes les parties", review: "Étudier", importDetails: "Collez la notation ou choisissez un fichier PGN",
+    engineHelp: "Analyse locale de parties terminées. Rapide pour un aperçu, approfondie pour étudier.", chooseGame: "Choisir une partie", practiceThese: "Travailler ces positions", moves: "Coups de la partie", moveWhite: "Blancs", moveBlack: "Noirs", evaluationHelp: "Évaluation de la partie · perspective des Blancs",
+    loading: "Ouverture de votre espace", noGameHelp: "Les parties restent dans le navigateur où vous les avez importées. Importez cette partie ici pour l’étudier.", emptyTitle: "Un nouveau départ.", recentReviews: "Dernières révisions", notAttempted: "Non essayé", skipped: "Passé", analysisDone: "Analysée", analysisPending: "Non analysée", analysisFailed: "Relancer l’analyse", analysisSkipped: "Indisponible",
+    boardAppearance: "Échiquier & apparence", audio: "Son & voix", engineSettings: "Préférences d’analyse", advanced: "Coaching IA facultatif", data: "Données locales", reviewHelp: "Choisissez un moment ou naviguez avec les flèches du clavier.",
+  },
   axis: {
     review: "Analyse", training: "Entraînement", selectGame: "Choisissez une partie pour analyser les coups et les erreurs.",
     noGame: "Partie introuvable dans ce navigateur.", backGames: "Toutes les parties", importTitle: "Importer un PGN",

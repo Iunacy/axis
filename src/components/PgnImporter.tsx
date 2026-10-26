@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { ChevronDown, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { importPgnText } from "@/lib/import-pgn";
 import { upsertGames } from "@/lib/storage";
 import { useI18n } from "@/lib/i18n";
 
-export default function PgnImporter() {
+export default function PgnImporter({ defaultOpen = false }: { defaultOpen?: boolean }) {
   const { t } = useI18n();
+  const [open, setOpen] = useState(defaultOpen);
   const [pgn, setPgn] = useState("");
   const [side, setSide] = useState<"w" | "b">("w");
   const [busy, setBusy] = useState(false);
@@ -31,10 +33,9 @@ export default function PgnImporter() {
     } catch (cause) { setError(cause instanceof Error ? cause.message : t.axis.invalidPgn); }
     finally { setBusy(false); }
   }
-  return <form className="axis-import" onSubmit={submit}>
-    <div><h2>{t.axis.importTitle}</h2><p>{t.axis.importHelp}</p></div>
+  return <details className="axis-import" open={open} onToggle={event => setOpen(event.currentTarget.open)}><summary><div><strong>{t.axis.importTitle}</strong><p>{t.ui.importDetails}</p></div><ChevronDown size={18}/></summary><form onSubmit={submit}><p>{t.axis.importHelp}</p>
     <textarea aria-label={t.axis.paste} placeholder={t.axis.paste} value={pgn} onChange={event => setPgn(event.target.value)} rows={4}/>
-    <div className="axis-import-actions"><label className="axis-button secondary">{t.axis.file}<input type="file" accept=".pgn,application/x-chess-pgn,text/plain" onChange={event => void fileChanged(event.target.files?.[0])}/></label><label>{t.axis.side}<select value={side} onChange={event => setSide(event.target.value as "w" | "b")}><option value="w">{t.axis.white}</option><option value="b">{t.axis.black}</option></select></label><button className="axis-button" disabled={busy || !pgn.trim()}>{busy ? t.axis.importing : t.axis.import}</button></div>
+    <div className="axis-import-actions"><label className="axis-button secondary"><Upload size={15}/>{t.axis.file}<input type="file" accept=".pgn,application/x-chess-pgn,text/plain" onChange={event => void fileChanged(event.target.files?.[0])}/></label><label>{t.axis.side}<select value={side} onChange={event => setSide(event.target.value as "w" | "b")}><option value="w">{t.axis.white}</option><option value="b">{t.axis.black}</option></select></label><button className="axis-button" disabled={busy || !pgn.trim()}>{busy ? t.axis.importing : t.axis.import}</button></div>
     {error && <p className="axis-feedback error" role="alert">{error}</p>}
-  </form>;
+  </form></details>;
 }

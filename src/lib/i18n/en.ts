@@ -1,4 +1,15 @@
 const en = {
+  ui: {
+    boardTools: "Board tools",
+    brandSub: "Analysis & practice", workspace: "Workspace", localOnly: "Saved on this device", menu: "Menu", appearance: "Appearance", system: "System", dark: "Dark", light: "Light",
+    overviewHelp: "A clearer view of your game. A focused plan for your next move.", gamesHelp: "Your completed games, ready for a closer look.", settingsHelp: "Make this workspace your own.", trainingHelp: "Find the move. Understand the idea. Make it stick.",
+    startTitle: "Every game is a starting point.", startHelp: "Connect a public chess profile, or bring a completed PGN. AXIS turns your decisions into focused practice.", connect: "Import my games", importInstead: "Import a PGN instead", accounts: "Public profiles", accountHelp: "One username is enough. No password or sign-in required.",
+    nextSession: "Your next session", ready: (n: number) => `${n} ${n === 1 ? "position" : "positions"} ready`, startPractice: "Start practice", reviewGame: "Review a game", trainingEmpty: "Analyze a game to build your first practice session.", trainingClear: "Your reviews are complete. Keep exploring your games, or return when the next session is due.",
+    search: "Search opponents or openings", allResults: "All results", noMatches: "No games match your search.", results: (n: number) => `${n} ${n === 1 ? "game" : "games"}`, page: (n: number, total: number) => `Page ${n} of ${total}`, viewAll: "View all games", review: "Review", importDetails: "Paste notation or choose a PGN file",
+    engineHelp: "Analyze completed games locally. Fast for a first look, deep for a closer study.", chooseGame: "Choose a game", practiceThese: "Practice these positions", moves: "Game moves", moveWhite: "White", moveBlack: "Black", evaluationHelp: "Game evaluation · White’s perspective",
+    loading: "Opening your workspace", noGameHelp: "Games are saved in the browser where you imported them. Import this game here to review it.", emptyTitle: "A clean slate.", recentReviews: "Recent reviews", notAttempted: "Not attempted", skipped: "Skipped", analysisDone: "Analyzed", analysisPending: "Not analyzed", analysisFailed: "Retry analysis", analysisSkipped: "Unavailable",
+    boardAppearance: "Board & appearance", audio: "Sound & voice", engineSettings: "Analysis preferences", advanced: "Optional AI coaching", data: "Local data", reviewHelp: "Select a moment to inspect it, or navigate with the arrow keys.",
+  },
   axis: {
     review: "Review", training: "Training", selectGame: "Choose a game to inspect moves and mistakes.",
     noGame: "This game is not saved in this browser.", backGames: "All games", importTitle: "Import PGN",

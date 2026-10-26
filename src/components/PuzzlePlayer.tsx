@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
+import { SlidersHorizontal } from "lucide-react";
 import Board from "./Board";
 import { useI18n } from "@/lib/i18n";
 import { recordReview } from "@/lib/storage";
@@ -46,6 +47,8 @@ function SinglePuzzle({
   const [state, setState] = useState<"playing" | "wrong" | "solved" | "revealed">("playing");
   const [boardKey, setBoardKey] = useState(0);
   const cancelRef = useRef(false);
+  const generationRef = useRef(0);
+  const [showTools, setShowTools] = useState(false);
   const reported = useRef(false);
   const [waiting, setWaiting] = useState(false);
 
@@ -53,6 +56,7 @@ function SinglePuzzle({
     cancelRef.current = false;
     return () => {
       cancelRef.current = true;
+      generationRef.current += 1;
     };
   }, []);
 
@@ -95,8 +99,9 @@ function SinglePuzzle({
     }
     if (reply) {
       setWaiting(true);
+      const generation = generationRef.current;
       setTimeout(() => {
-        if (cancelRef.current) return;
+        if (cancelRef.current || generation !== generationRef.current) return;
         try {
           const m = c.move(reply);
           if (m) {
@@ -116,6 +121,7 @@ function SinglePuzzle({
   }
 
   async function showSolution() {
+    const generation = ++generationRef.current;
     report(false);
     setState("revealed");
     setFen(puzzle.fen);
@@ -124,7 +130,7 @@ function SinglePuzzle({
     const c = new Chess(puzzle.fen);
     for (const san of sequence) {
       await sleep(700);
-      if (cancelRef.current) return;
+      if (cancelRef.current || generation !== generationRef.current) return;
       let m;
       try {
         m = c.move(san);
@@ -138,6 +144,8 @@ function SinglePuzzle({
   }
 
   function retry() {
+    generationRef.current += 1;
+    setWaiting(false);
     setFen(puzzle.fen);
     setLastMove(null);
     setStep(0);
@@ -149,7 +157,7 @@ function SinglePuzzle({
   const sideToMove = puzzle.user_side === "w" ? t.puzzles.white : t.puzzles.black;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 items-start">
+    <div className="axis-puzzle">
       <Board
         key={boardKey}
         fen={fen}
@@ -157,10 +165,10 @@ function SinglePuzzle({
         orientation={puzzle.user_side}
         interactive={state === "playing" && !waiting}
         onTryMove={tryMove}
-        showOverlayControls
+        showOverlayControls={showTools}
       />
 
-      <div className="flex flex-col gap-4 max-w-sm">
+      <div className="axis-puzzle-detail">
         <div>
           <div className="flex flex-wrap gap-1.5 mb-2">
             <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs text-foreground/90">
@@ -202,6 +210,7 @@ function SinglePuzzle({
           </p>
         </div>
 
+        <button className="axis-button secondary w-fit" onClick={() => setShowTools(!showTools)} aria-pressed={showTools}><SlidersHorizontal size={16}/>{t.ui.boardTools}</button>
         {state === "playing" && step > 0 && (
           <p className="text-sm text-emerald-600 dark:text-emerald-400">
             {t.puzzles.correct} {t.puzzles.opponentPlays(puzzle.reply_san[step - 1] ?? "…")}{" "}
@@ -226,7 +235,7 @@ function SinglePuzzle({
 
         <div className="flex flex-wrap gap-2">
           {(state === "wrong" || state === "revealed") && (
-            <button onClick={retry} className="rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium">
+            <button onClick={retry} className="axis-button">
               {t.puzzles.retry}
             </button>
           )}
@@ -234,14 +243,15 @@ function SinglePuzzle({
             <button
               disabled={waiting}
               onClick={showSolution}
-              className="rounded-lg border border-input px-4 py-2 text-sm text-foreground/90 hover:border-ring/60"
+              className="axis-button secondary"
             >
               {t.puzzles.showSolution}
             </button>
           )}
           <button
             onClick={onNext}
-            className="rounded-lg border border-input px-4 py-2 text-sm text-foreground/90 hover:border-ring/60"
+            disabled={state === "playing" || waiting}
+            className="axis-button secondary"
           >
             {t.puzzles.next}
           </button>

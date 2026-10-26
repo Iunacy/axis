@@ -1,23 +1,27 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, FolderOpen, Search } from "lucide-react";
 import PgnImporter from "@/components/PgnImporter";
 import GamesTable from "@/components/GamesTable";
+import SyncButton from "@/components/SyncButton";
+import WorkspaceLoading from "@/components/WorkspaceLoading";
 import { useI18n } from "@/lib/i18n";
 import { useGames, useStoreHydrated } from "@/lib/store";
 
 export default function GamesPage() {
   const { t } = useI18n();
   const hydrated = useStoreHydrated();
-  const allGames = useGames();
-  const games = hydrated ? allGames.slice(0, 300) : null;
-
-  if (!games) return null;
-
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-10 flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold text-foreground">{t.games.title}</h1>
-      <PgnImporter />
-      {games.length === 0 ? <p className="text-muted-foreground">{t.dashboard.noData}</p> : <GamesTable games={games} showStatus />}
-    </main>
-  );
+  const games = useGames();
+  const [query, setQuery] = useState("");
+  const [result, setResult] = useState("all");
+  const [page, setPage] = useState(0);
+  if (!hydrated) return <WorkspaceLoading/>;
+  const filtered = games.filter(game => (result === "all" || result === game.result) && `${game.opponent_name ?? ""} ${game.opening_name ?? ""} ${game.eco ?? ""}`.toLowerCase().includes(query.trim().toLowerCase()));
+  const pages = Math.max(1, Math.ceil(filtered.length / 20));
+  const current = Math.min(page, pages - 1);
+  return <main className="axis-games"><div className="axis-page-head"><div><h1>{t.games.title}</h1><p>{t.ui.gamesHelp}</p></div><SyncButton/></div><PgnImporter defaultOpen={!games.length}/>
+    {games.length > 0 ? <><div className="axis-game-filters"><label className="axis-search"><Search size={17} aria-hidden="true"/><input className="axis-field" aria-label={t.ui.search} placeholder={t.ui.search} value={query} onChange={event => { setQuery(event.target.value); setPage(0); }}/></label><select className="axis-field" aria-label={t.games.result} value={result} onChange={event => { setResult(event.target.value); setPage(0); }}><option value="all">{t.ui.allResults}</option>{(["win", "loss", "draw"] as const).map(value => <option key={value} value={value}>{t.games.results[value]}</option>)}</select><span>{t.ui.results(filtered.length)}</span></div><section className="axis-panel">{filtered.length ? <GamesTable games={filtered.slice(current * 20, current * 20 + 20)} showStatus/> : <p className="axis-muted py-8">{t.ui.noMatches}</p>}</section>{pages > 1 && <div className="axis-pagination"><button aria-label={t.axis.previous} disabled={current === 0} onClick={() => setPage(current - 1)}><ChevronLeft size={18}/></button><span>{t.ui.page(current + 1, pages)}</span><button aria-label={t.axis.next} disabled={current === pages - 1} onClick={() => setPage(current + 1)}><ChevronRight size={18}/></button></div>}</> : <section className="axis-panel axis-empty"><FolderOpen size={28}/><h2>{t.ui.emptyTitle}</h2><p>{t.ui.startHelp}</p><Link href="/" className="axis-button w-fit">{t.ui.connect}</Link></section>}
+  </main>;
 }

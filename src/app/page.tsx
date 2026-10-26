@@ -1,14 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen } from "lucide-react";
+import { ArrowUpRight, Target } from "lucide-react";
 import AnalysisRunner from "@/components/AnalysisRunner";
 import GamesTable from "@/components/GamesTable";
+import GettingStarted from "@/components/GettingStarted";
 import RatingChart from "@/components/RatingChart";
 import SyncButton from "@/components/SyncButton";
+import WorkspaceLoading from "@/components/WorkspaceLoading";
 import { useI18n } from "@/lib/i18n";
 import { computeDashboardStats } from "@/lib/stats";
-import { useAnalyses, useGames, useSettings, useStoreHydrated } from "@/lib/store";
+import { duePuzzles } from "@/lib/training";
+import { useAnalyses, useGames, useSettings, useStore, useStoreHydrated } from "@/lib/store";
 
 export default function DashboardPage() {
   const { t } = useI18n();
@@ -16,124 +19,18 @@ export default function DashboardPage() {
   const games = useGames();
   const analyses = useAnalyses();
   const settings = useSettings();
-
-  const stats = hydrated ? computeDashboardStats(games, analyses) : null;
-
-  if (!stats) return null;
-
-  const accounts = [
-    settings.chesscomUsername && `${settings.chesscomUsername} (Chess.com)`,
-    settings.lichessUsername && `${settings.lichessUsername} (Lichess)`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-10 flex flex-col gap-8">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">{t.dashboard.title}</h1>
-          <p className="text-sm text-muted-foreground mt-1">{t.app.tagline}</p>
-          {accounts && (
-            <p className="text-xs text-muted-foreground/80 mt-2">
-              {t.dashboard.accounts} <span className="text-foreground/80">{accounts}</span>{" "}
-              <Link href="/settings" className="underline hover:text-foreground">
-                ({t.dashboard.accountsEdit})
-              </Link>
-            </p>
-          )}
-        </div>
-        <SyncButton />
-      </div>
-
-      {stats.totalGames === 0 ? (
-        <p className="text-muted-foreground">{t.dashboard.noData}</p>
-      ) : (
-        <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              label={t.dashboard.games}
-              value={String(stats.totalGames)}
-              sub={`${stats.analyzedCount} ${t.dashboard.analyzed}`}
-            />
-            <StatCard label={t.dashboard.winRate} value={stats.winRate != null ? `${stats.winRate}%` : "—"} />
-            <StatCard label={t.dashboard.accuracy} value={stats.avgAccuracy != null ? `${stats.avgAccuracy}%` : "—"} />
-            <StatCard
-              label={t.dashboard.blundersPerGame}
-              value={stats.blundersPerGame != null ? String(stats.blundersPerGame) : "—"}
-            />
-          </div>
-
-          <AnalysisRunner pendingCount={stats.pendingCount} />
-
-          <section className="rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-medium text-foreground">{t.dashboard.progression}</h2>
-              <LessonsLink label={t.nav.lessons} />
-            </div>
-            <RatingChart series={stats.ratingSeries} />
-          </section>
-
-          {stats.weaknesses && stats.weaknesses.topMotifs.length > 0 && (
-            <section className="rounded-xl border border-border bg-card p-5">
-              <h2 className="font-medium text-foreground mb-4">{t.dashboard.weaknesses}</h2>
-              <ul className="flex flex-col gap-3">
-                {stats.weaknesses.topMotifs.map((m, i) => (
-                  <li key={m.motif} className="flex items-center gap-3 text-sm">
-                    <span className="w-6 h-6 rounded-full bg-red-500/15 text-red-500 flex items-center justify-center text-xs font-bold">
-                      {i + 1}
-                    </span>
-                    <span className="text-foreground/90">{t.motifs[m.motif] ?? m.motif}</span>
-                    <span className="text-muted-foreground">× {m.count}</span>
-                  </li>
-                ))}
-                {stats.weaknesses.weakestPhase && (
-                  <li className="text-sm text-muted-foreground pt-2 border-t border-border">
-                    {t.dashboard.weakestPhase}:{" "}
-                    <strong className="text-foreground">{t.phases[stats.weaknesses.weakestPhase.phase]}</strong> (
-                    {Math.round(stats.weaknesses.weakestPhase.blunderRate * 100)}% {t.dashboard.blunderRate})
-                  </li>
-                )}
-              </ul>
-              <div className="mt-4 flex gap-4">
-                <Link href="/lessons" className="text-sm text-emerald-600 dark:text-emerald-400 underline">
-                  {t.nav.lessons} →
-                </Link>
-              </div>
-            </section>
-          )}
-
-          <section className="rounded-xl border border-border bg-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-medium text-foreground">{t.dashboard.recentGames}</h2>
-              <LessonsLink label={t.nav.lessons} />
-            </div>
-            <GamesTable games={stats.recentGames} />
-          </section>
-        </>
-      )}
-    </main>
-  );
-}
-
-function LessonsLink({ label }: { label: string }) {
-  return (
-    <Link
-      href="/lessons"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-violet-500/50 px-3 py-1.5 text-xs font-medium text-violet-600 dark:text-violet-300 hover:bg-violet-500/10 transition"
-    >
-      <BookOpen className="size-3.5" />
-      {label}
-    </Link>
-  );
-}
-
-function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="text-2xl font-semibold text-foreground mt-1">{value}</p>
-      {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
-    </div>
-  );
+  const puzzles = useStore(state => state.puzzles);
+  if (!hydrated) return <WorkspaceLoading/>;
+  const stats = computeDashboardStats(games, analyses);
+  const due = duePuzzles(puzzles).length;
+  const accounts = [settings.chesscomUsername && `${settings.chesscomUsername} · Chess.com`, settings.lichessUsername && `${settings.lichessUsername} · Lichess`].filter(Boolean).join(" / ");
+  return <main className="axis-dashboard">
+    <div className="axis-page-head"><div><h1>{t.dashboard.title}</h1><p>{t.ui.overviewHelp}</p>{accounts && <p className="axis-account"><Link href="/settings">{accounts}</Link></p>}</div>{stats.totalGames > 0 && <SyncButton/>}</div>
+    {!stats.totalGames ? <GettingStarted/> : <>
+      <div className="axis-stats"><div><span>{t.dashboard.games}</span><strong>{stats.totalGames}</strong><small>{stats.analyzedCount} {t.dashboard.analyzed}</small></div><div><span>{t.dashboard.winRate}</span><strong>{stats.winRate == null ? "—" : `${stats.winRate}%`}</strong></div><div><span>{t.dashboard.accuracy}</span><strong>{stats.avgAccuracy == null ? "—" : `${stats.avgAccuracy}%`}</strong></div><div><span>{t.dashboard.blundersPerGame}</span><strong>{stats.blundersPerGame ?? "—"}</strong></div></div>
+      <div className="axis-dashboard-grid"><section className="axis-panel"><div className="axis-panel-head"><h2>{t.dashboard.progression}</h2></div><RatingChart series={stats.ratingSeries}/></section><section className="axis-panel axis-session"><div><Target size={26}/><h2>{t.ui.nextSession}</h2><h3>{due ? t.ui.ready(due) : puzzles.length ? t.axis.allDone : t.axis.training}</h3><p>{due ? t.ui.trainingHelp : puzzles.length ? t.ui.trainingClear : t.ui.trainingEmpty}</p></div><Link className="axis-button" href={due ? "/training" : "/games"}>{due ? t.ui.startPractice : t.ui.reviewGame}<ArrowUpRight size={16}/></Link></section></div>
+      <div className="axis-dashboard-grid"><AnalysisRunner pendingCount={stats.pendingCount}/><section className="axis-panel"><div className="axis-panel-head"><h2>{t.dashboard.weaknesses}</h2><Link href="/lessons" className="axis-link">{t.nav.lessons}</Link></div>{stats.weaknesses?.topMotifs.length ? <ul className="axis-weakness-list">{stats.weaknesses.topMotifs.map(item => <li key={item.motif}><span>{t.motifs[item.motif].split(" (")[0]}</span><span>{item.count}</span></li>)}</ul> : <p className="axis-muted text-sm leading-7">{t.axis.noTraining}</p>}</section></div>
+      <section className="axis-panel"><div className="axis-panel-head"><h2>{t.dashboard.recentGames}</h2><Link href="/games" className="axis-link">{t.ui.viewAll}</Link></div><GamesTable games={stats.recentGames.slice(0, 6)} showStatus/></section>
+    </>}
+  </main>;
 }

@@ -4,7 +4,6 @@ import { Analytics } from "@vercel/analytics/next";
 import { Github } from "lucide-react";
 import { ThemeProvider } from "next-themes";
 import Nav from "@/components/Nav";
-import OnboardingModal from "@/components/OnboardingModal";
 import StoreHydrator from "@/components/StoreHydrator";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProvider } from "@/lib/i18n";
@@ -29,10 +28,11 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
+  other: { "axis-build": process.env.VERCEL_GIT_COMMIT_SHA ?? "local" },
   keywords: [...site.keywords],
-  authors: [{ name: "ln-dev7", url: site.github }],
-  creator: "ln-dev7",
-  publisher: "ln-dev7",
+  authors: [{ name: "AXIS contributors", url: site.github }],
+  creator: "AXIS contributors",
+  publisher: "AXIS",
   category: "education",
   alternates: {
     canonical: "/",
@@ -88,19 +88,18 @@ export default function RootLayout({
               operatingSystem: "Web",
               browserRequirements: "Requires JavaScript and WebAssembly.",
               offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-              author: { "@type": "Person", name: "ln-dev7", url: site.github },
+              author: { "@type": "Person", name: "AXIS contributors", url: site.github },
               inLanguage: ["en", "fr"],
             }),
           }}
         />
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <I18nProvider>
             <StoreHydrator />
             <Toaster />
-            <OnboardingModal />
             <Nav />
-            <div className="flex-1">{children}</div>
-            <footer className="border-t border-border py-6">
+            <div className="axis-content flex-1">{children}</div>
+            <footer className="axis-footer">
               <div className="mx-auto max-w-5xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground/70">
                 <span>
                   AXIS · built on Chess Coach by{" "}

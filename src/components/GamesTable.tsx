@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import { describeError } from "@/lib/errors";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen } from "lucide-react";
+import { ArrowUpRight, BookOpen } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { CometSpinner } from "@/components/ui/comet-spinner";
 import { requestAiLesson, useCoachAvailability } from "@/lib/coach-client";
@@ -14,13 +16,7 @@ import type { AiLessonRow, GameRow } from "@/lib/types";
 
 export function ResultBadge({ result }: { result: GameRow["result"] }) {
   const { t } = useI18n();
-  const cls =
-    result === "win"
-      ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
-      : result === "loss"
-      ? "bg-red-500/15 text-red-600 dark:text-red-400"
-      : "bg-muted text-muted-foreground";
-  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{t.games.results[result]}</span>;
+  return <span className={`axis-result ${result}`}>{t.games.results[result]}</span>;
 }
 
 function GameLessonButton({
@@ -63,7 +59,7 @@ function GameLessonButton({
       setBusyId(null);
       router.push(`/lessons/${row.id}`);
     } catch (e) {
-      console.error(e);
+      toast.error(describeError(e, t));
       setBusyId(null);
     }
   }
@@ -98,57 +94,7 @@ export default function GamesTable({ games, showStatus = false }: { games: GameR
   const { t, locale } = useI18n();
   const { available: aiConfigured } = useCoachAvailability();
   const [busyId, setBusyId] = useState<string | null>(null);
-
-  return (
-    <TooltipProvider delayDuration={200}>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="py-2 pr-4 font-medium">{t.games.date}</th>
-              <th className="py-2 pr-4 font-medium">{t.games.opponent}</th>
-              <th className="py-2 pr-4 font-medium">{t.games.result}</th>
-              <th className="py-2 pr-4 font-medium">{t.games.opening}</th>
-              <th className="py-2 pr-4 font-medium">{t.games.accuracy}</th>
-              {showStatus && <th className="py-2 pr-4 font-medium">{t.games.status}</th>}
-              {aiConfigured && <th className="py-2 font-medium" aria-label={t.games.aiLesson} />}
-            </tr>
-          </thead>
-          <tbody>
-            {games.map((g) => (
-              <tr key={g.id} className="border-t border-border text-foreground/90">
-                <td className="py-2 pr-4 text-muted-foreground whitespace-nowrap">
-                  {new Date(g.played_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")}
-                </td>
-                <td className="py-2 pr-4">
-                  <Link href={`/review/${encodeURIComponent(g.id)}`} className="axis-link">{g.opponent_name ?? "?"} →</Link>
-                  <span className="text-muted-foreground/70"> ({g.opponent_rating ?? "?"})</span>
-                </td>
-                <td className="py-2 pr-4">
-                  <ResultBadge result={g.result} />
-                </td>
-                <td className="py-2 pr-4 text-muted-foreground">
-                  {busyId === g.id ? (
-                    <span className="inline-flex items-center text-violet-500 dark:text-violet-400 gap-3">
-                      <CometSpinner className="size-3" />
-                      <span className="inline-block">{t.games.generatingLesson}</span>
-                    </span>
-                  ) : (
-                    g.opening_name ?? g.eco ?? "—"
-                  )}
-                </td>
-                <td className="py-2 pr-4 text-muted-foreground">{g.accuracy_user != null ? `${g.accuracy_user}%` : "—"}</td>
-                {showStatus && <td className="py-2 pr-4 text-muted-foreground">{g.analysis_status}</td>}
-                {aiConfigured && (
-                  <td className="py-1">
-                    <GameLessonButton game={g} busyId={busyId} setBusyId={setBusyId} />
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </TooltipProvider>
-  );
+  const date = (game: GameRow) => new Date(game.played_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB");
+  const status = (game: GameRow) => ({ done: t.ui.analysisDone, pending: t.ui.analysisPending, failed: t.ui.analysisFailed, skipped: t.ui.analysisSkipped, analyzing: t.analysis.running })[game.analysis_status];
+  return <TooltipProvider delayDuration={200}><div className="axis-table-wrap"><table className="axis-table"><thead><tr><th>{t.games.date}</th><th>{t.games.opponent}</th><th>{t.games.result}</th><th>{t.games.opening}</th><th>{t.games.accuracy}</th>{showStatus && <th>{t.games.status}</th>}{aiConfigured && <th aria-label={t.games.aiLesson}/>}</tr></thead><tbody>{games.map(game => <tr key={game.id}><td>{date(game)}</td><td><Link className="axis-opponent" href={`/review/${encodeURIComponent(game.id)}`}>{game.opponent_name ?? "—"}<ArrowUpRight size={13}/></Link><span className="axis-muted text-xs">{game.opponent_rating ?? "—"} · {game.platform === "chesscom" ? "Chess.com" : game.platform === "lichess" ? "Lichess" : "PGN"}</span></td><td><ResultBadge result={game.result}/></td><td className="axis-opening">{game.opening_name ?? game.eco ?? "—"}</td><td>{game.accuracy_user == null ? "—" : `${game.accuracy_user}%`}</td>{showStatus && <td className="axis-muted text-xs">{status(game)}</td>}{aiConfigured && <td><GameLessonButton game={game} busyId={busyId} setBusyId={setBusyId}/></td>}</tr>)}</tbody></table></div><div className="axis-game-mobile">{games.map(game => <Link key={game.id} href={`/review/${encodeURIComponent(game.id)}`}><h3><span>{game.opponent_name ?? "—"}</span><ArrowUpRight size={14}/></h3><ResultBadge result={game.result}/><span className="axis-mobile-opening">{game.opening_name ?? game.eco ?? game.time_class}</span><div className="axis-mobile-meta"><span>{date(game)} · {game.opponent_rating ?? "—"}</span><span>{showStatus ? status(game) : game.accuracy_user == null ? "—" : `${game.accuracy_user}%`}</span></div></Link>)}</div></TooltipProvider>;
 }

@@ -34,10 +34,13 @@ export default function AnalysisRunner({
   const [progress, setProgress] = useState(0);
   const [runningMode, setRunningMode] = useState<AnalysisMode>("fast");
   const stopRef = useRef(false);
+  const runningRef = useRef(false);
   const engineRef = useRef<Engine | null>(null);
   useEffect(() => () => { stopRef.current = true; engineRef.current?.destroy(); }, []);
 
   async function run(mode: AnalysisMode) {
+    if (runningRef.current) return;
+    runningRef.current = true;
     setStatus("running");
     setRunningMode(mode);
     stopRef.current = false;
@@ -108,11 +111,12 @@ export default function AnalysisRunner({
       setLabel(t.analysis.none);
     } catch (e) {
       if (activeGame) setGameStatus(activeGame, stopRef.current ? "pending" : "failed");
-      if (stopRef.current) return;
+      if (stopRef.current) { setStatus("idle"); setLabel(""); return; }
       setStatus("error");
       setLabel((e as Error).message);
       toast.error(describeError(e, t));
     } finally {
+      runningRef.current = false;
       engine.destroy();
       engineRef.current = null;
       onProgress?.();
@@ -120,7 +124,7 @@ export default function AnalysisRunner({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3">
+    <div className="axis-panel flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <h2 className="font-medium text-foreground">{t.analysis.title}</h2>
         <span className="text-xs text-muted-foreground">
@@ -143,7 +147,7 @@ export default function AnalysisRunner({
               </span>
               {label}
             </span>
-            <button onClick={() => (stopRef.current = true)} className="text-red-500 hover:text-red-600 dark:text-red-300">
+            <button onClick={() => { stopRef.current = true; engineRef.current?.destroy(); }} className="text-red-500 hover:text-red-600 dark:text-red-300">
               {t.analysis.stop}
             </button>
           </div>
@@ -155,14 +159,14 @@ export default function AnalysisRunner({
             <button
               onClick={() => run("fast")}
               disabled={pendingCount === 0}
-              className="rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 text-sm font-medium text-white transition"
+              className="axis-button"
             >
               {t.analysis.fast}
             </button>
             <button
               onClick={() => run("deep")}
               disabled={pendingCount === 0}
-              className="rounded-lg border border-violet-500/60 text-violet-600 dark:text-violet-300 hover:bg-violet-500/10 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 text-sm font-medium transition"
+              className="axis-button secondary"
             >
               {t.analysis.deep}
             </button>

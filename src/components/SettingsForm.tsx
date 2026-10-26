@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ApiKeyField from "./ApiKeyField";
+import AppearanceControl from "./AppearanceControl";
+import { ChevronDown } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,11 +53,11 @@ function SettingsFormInner() {
   }
 
   const input =
-    "rounded-lg border border-input bg-transparent px-3 py-2 text-sm text-foreground focus:border-emerald-500 focus:outline-none w-full";
+    "axis-field";
 
   return (
-    <form onSubmit={save} className="flex flex-col gap-6 max-w-md">
-      <label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+    <form onSubmit={save} className="axis-settings-form" onChange={() => setState("idle")}>
+      <fieldset className="axis-panel"><h2>{t.ui.accounts}</h2><p className="axis-muted text-sm leading-6">{t.ui.accountHelp}</p><label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.chesscom}
         <input
           className={input}
@@ -74,7 +76,7 @@ function SettingsFormInner() {
         />
       </label>
 
-      <label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+      </fieldset><fieldset className="axis-panel"><h2>{t.ui.boardAppearance}</h2><AppearanceControl/><label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.language}
         <div className="flex gap-2">
           {(["fr", "en"] as Locale[]).map((l) => (
@@ -97,7 +99,7 @@ function SettingsFormInner() {
 
       <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.boardTheme}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="axis-board-themes grid gap-2">
           {BOARD_THEMES.map((th) => {
             const active = form.boardTheme === th.id;
             return (
@@ -126,7 +128,7 @@ function SettingsFormInner() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+      </fieldset><details className="axis-panel axis-settings-audio"><summary>{t.ui.audio}<ChevronDown size={18}/></summary><div><div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.sound}
         <div className="flex gap-2">
           {([true, false] as const).map((on) => {
@@ -228,7 +230,7 @@ function SettingsFormInner() {
         )}
       </div>
 
-      <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+      </div></details><fieldset className="axis-panel"><h2>{t.ui.engineSettings}</h2><div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.analysisMode}
         <div className="flex gap-2">
           {(["fast", "deep"] as const).map((m) => {
@@ -280,12 +282,12 @@ function SettingsFormInner() {
         />
       </label>
 
-      <ApiKeyField />
+      </fieldset><section className="axis-panel"><h2 className="mb-5">{t.ui.advanced}</h2><ApiKeyField /></section>
 
-      <div className="flex items-center gap-3">
+      <div className="axis-settings-actions">
         <button
           type="submit"
-          className="rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 text-sm font-medium transition"
+          className="axis-button"
         >
           {t.settings.save}
         </button>
@@ -293,13 +295,13 @@ function SettingsFormInner() {
         {state === "cleared" && <span className="text-sm text-amber-600 dark:text-amber-400">{t.settings.cleared}</span>}
       </div>
 
-      <div className="border-t border-border pt-5 flex flex-col gap-2">
-        <p className="text-xs text-muted-foreground">{t.settings.storageNote}</p>
+      <div className="axis-panel axis-settings-data">
+        <h2 className="mb-3">{t.ui.data}</h2><p>{t.settings.storageNote}</p>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <button
               type="button"
-              className="self-start rounded-lg border border-red-900 text-red-500 hover:border-red-600 px-4 py-2 text-sm transition"
+              className="axis-button danger"
             >
               {t.settings.clearData}
             </button>

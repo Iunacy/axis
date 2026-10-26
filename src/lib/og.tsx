@@ -1,12 +1,13 @@
 import { ImageResponse } from "next/og";
+import { AXIS_MARK_PATH } from "./brand";
 
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 export const ogAlt =
   "AXIS — Analyze. Understand. Improve.";
 
-const BG = "#09090b";
-const ACCENT = "#d9b778";
+const BG = "#0d1016";
+const ACCENT = "#c2cfdf";
 const MUTED = "#a1a1aa";
 const BORDER = "#27272a";
 
@@ -44,20 +45,6 @@ export function renderOgImage() {
           position: "relative",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            top: -260,
-            right: -160,
-            width: 620,
-            height: 620,
-            borderRadius: 999,
-            background:
-              "radial-gradient(closest-side, rgba(217,183,120,0.14), rgba(52,211,153,0))",
-            display: "flex",
-          }}
-        />
-
         <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
           <div
             style={{
@@ -71,10 +58,7 @@ export function renderOgImage() {
               border: `1px solid ${BORDER}`,
             }}
           >
-            <svg width="56" height="56" viewBox="0 0 24 24" fill={ACCENT}>
-              <path d="M14 3a1 1 0 0 1 .993 .883l.007 .117v2h1.652l.362 -2.164a1 1 0 0 1 1.034 -.836l.116 .013a1 1 0 0 1 .836 1.035l-.013 .116l-.5 3a1 1 0 0 1 -.865 .829l-.122 .007h-1.383l.877 7.89a1 1 0 0 1 -.877 1.103l-.117 .007h-8a1 1 0 0 1 -1 -.993l.006 -.117l.877 -7.89h-1.383a1 1 0 0 1 -.96 -.718l-.026 -.118l-.5 -3a1 1 0 0 1 1.947 -.442l.025 .114l.361 2.164h1.653v-2a1 1 0 0 1 1.993 -.117l.007 .117v2h2v-2a1 1 0 0 1 1 -1z" />
-              <path d="M18 18h-12a1 1 0 0 0 -1 1a2 2 0 0 0 2 2h10a2 2 0 0 0 1.987 -1.768l.011 -.174a1 1 0 0 0 -.998 -1.058z" />
-            </svg>
+            <svg width="56" height="56" viewBox="0 0 32 32" fill={ACCENT}><path d={AXIS_MARK_PATH}/></svg>
           </div>
           <span style={{ fontSize: 40, fontWeight: 700, color: "#fafafa" }}>
             AXIS

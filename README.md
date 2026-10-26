@@ -29,12 +29,6 @@ Open [localhost:3000](http://localhost:3000), enter your public username or impo
 - **Learn:** recurring weaknesses, lessons, exercises from your games, attempts, and reviews after 1, 3, 7, 14, and 30 days. Failed reviews restart at one day.
 - **Customize:** board themes, language, analysis depth, sound, and optional AI coaching with your own provider key.
 
-## Deploy and verify
-
-Import this repository into Vercel using **main** and the Next.js preset. No environment variables are required; optionally set `NEXT_PUBLIC_SITE_URL` to your domain. Installation copies the Stockfish worker, WASM, and GPL license into public assets. Verify with `npm test`, `npm run lint`, `npm run typecheck`, and `npm run build`.
-
-Progress is stored on this device in IndexedDB, with localStorage fallback. Clearing browser data removes it. Imports require network access; engine depth and device resources affect analysis. Coaching cues are heuristic and identified separately from engine calculations. Use completed games only.
-
 ## License
 
 MIT, built on [Chess Coach by Leonel Ngoya](https://github.com/ln-dev7/chess-coach); see [LICENSE](LICENSE). Stockfish.js is GPL-3.0; its license and [corresponding source](https://github.com/nmrugg/stockfish.js/tree/32d4b5ae40c01db88219bfbe2b82dbe6dec93832) are linked from the app's Licenses page.

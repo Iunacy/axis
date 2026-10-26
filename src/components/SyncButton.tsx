@@ -27,7 +27,7 @@ export default function SyncButton({ onSynced }: { onSynced?: () => void }) {
     <button
       onClick={sync}
       disabled={busy}
-      className="rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 px-4 py-2 text-sm font-medium transition"
+      className="axis-button"
     >
       {busy ? t.sync.syncing : t.sync.button}
     </button>

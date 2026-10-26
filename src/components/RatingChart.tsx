@@ -61,8 +61,8 @@ export default function RatingChart({ series }: { series: Point[] }) {
           </button>
         ))}
       </div>
-      <div className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-56 min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 500, height: 224 }}>
           <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
             <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
             <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} minTickGap={40} />
@@ -77,7 +77,7 @@ export default function RatingChart({ series }: { series: Point[] }) {
               }}
               labelStyle={{ color: "var(--muted-foreground)" }}
             />
-            <Line type="monotone" dataKey="rating" stroke="#10b981" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="rating" stroke="var(--chart-line)" strokeWidth={2} dot={false} isAnimationActive={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
