@@ -10,7 +10,7 @@ import type { PuzzleRow } from "@/lib/types";
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const clean = (s: string) => s.replace(/[+#?!]/g, "");
 
-export default function PuzzlePlayer({ puzzles }: { puzzles: PuzzleRow[] }) {
+export default function PuzzlePlayer({ puzzles, onAdvance }: { puzzles: PuzzleRow[]; onAdvance?: (id: string) => void }) {
   const { t } = useI18n();
   const [idx, setIdx] = useState(0);
 
@@ -23,7 +23,7 @@ export default function PuzzlePlayer({ puzzles }: { puzzles: PuzzleRow[] }) {
       puzzle={puzzle}
       index={(idx % puzzles.length) + 1}
       total={puzzles.length}
-      onNext={() => setIdx(idx + 1)}
+      onNext={() => onAdvance ? onAdvance(puzzle.id) : setIdx(idx + 1)}
     />
   );
 }
@@ -148,6 +148,7 @@ function SinglePuzzle({
     setLastMove(null);
     setStep(0);
     setState("playing");
+    reported.current = false;
     setBoardKey((k) => k + 1);
   }
 

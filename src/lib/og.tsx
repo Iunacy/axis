@@ -4,10 +4,10 @@ import { ImageResponse } from "next/og";
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 export const ogAlt =
-  "Chess Coach — personalized chess lessons and puzzles built from your own Chess.com and Lichess games.";
+  "AXIS — Analyze. Understand. Improve.";
 
 const BG = "#09090b";
-const ACCENT = "#34d399";
+const ACCENT = "#d9b778";
 const MUTED = "#a1a1aa";
 const BORDER = "#27272a";
 
@@ -55,7 +55,7 @@ export function renderOgImage() {
             height: 620,
             borderRadius: 999,
             background:
-              "radial-gradient(closest-side, rgba(52,211,153,0.22), rgba(52,211,153,0))",
+              "radial-gradient(closest-side, rgba(217,183,120,0.14), rgba(52,211,153,0))",
             display: "flex",
           }}
         />
@@ -80,7 +80,7 @@ export function renderOgImage() {
             </svg>
           </div>
           <span style={{ fontSize: 40, fontWeight: 700, color: "#fafafa" }}>
-            Chess Coach
+            AXIS
           </span>
         </div>
 

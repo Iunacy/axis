@@ -49,7 +49,7 @@ export default function AnalysisRunner({
       const settings = loadSettings();
       const params = resolveAnalysisParams(settings, mode);
       const games = loadGames()
-        .filter((g) => (!gameId || g.id === gameId) && ["pending", "failed"].includes(g.analysis_status))
+        .filter((g) => (!gameId || g.id === gameId) && ["pending", "failed", "skipped"].includes(g.analysis_status))
         .slice(0, settings.analyzeLastN);
 
       if (!games.length) {
@@ -65,7 +65,7 @@ export default function AnalysisRunner({
         activeGame = game.id;
         setGameStatus(game.id, "analyzing");
         const parsed = parsePgn(game.pgn);
-        if (!parsed || parsed.moves.length < 8) {
+        if (!parsed || parsed.moves.length < 2) {
           setGameStatus(game.id, "skipped");
           continue;
         }

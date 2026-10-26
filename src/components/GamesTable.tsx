@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookOpen } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -121,13 +122,7 @@ export default function GamesTable({ games, showStatus = false }: { games: GameR
                   {new Date(g.played_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")}
                 </td>
                 <td className="py-2 pr-4">
-                  {g.url ? (
-                    <a href={g.url} target="_blank" className="hover:underline">
-                      {g.opponent_name ?? "?"}
-                    </a>
-                  ) : (
-                    g.opponent_name ?? "?"
-                  )}
+                  <Link href={`/review/${encodeURIComponent(g.id)}`} className="axis-link">{g.opponent_name ?? "?"} →</Link>
                   <span className="text-muted-foreground/70"> ({g.opponent_rating ?? "?"})</span>
                 </td>
                 <td className="py-2 pr-4">
@@ -143,7 +138,7 @@ export default function GamesTable({ games, showStatus = false }: { games: GameR
                     g.opening_name ?? g.eco ?? "—"
                   )}
                 </td>
-                <td className="py-2 pr-4 text-muted-foreground">{g.accuracy_user ? `${g.accuracy_user}%` : "—"}</td>
+                <td className="py-2 pr-4 text-muted-foreground">{g.accuracy_user != null ? `${g.accuracy_user}%` : "—"}</td>
                 {showStatus && <td className="py-2 pr-4 text-muted-foreground">{g.analysis_status}</td>}
                 {aiConfigured && (
                   <td className="py-1">

@@ -37,5 +37,6 @@ for (const f of files) {
     copied++;
   }
 }
+cpSync(join(pkgRoot, "Copying.txt"), join(dest, "COPYING.txt"));
 writeFileSync(join(dest, "manifest.json"), JSON.stringify({ js: entry }));
 console.log(`[copy-stockfish] copied ${copied} file(s), entry: ${entry}`);

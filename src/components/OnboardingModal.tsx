@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -17,6 +18,7 @@ import { syncGames } from "@/lib/sync";
 /** First-visit gate: requires at least one platform username before using the app. */
 export default function OnboardingModal() {
   const { t } = useI18n();
+  const router = useRouter();
   const hydrated = useStoreHydrated();
   const onboardedFlag = useOnboardedFlag();
   const settings = useSettings();
@@ -93,6 +95,7 @@ export default function OnboardingModal() {
 
           {error && <p className="text-sm text-red-500">{t.onboarding.required}</p>}
 
+          <button type="button" className="axis-link self-start" onClick={() => { setOnboarded(); router.push("/games"); }}>{t.axis.importTitle} →</button>
           <button
             type="submit"
             disabled={syncing}

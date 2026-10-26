@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
-import { Github, Twitter } from "lucide-react";
+import { Github } from "lucide-react";
 import { ThemeProvider } from "next-themes";
 import Nav from "@/components/Nav";
 import OnboardingModal from "@/components/OnboardingModal";
@@ -49,8 +49,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: site.title,
     description: site.description,
-    creator: site.twitter,
-    site: site.twitter,
   },
   robots: {
     index: true,
@@ -106,7 +104,7 @@ export default function RootLayout({
             <footer className="border-t border-border py-6">
               <div className="mx-auto max-w-5xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground/70">
                 <span>
-                  Chess Coach by{" "}
+                  AXIS · built on Chess Coach by{" "}
                   <a
                     href="https://www.chess.com/member/ln_dev"
                     target="_blank"
@@ -117,8 +115,9 @@ export default function RootLayout({
                   </a>
                 </span>
                 <div className="flex items-center gap-5">
+                  <a href="/licenses" className="hover:text-foreground transition">Licenses</a>
                   <a
-                    href="https://github.com/ln-dev7/chess-coach"
+                    href={site.github}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 hover:text-foreground transition"
@@ -126,15 +125,7 @@ export default function RootLayout({
                     <Github className="size-3.5" />
                     GitHub
                   </a>
-                  <a
-                    href="https://x.com/ln_dev7"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 hover:text-foreground transition"
-                  >
-                    <Twitter className="size-3.5" />
-                    @ln_dev7
-                  </a>
+
                 </div>
               </div>
             </footer>

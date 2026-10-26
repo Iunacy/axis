@@ -35,7 +35,7 @@ export const DEFAULT_SETTINGS: Settings = {
   analyzeLastN: 50,
   engineMovetimeMs: 90,
   analysisMode: "fast",
-  boardTheme: "classic",
+  boardTheme: "grey",
   soundEnabled: true,
   voiceEnabled: true,
   voiceAutoplay: true,

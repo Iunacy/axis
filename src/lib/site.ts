@@ -1,20 +1,20 @@
 // Central site/SEO config. Override the URL per-environment with NEXT_PUBLIC_SITE_URL.
 export const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://chess-coach.lndev.me"
+  process.env.NEXT_PUBLIC_SITE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000")
 ).replace(/\/$/, "");
 
 export const site = {
-  name: "Chess Coach",
-  title: "Chess Coach — lessons built from your own games",
-  tagline: "Lessons built from your own games",
+  name: "AXIS",
+  title: "AXIS — Analyze. Understand. Improve.",
+  tagline: "Analyze. Understand. Improve.",
   description:
     "Import your Chess.com and Lichess games, analyze them with Stockfish right in your browser, and get personalized chess lessons and puzzles built from your own mistakes. Free, private, no account.",
   url: siteUrl,
   locale: "en_US",
-  twitter: "@ln_dev7",
-  github: "https://github.com/ln-dev7/chess-coach",
+
+  github: "https://github.com/Iunacy/axis",
   keywords: [
-    "chess coach",
+    "AXIS chess",
     "chess training",
     "chess lessons",
     "chess puzzles",

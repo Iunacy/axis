@@ -1,7 +1,23 @@
 import type { Dict } from "./en";
 
 const fr: Dict = {
-  app: { name: "Chess Coach", tagline: "Des leçons construites à partir de tes propres parties" },
+  axis: {
+    review: "Analyse", training: "Entraînement", selectGame: "Choisissez une partie pour analyser les coups et les erreurs.",
+    noGame: "Partie introuvable dans ce navigateur.", backGames: "Toutes les parties", importTitle: "Importer un PGN",
+    importHelp: "Importez uniquement des parties terminées. Collez un PGN ou choisissez un fichier .pgn (2 Mo max).",
+    paste: "Coller le PGN ici", file: "Fichier PGN", import: "Importer les parties", importing: "Importation…",
+    imported: (n: number) => `${n} partie(s) importée(s).`, invalidPgn: "Aucune partie terminée valide dans ce PGN.",
+    side: "Votre couleur", white: "Blancs", black: "Noirs", previous: "Précédent", next: "Suivant",
+    first: "Début", last: "Fin", move: "Coup", position: "Position", engine: "Évaluation du moteur",
+    unanalysed: "Lancez l’analyse pour voir les évaluations, erreurs et corrections.",
+    evaluation: "Évaluation (point de vue des Blancs)", issues: "Positions à revoir", noIssues: "Aucune erreur importante détectée à cette profondeur.",
+    findMove: "À vous de trouver un meilleur coup", reveal: "Voir la réponse", retry: "Réessayer", correct: "Correct !", wrong: "Un autre coup est meilleur. Réessayez.",
+    best: "Meilleur coup", played: "Coup joué", line: "Variante vérifiée", practice: "S’entraîner", queue: "À réviser aujourd’hui", allDone: "Tout est révisé pour aujourd’hui. Revenez demain.",
+    history: "Historique", reviewed: "Révisions", solved: "Réussites", nextDue: "Prochaine révision", noTraining: "Analysez des parties pour créer des exercices tirés de vos propres coups.",
+    heuristic: "Piste pédagogique fondée sur la position ; l’évaluation vient de Stockfish.",
+    explain: { hanging_piece: "La meilleure réponse adverse prend une pièce insuffisamment défendue.", missed_tactic: "Un coup actif était disponible : vérifiez les échecs et les prises.", allowed_fork: "La réponse adverse attaque plusieurs pièces à la fois.", allowed_mate: "La réponse adverse crée une menace de mat décisive.", missed_mate: "Vous aviez une suite de mat que vous n’avez pas jouée.", bad_trade: "La meilleure réponse adverse gagne un échange de matériel.", other: "L’évaluation baisse après ce coup. Comparez la suite calculée par le moteur." },
+  },
+  app: { name: "AXIS", tagline: "Analyser. Comprendre. Progresser." },
   nav: { dashboard: "Tableau de bord", games: "Parties", puzzles: "Puzzles", lessons: "Leçons", masters: "Maîtres", settings: "Réglages" },
   dashboard: {
     title: "Tableau de bord",
@@ -199,10 +215,10 @@ const fr: Dict = {
     clearTitle: "Effacer toutes les données locales ?",
     clearDesc: "Parties, analyses, puzzles, leçons, réglages et ta clé API seront supprimés de ce navigateur. Cette action est irréversible.",
     cleared: "Données effacées",
-    storageNote: "Tout est stocké dans ce navigateur (localStorage). Pas de compte, pas de serveur.",
+    storageNote: "Tes parties et ton entraînement restent dans ce navigateur. Aucun compte requis.",
   },
   onboarding: {
-    title: "Bienvenue sur Chess Coach ♞",
+    title: "Bienvenue sur AXIS",
     desc: "Renseigne au moins un pseudo — pas besoin des deux. On récupère tes parties et on les transforme en leçons. Tout reste dans ton navigateur — pas de compte, pas de serveur.",
     required: "Renseigne au moins un des deux pseudos.",
     start: "C'est parti",

@@ -1,6 +1,22 @@
 // English dictionary. fr.ts mirrors this shape exactly.
 const en = {
-  app: { name: "Chess Coach", tagline: "Lessons built from your own games" },
+  axis: {
+    review: "Review", training: "Training", selectGame: "Choose a game to inspect moves and mistakes.",
+    noGame: "This game is not saved in this browser.", backGames: "All games", importTitle: "Import PGN",
+    importHelp: "Import completed games only. Paste PGN or choose a .pgn file (2 MB max).",
+    paste: "Paste PGN here", file: "PGN file", import: "Import games", importing: "Importing…",
+    imported: (n: number) => `${n} game(s) imported.`, invalidPgn: "No valid completed game found in this PGN.",
+    side: "Your side", white: "White", black: "Black", previous: "Previous", next: "Next",
+    first: "Start", last: "End", move: "Move", position: "Position", engine: "Engine evaluation",
+    unanalysed: "Run analysis to see evaluations, mistakes, and corrections.",
+    evaluation: "Evaluation (White perspective)", issues: "Positions to review", noIssues: "No significant mistakes detected at this analysis setting.",
+    findMove: "Find a better move", reveal: "Show answer", retry: "Try again", correct: "Correct!", wrong: "There is a stronger move. Try again.",
+    best: "Best move", played: "Played", line: "Verified continuation", practice: "Practice", queue: "Due today", allDone: "All caught up for today. Return tomorrow.",
+    history: "History", reviewed: "Reviews", solved: "Solved", nextDue: "Next review", noTraining: "Analyze games to create exercises from your own moves.",
+    heuristic: "Teaching cue based on the position; Stockfish supplies the evaluation.",
+    explain: { hanging_piece: "The opponent's best reply captures an under-defended piece.", missed_tactic: "An active continuation was available. Check forcing moves first.", allowed_fork: "The opponent's best reply attacks multiple pieces at once.", allowed_mate: "The opponent's best reply creates a decisive mating threat.", missed_mate: "A mating continuation was available before this move.", bad_trade: "The opponent's best reply wins material in a trade.", other: "The evaluation drops after this move. Compare the engine's calculated line." },
+  },
+  app: { name: "AXIS", tagline: "Analyze. Understand. Improve." },
   nav: { dashboard: "Dashboard", games: "Games", puzzles: "Puzzles", lessons: "Lessons", masters: "Masters", settings: "Settings" },
   dashboard: {
     title: "Dashboard",
@@ -198,11 +214,11 @@ const en = {
     clearTitle: "Clear all local data?",
     clearDesc: "Games, analyses, puzzles, lessons, settings and your API key will be removed from this browser. This cannot be undone.",
     cleared: "Data cleared",
-    storageNote: "Everything is stored in this browser (localStorage). No account, no server.",
+    storageNote: "Your games and training history stay in this browser. No account is needed.",
   },
   onboarding: {
-    title: "Welcome to Chess Coach ♞",
-    desc: "Enter at least one username — you don't need both. We'll fetch your games and turn them into lessons. Everything stays in your browser — no account, no server.",
+    title: "Welcome to AXIS",
+    desc: "Enter at least one username — you don't need both. We'll fetch your games and turn them into lessons. Your games and progress stay in this browser. No account needed.",
     required: "Enter at least one of the two usernames.",
     start: "Let's go",
     syncing: "Importing your games…",

@@ -1,4 +1,4 @@
-export type Platform = "chesscom" | "lichess";
+export type Platform = "chesscom" | "lichess" | "pgn";
 export type TimeClass = "bullet" | "blitz" | "rapid" | "daily" | "classical" | "correspondence";
 export type GameResult = "win" | "loss" | "draw";
 export type Phase = "opening" | "middlegame" | "endgame";
