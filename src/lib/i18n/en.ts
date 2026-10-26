@@ -1,4 +1,3 @@
-// English dictionary. fr.ts mirrors this shape exactly.
 const en = {
   axis: {
     review: "Review", training: "Training", selectGame: "Choose a game to inspect moves and mistakes.",

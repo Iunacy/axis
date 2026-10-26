@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { indexedStorage } from "./indexed-storage";
 import { scheduleReview } from "./training";
+import { restorePersistedState } from "./state-validation";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { type AiProviderId, isProviderId } from "./providers";
 import type {
@@ -15,17 +16,6 @@ import type {
   Settings,
 } from "./types";
 
-/**
- * Single source of truth for all local data — a Zustand store persisted to
- * localStorage. Components subscribe with the selector hooks below, so any
- * mutation propagates everywhere with no manual refresh callbacks or reloads.
- *
- * The on-disk format is one JSON blob under `cc:store`. Data written by earlier
- * versions (separate `cc:*` keys) is imported once in `hydrateStore()`.
- *
- * See docs/POST-MVP-GUIDE.md: to move to IndexedDB later, swap `storage` below
- * for a custom adapter — components and storage.ts stay unchanged.
- */
 
 export const STORE_KEY = "cc:store";
 
@@ -59,7 +49,6 @@ interface PersistedState {
 }
 
 interface StoreState extends PersistedState {
-  /** false until the persisted state has been read back from localStorage. */
   hydrated: boolean;
 
   setSettings: (settings: Settings) => void;
@@ -109,7 +98,7 @@ export const useStore = create<StoreState>()(
       upsertGames: (incoming) => {
         const existing = get().games;
         const seen = new Set(existing.map((g) => g.id));
-        const fresh = incoming.filter((g) => !seen.has(g.id));
+        const fresh = incoming.filter((g) => { if (seen.has(g.id)) return false; seen.add(g.id); return true; });
         if (fresh.length) {
           const all = [...existing, ...fresh].sort(
             (a, b) => new Date(b.played_at).getTime() - new Date(a.played_at).getTime()
@@ -134,7 +123,7 @@ export const useStore = create<StoreState>()(
       upsertPuzzles: (incoming) => {
         const existing = get().puzzles;
         const seen = new Set(existing.map((p) => p.id));
-        const fresh = incoming.filter((p) => !seen.has(p.id));
+        const fresh = incoming.filter((p) => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
         if (fresh.length) set({ puzzles: [...fresh, ...existing] });
       },
 
@@ -161,7 +150,6 @@ export const useStore = create<StoreState>()(
         set({
           masterAnnotations: [
             annotation,
-            // replace any existing annotation for the same game+locale
             ...get().masterAnnotations.filter(
               (a) => !(a.gameId === annotation.gameId && a.locale === annotation.locale)
             ),
@@ -212,15 +200,8 @@ export const useStore = create<StoreState>()(
         onboardedFlag,
       }),
       merge: (persisted, current) => {
-        const saved = (persisted ?? {}) as Partial<PersistedState>;
-        return {
-          ...current, ...saved,
-          settings: { ...DEFAULT_SETTINGS, ...saved.settings },
-          games: (saved.games ?? []).map(g => g.analysis_status === "analyzing" ? { ...g, analysis_status: "pending" as const } : g),
-        };
+        return { ...current, ...restorePersistedState(persisted, DEFAULT_SETTINGS) };
       },
-      // Hydrate explicitly after mount (see hydrateStore) so SSR and the first
-      // client render agree, and the persisted read never lands inside an effect.
       skipHydration: true,
       onRehydrateStorage: () => () => {
         useStore.setState({ hydrated: true });
@@ -229,7 +210,6 @@ export const useStore = create<StoreState>()(
   )
 );
 
-// ---------- Selector hooks (reactive reads for components) ----------
 
 export const useSettings = () => useStore((s) => s.settings);
 export const useGames = () => useStore((s) => s.games);
@@ -241,7 +221,6 @@ export const useApiKey = () => useStore((s) => s.apiKey);
 export const useOnboardedFlag = () => useStore((s) => s.onboardedFlag);
 export const useStoreHydrated = () => useStore((s) => s.hydrated);
 
-// ---------- Legacy migration (separate cc:* keys → single cc:store) ----------
 
 const LEGACY_KEYS = {
   settings: "cc:settings",
@@ -281,7 +260,6 @@ function readLegacyApiKey(): StoredAiKey | null {
       return { provider: isProviderId(obj.provider) ? obj.provider : "anthropic", key };
     }
   } catch {
-    /* ignore */
   }
   return null;
 }
@@ -296,30 +274,27 @@ function readLegacy(): PersistedState | null {
     puzzles: readJSON<PuzzleRow[]>(LEGACY_KEYS.puzzles, []),
     lessons: readJSON<GeneratedLesson[]>(LEGACY_KEYS.lessons, []),
     aiLessons: readJSON<AiLessonRow[]>(LEGACY_KEYS.aiLessons, []),
-    masterAnnotations: [], // never existed in the legacy per-key layout
+    masterAnnotations: [],
     apiKey: readLegacyApiKey(),
     onboardedFlag: localStorage.getItem(LEGACY_KEYS.onboarded) === "1",
   };
 }
 
-/**
- * Read persisted state into the store. Call once, from the client after mount.
- * Migrates any pre-existing `cc:*` data into the new `cc:store` blob first.
- */
+let hydration: Promise<void> | undefined;
+
 export function hydrateStore(): void {
   if (typeof window === "undefined") return;
-  try {
-  if (!localStorage.getItem(STORE_KEY)) {
-    const migrated = readLegacy();
-    if (migrated) {
-      localStorage.setItem(STORE_KEY, JSON.stringify({ state: migrated, version: 1 }));
-    }
-  }
-  } catch {}
-  void useStore.persist.rehydrate();
+  hydration ??= (async () => {
+    try {
+      if (!await indexedStorage.getItem(STORE_KEY)) {
+        const migrated = readLegacy();
+        if (migrated) await indexedStorage.setItem(STORE_KEY, JSON.stringify({ state: migrated, version: 1 }));
+      }
+    } catch {}
+    await useStore.persist.rehydrate();
+  })();
 }
 
-/** Remove the legacy per-slice keys (used by the full wipe). */
 export function purgeLegacyKeys(): void {
   if (typeof window === "undefined") return;
   for (const k of LEGACY_KEY_LIST) localStorage.removeItem(k);

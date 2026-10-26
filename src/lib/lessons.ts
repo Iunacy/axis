@@ -8,24 +8,13 @@ import type {
   WeaknessProfile,
 } from "./types";
 
-/**
- * Lesson generation, guided by the `teach` skill pedagogy
- * (docs/teaching-principles.md): one tightly-scoped concept per lesson,
- * grounded in the player's real weaknesses, knowledge → skills via tight
- * feedback loops, retrieval-practice quizzes, one high-trust primary source.
- *
- * Generated lessons store DATA only (positions + stats); all text lives in
- * localized templates below, so lessons follow the site language.
- */
 
 interface LocalizedTemplate {
   title: string;
   concept: string;
   mission: (stats: GeneratedLesson["stats"]) => string;
   drill: string;
-  /** Shown after the player finds the right move. */
   answerExplain: string;
-  /** Mini theory course shown BEFORE each board (cycled per example): the philosophy behind the choice. */
   theorySteps: string[];
   quiz: { q: string; choices: string[]; answerIdx: number; explain: string }[];
   sourceLabel: string;
@@ -407,7 +396,6 @@ function toExamples(puzzles: PuzzleRow[], theme: Motif | Motif[], n: number): Le
     }));
 }
 
-/** Interleave user moves and opponent replies into one playable line. */
 function toLine(ex: LessonExample): string[] {
   const line: string[] = [];
   ex.solution_san.forEach((san, k) => {
@@ -418,12 +406,10 @@ function toLine(ex: LessonExample): string[] {
   return line;
 }
 
-/** Build (or rebuild) lessons from the weakness profile. Pure — caller persists. */
 export function generateLessons(profile: WeaknessProfile, puzzles: PuzzleRow[]): GeneratedLesson[] {
   const out: GeneratedLesson[] = [];
   const now = new Date().toISOString();
 
-  // Flagship lesson — always relevant when there's any material.
   const lof = toExamples(puzzles, ["hanging_piece", "missed_tactic"] as Motif[], 3);
   if (lof.length) {
     out.push({
@@ -457,7 +443,6 @@ export function generateLessons(profile: WeaknessProfile, puzzles: PuzzleRow[]):
   return out;
 }
 
-/** Render a stored lesson in the requested locale. */
 export function renderLesson(lesson: GeneratedLesson, locale: Locale): (LessonContent & { title: string }) | null {
   const template = BY_SLUG.get(lesson.slug);
   if (!template) return null;

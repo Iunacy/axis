@@ -3,7 +3,7 @@ import type { GameResult, TimeClass } from "./types";
 
 export interface ParsedGame {
   headers: Record<string, string>;
-  fens: string[]; // fens[i] = position before move i (ply i, 0-based); last entry = final position
+  fens: string[];
   moves: { san: string; uci: string; color: "w" | "b" }[];
 }
 
@@ -42,27 +42,20 @@ export function normalizeTimeClass(tc: string): TimeClass {
   return (known.includes(tc as TimeClass) ? tc : "rapid") as TimeClass;
 }
 
-/** Estimate time class from a lichess "speed" or clock. */
 export function lichessSpeedToTimeClass(speed: string): TimeClass {
   if (speed === "ultraBullet") return "bullet";
   return normalizeTimeClass(speed);
 }
 
-/**
- * Extract remaining clock time (seconds) per ply from PGN %clk comments
- * (chess.com always includes them). clocks[i] = time left AFTER ply i+1 was played.
- * Returns null if the PGN has no clock data.
- */
 export function extractClocks(pgn: string): number[] | null {
   const matches = [...pgn.matchAll(/\[%clk\s+(\d+):(\d+):(\d+(?:\.\d+)?)\]/g)];
   if (!matches.length) return null;
   return matches.map((m) => Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]));
 }
 
-/** Base time in seconds from a TimeControl header like "600", "600+5", "1/86400". */
 export function parseBaseTime(timeControl?: string | null): number | null {
   if (!timeControl) return null;
-  if (timeControl.includes("/")) return null; // daily/correspondence
+  if (timeControl.includes("/")) return null;
   const base = Number(timeControl.split("+")[0]);
   return Number.isFinite(base) && base > 0 ? base : null;
 }

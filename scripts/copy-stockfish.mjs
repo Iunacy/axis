@@ -1,35 +1,28 @@
-// Copies a single-threaded Stockfish WASM build from node_modules/stockfish
-// into public/stockfish/ and writes manifest.json with the worker entry file.
-// Runs on postinstall. Single-threaded build = no SharedArrayBuffer, so no
-// COOP/COEP headers are needed.
 import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const pkgRoot = join(process.cwd(), "node_modules", "stockfish");
-// stockfish >= 17 ships engines in bin/, older versions in src/.
 const src = ["bin", "src"].map((d) => join(pkgRoot, d)).find((p) => existsSync(p));
 const dest = join(process.cwd(), "public", "stockfish");
 
 if (!src) {
-  console.log("[copy-stockfish] stockfish package not found, skipping");
-  process.exit(0);
+  throw new Error("Stockfish package not found. Install dependencies before building.");
 }
 
 mkdirSync(dest, { recursive: true });
 const files = readdirSync(src);
 
-// Prefer a lite single-threaded build (small download, no threading headers).
 const entry =
   files.find((f) => f.includes("lite-single") && f.endsWith(".js")) ??
   files.find((f) => f.includes("-single") && f.endsWith(".js")) ??
   files.find((f) => f.endsWith(".js"));
 
 if (!entry) {
-  console.error("[copy-stockfish] no engine js found in", src);
-  process.exit(0);
+  throw new Error(`Stockfish worker not found in ${src}`);
 }
 
 const base = entry.replace(/\.js$/, "");
+if (!files.some(file => file.startsWith(base) && file.endsWith(".wasm"))) throw new Error("Stockfish WebAssembly asset is missing.");
 let copied = 0;
 for (const f of files) {
   if (f.startsWith(base)) {

@@ -2,18 +2,6 @@ import { buildFacts, type PositionFacts } from "./dossier";
 import { parsePgn } from "./pgn";
 import type { MasterAnnotation, MasterGame, MasterMoveNote, Motif } from "./types";
 
-/**
- * Shared logic for the masters feature: the system prompt, the per-move fact
- * extraction, and response parsing/validation. Used by BOTH the browser (BYOK,
- * key sent straight to the provider) and the server route (owner's env key) —
- * exactly like coach.ts.
- *
- * Anti-hallucination contract: the model may only name squares/pieces/captures/
- * checks that appear in the per-ply `facts` (built by chess.js). It must NOT
- * invent numeric engine evaluations — engine analysis is offered separately,
- * on demand, in the UI. The reasoning is framed as expert interpretation of a
- * strong player's plan, never a claim to know their actual thoughts.
- */
 
 const VALID_MOTIFS: ReadonlySet<string> = new Set<Motif>([
   "hanging_piece",
@@ -47,15 +35,13 @@ Respond with ONLY a JSON object, no markdown fences, matching:
 - "ply" is the 1-based move index from the supplied move list. One note per narrated ply.
 - Write every string in the language requested by the user message.`;
 
-/** A move with its chess.js-verified facts, fed to the model. */
 export interface MasterPly {
-  ply: number; // 1-based
+  ply: number;
   san: string;
   color: "w" | "b";
   facts: PositionFacts;
 }
 
-/** Build the per-ply facts for a game from its (build-time validated) PGN. */
 export function buildMasterPlies(game: MasterGame): MasterPly[] {
   const parsed = parsePgn(game.pgn);
   if (!parsed) return [];
@@ -116,11 +102,6 @@ export function parseMastersText(text: string): ModelMasterAnnotation | null {
   }
 }
 
-/**
- * Validate the model output into a MasterAnnotation. FEN/moves never come from
- * the model — only ply indices into our own move list. Out-of-range plies and
- * unknown motifs are dropped; an empty result is rejected.
- */
 export function sanitizeMasterAnnotation(
   model: ModelMasterAnnotation,
   ctx: { gameId: string; locale: "en" | "fr"; plyCount: number; createdAt: string }
@@ -144,5 +125,4 @@ export function sanitizeMasterAnnotation(
   return { gameId: ctx.gameId, locale: ctx.locale, created_at: ctx.createdAt, intro, notes };
 }
 
-/** Long games need more output tokens so the per-move narration isn't truncated. */
 export const MASTERS_MAX_TOKENS = 8192;

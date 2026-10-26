@@ -21,8 +21,6 @@ export default function Nav() {
   const [open, setOpen] = useState(false);
   const [lastPath, setLastPath] = useState(pathname);
 
-  // Close the burger menu on navigation — adjust state during render rather
-  // than in an effect (React's "store info from previous render" pattern).
   if (pathname !== lastPath) {
     setLastPath(pathname);
     setOpen(false);
@@ -47,7 +45,6 @@ export default function Nav() {
           {t.app.name}
         </Link>
 
-        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-1 text-sm flex-1">
           {links.map((l) => (
             <Link
@@ -83,7 +80,6 @@ export default function Nav() {
           </Select>
           <ThemeToggle />
 
-          {/* Burger (mobile only) */}
           <button
             onClick={() => setOpen(!open)}
             aria-label="Menu"
@@ -95,7 +91,6 @@ export default function Nav() {
         </div>
       </div>
 
-      {/* Mobile menu panel */}
       {open && (
         <nav className="md:hidden border-t border-border bg-background/95 backdrop-blur px-4 py-3 flex flex-col gap-1 text-sm">
           {links.map((l) => (

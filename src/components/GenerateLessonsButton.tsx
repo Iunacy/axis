@@ -23,7 +23,6 @@ export default function GenerateLessonsButton({ onGenerated }: { onGenerated?: (
       setMsg(t.lessons.needAnalysis);
       return;
     }
-    // Keep completion state of lessons that already existed.
     const existing = new Map(loadLessons().map((l) => [l.slug, l]));
     for (const l of fresh) {
       const prev = existing.get(l.slug);

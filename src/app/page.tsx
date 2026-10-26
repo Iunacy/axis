@@ -17,7 +17,6 @@ export default function DashboardPage() {
   const analyses = useAnalyses();
   const settings = useSettings();
 
-  // Reactive: sync/analysis write to the store, so this recomputes on its own.
   const stats = hydrated ? computeDashboardStats(games, analyses) : null;
 
   if (!stats) return null;

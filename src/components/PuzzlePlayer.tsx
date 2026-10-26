@@ -50,15 +50,12 @@ function SinglePuzzle({
   const [waiting, setWaiting] = useState(false);
 
   useEffect(() => {
-    // Reset on (re)mount — React StrictMode mounts/unmounts/remounts in dev,
-    // and a stale `true` here silently kills the playback loop.
     cancelRef.current = false;
     return () => {
       cancelRef.current = true;
     };
   }, []);
 
-  /** Solution and opponent replies, interleaved: [sol0, rep0, sol1, rep1, ...] */
   const sequence = useMemo(() => {
     const out: string[] = [];
     for (let i = 0; i < puzzle.solution_san.length; i++) {
@@ -89,7 +86,6 @@ function SinglePuzzle({
       return true;
     }
 
-    // Auto-play the opponent's reply with a slide animation, then hand back.
     const reply = puzzle.reply_san[step];
     const c = new Chess(fen);
     try {
@@ -108,7 +104,6 @@ function SinglePuzzle({
             setLastMove({ from: m.from, to: m.to });
           }
         } catch {
-          /* corrupt reply — let the user continue from their move */
         }
         setWaiting(false);
         setStep((s) => s + 1);
@@ -123,7 +118,6 @@ function SinglePuzzle({
   async function showSolution() {
     report(false);
     setState("revealed");
-    // Remount the board on the initial position, then replay every move.
     setFen(puzzle.fen);
     setLastMove(null);
     setBoardKey((k) => k + 1);

@@ -13,13 +13,6 @@ import { getProvider } from "./providers";
 import { loadAiKey } from "./storage";
 import type { MasterAnnotation, MasterGame } from "./types";
 
-/**
- * Generate the per-move reasoning for one master game in one locale. Mirrors
- * requestAiLesson: if the user saved their own key, the request goes STRAIGHT
- * from the browser to the chosen provider; otherwise it goes through the server
- * route (owner's env key). Availability is gated in the UI by useCoachAvailability
- * (same keys / probe as the coach).
- */
 export async function requestMasterAnnotation(args: {
   game: MasterGame;
   locale: "en" | "fr";
@@ -41,7 +34,6 @@ export async function requestMasterAnnotation(args: {
     return data.annotation;
   }
 
-  // BYOK: browser → provider, directly.
   const provider = getProvider(stored.provider);
   const { url, headers, body } = provider.buildRequest({
     key: stored.key,

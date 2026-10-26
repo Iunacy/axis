@@ -6,15 +6,6 @@ import { AI_PROVIDERS, type AiProvider, modelEnvVar } from "@/lib/providers";
 
 export const maxDuration = 60;
 
-/**
- * Server-side AI coach using the OWNER's env key. The first configured provider
- * wins, in this order: Anthropic → OpenAI → Google (Gemini). Set ANTHROPIC_API_KEY,
- * OPENAI_API_KEY or GEMINI_API_KEY (optionally <PROVIDER>_MODEL) in .env.local.
- *
- * Users can alternatively bring their own key, which the browser sends DIRECTLY
- * to the chosen provider (see src/lib/coach-client.ts) — those requests never
- * touch this route.
- */
 
 interface Body {
   dossier: CoachingDossier;
@@ -23,7 +14,6 @@ interface Body {
   focus?: string;
 }
 
-/** First provider with a key set in the environment, or null. */
 function resolveServerProvider(): { provider: AiProvider; key: string; model?: string } | null {
   for (const provider of AI_PROVIDERS) {
     const key = process.env[provider.envVar];
@@ -34,7 +24,6 @@ function resolveServerProvider(): { provider: AiProvider; key: string; model?: s
   return null;
 }
 
-/** Used by the UI to decide whether the server-side coach is available. */
 export async function GET() {
   return NextResponse.json({ configured: Boolean(resolveServerProvider()) });
 }

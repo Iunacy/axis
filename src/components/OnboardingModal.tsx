@@ -15,7 +15,6 @@ import { useOnboardedFlag, useSettings, useStoreHydrated } from "@/lib/store";
 import { loadSettings, saveSettings, setOnboarded } from "@/lib/storage";
 import { syncGames } from "@/lib/sync";
 
-/** First-visit gate: requires at least one platform username before using the app. */
 export default function OnboardingModal() {
   const { t } = useI18n();
   const router = useRouter();
@@ -27,7 +26,6 @@ export default function OnboardingModal() {
   const [error, setError] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
-  // Known only once the store is hydrated; stays closed during SSR / first render.
   const open = hydrated && !(onboardedFlag || settings.chesscomUsername || settings.lichessUsername);
 
   async function submit(e: React.FormEvent) {
@@ -39,14 +37,10 @@ export default function OnboardingModal() {
       setError(true);
       return;
     }
-    // Run the one and only automatic sync before closing, so games are already
-    // importing when the user lands on the dashboard. Save settings + mark
-    // onboarded last — that flips `open` to false and closes the modal.
     setSyncing(true);
     try {
       await syncGames({ chesscomUsername: c, lichessUsername: l });
     } catch {
-      /* let the user in even if the first sync fails — they can retry manually */
     }
     saveSettings({ ...loadSettings(), chesscomUsername: c, lichessUsername: l });
     setOnboarded();

@@ -18,7 +18,6 @@ import type {
   LessonSectionQuiz,
 } from "@/lib/types";
 
-/** Template-based lesson (FR/EN rendered from stored data). */
 export default function LessonView({ lesson }: { lesson: GeneratedLesson }) {
   const { locale } = useI18n();
   const c = renderLesson(lesson, locale);
@@ -33,7 +32,6 @@ export default function LessonView({ lesson }: { lesson: GeneratedLesson }) {
   );
 }
 
-/** Lesson written by the AI coach. */
 export function AiLessonView({ lesson }: { lesson: AiLessonRow }) {
   const { t } = useI18n();
   return (
@@ -138,14 +136,13 @@ function LessonContentView({
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-/** One position of the engine exploration line. */
 interface LineStep {
   fen: string;
   lastMove: { from: string; to: string } | null;
   san: string | null;
 }
 
-const EXPLORE_PLIES = 10; // 5 full moves, both sides
+const EXPLORE_PLIES = 10;
 
 function BoardSection({ section }: { section: LessonSectionBoard }) {
   const { t } = useI18n();
@@ -155,7 +152,6 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
   const [lastMove, setLastMove] = useState<{ from: string; to: string } | null>(null);
   const [boardKey, setBoardKey] = useState(0);
   const [playing, setPlaying] = useState(false);
-  // Engine exploration: best play for BOTH sides, computed on demand.
   const [steps, setSteps] = useState<LineStep[] | null>(null);
   const [stepIdx, setStepIdx] = useState(0);
   const [computing, setComputing] = useState<number | null>(null);
@@ -163,8 +159,6 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
   const clean = (s: string) => s.replace(/[+#?!]/g, "");
 
   useEffect(() => {
-    // Reset on (re)mount — React StrictMode mounts/unmounts/remounts in dev,
-    // and a stale `true` here silently kills the playback loop.
     cancelRef.current = false;
     return () => {
       cancelRef.current = true;
@@ -173,7 +167,6 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
 
   const line = section.answerLine?.length ? section.answerLine : section.answerSan ?? [];
 
-  /** Replay the full continuation from the initial position, animated. */
   async function playLine() {
     if (!line.length || playing) return;
     setPlaying(true);
@@ -197,10 +190,6 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
     setPlaying(false);
   }
 
-  /**
-   * Build the engine line on demand: the validated best move first, then
-   * Stockfish's best move for EACH side alternately, up to EXPLORE_PLIES.
-   */
   async function exploreLine() {
     if (computing !== null) return;
     setComputing(0);
@@ -210,7 +199,6 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
       const c = new Chess(section.fen);
       const out: LineStep[] = [{ fen: section.fen, lastMove: null, san: null }];
 
-      // Ply 1 = the lesson's validated answer, for continuity with the drill.
       if (section.answerSan?.[0]) {
         const m = c.move(section.answerSan[0]);
         if (m) out.push({ fen: c.fen(), lastMove: { from: m.from, to: m.to }, san: m.san });
@@ -233,13 +221,12 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
 
       if (!cancelRef.current && out.length > 1) {
         setSteps(out);
-        setStepIdx(1); // land on the first move, animated
+        setStepIdx(1);
         setFen(out[1].fen);
         setLastMove(out[1].lastMove);
         setBoardKey((k) => k + 1);
       }
     } catch {
-      /* engine unavailable — leave the replay button as fallback */
     } finally {
       engine.destroy();
       setComputing(null);
@@ -345,7 +332,6 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
             </div>
           )}
 
-          {/* Engine exploration: stepper through best play for both sides. */}
           {steps === null ? (
             <button
               onClick={exploreLine}

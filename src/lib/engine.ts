@@ -2,12 +2,6 @@
 
 import type { PositionEval } from "./analysis";
 
-/**
- * Thin UCI wrapper around a Stockfish WASM worker served from /stockfish/.
- * The postinstall script (scripts/copy-stockfish.mjs) copies a single-threaded
- * build there and writes manifest.json with the entry filename.
- * Single-threaded build = no COOP/COEP headers needed.
- */
 export class Engine {
   private worker: Worker | null = null;
   private ready = false;
@@ -60,7 +54,6 @@ export class Engine {
     });
   }
 
-  /** Evaluate a FEN. Returns eval from White's POV. */
   async evaluate(fen: string, movetimeMs: number): Promise<PositionEval> {
     if (!this.ready) await this.init();
     await this.send("position fen " + fen);

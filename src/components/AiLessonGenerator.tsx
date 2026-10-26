@@ -42,7 +42,6 @@ const TOPIC_FOCUS: Partial<Record<Topic, string>> = {
   time: "deep-dive on TIME MANAGEMENT: use the timeManagement data (zeitnot blunders, clock at blunder) as the core of the lesson",
 };
 
-/** AI lesson generator with optional filters (date range, opponent rating range, theme). */
 export default function AiLessonGenerator() {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -73,7 +72,6 @@ export default function AiLessonGenerator() {
     const analyses = loadAnalyses();
     const analyzedGames = loadGames().filter((g) => analyses[g.id]);
 
-    // No analysis run yet → point the user to the home page to analyze first.
     if (analyzedGames.length === 0) {
       toast.error(t.errors.needAnalysis, {
         action: { label: t.errors.goHome, onClick: () => router.push("/") },
@@ -85,7 +83,6 @@ export default function AiLessonGenerator() {
     try {
       let games = analyzedGames;
 
-      // Platform / date / OPPONENT rating filters.
       if (form.platform !== "all") games = games.filter((g) => g.platform === form.platform);
       if (range?.from) {
         const from = new Date(range.from);

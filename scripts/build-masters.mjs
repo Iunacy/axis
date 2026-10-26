@@ -1,20 +1,3 @@
-// Build the bundled catalog of iconic master games.
-//
-// Full rebuild (fetches the historic source + merges curated modern games):
-//   node scripts/build-masters.mjs
-//
-// It fetches a clean, well-tagged collection of famous games, splits it into
-// individual games, VALIDATES every one through chess.js (the same engine the
-// runtime uses via parsePgn — illegal/truncated games are rejected), applies
-// the curated overlays from masters-seed.json, then appends the curated modern
-// `extraGames` (long classical games not present in the historic source, each
-// carrying its own movetext + metadata, validated the same way), and writes
-// src/lib/masters/catalog.json sorted by `iconic` (most iconic first). A bad
-// game hard-fails the script so it can never reach the app.
-//
-// If you only changed/added `extraGames` (no need to refetch the historic
-// source), run the offline merge instead: node scripts/merge-extra-masters.mjs
-
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -41,7 +24,6 @@ function lastName(full) {
   return parts[parts.length - 1] || full;
 }
 
-/** Split a multi-game PGN into individual game strings. */
 function splitGames(pgn) {
   const lines = pgn.split(/\r?\n/);
   const games = [];
@@ -67,19 +49,16 @@ function parseHeaders(game) {
   return headers;
 }
 
-/** Validate via chess.js exactly like the runtime parsePgn; throws on any problem. */
 function validate(game, headers) {
   const chess = new Chess();
   chess.loadPgn(game, { strict: false });
   const verbose = chess.history({ verbose: true });
   if (verbose.length < MIN_PLIES) throw new Error(`only ${verbose.length} plies`);
-  // Re-replay into a fresh board to catch any silent truncation/illegal move.
   const replay = new Chess(headers.FEN || undefined);
   for (const mv of verbose) {
     const made = replay.move(mv.san);
     if (!made) throw new Error(`illegal move ${mv.san}`);
   }
-  // Result consistency: a "#" finish must be checkmate.
   const lastSan = verbose[verbose.length - 1].san;
   if (lastSan.includes("#") && !replay.isCheckmate()) throw new Error("claims mate but not checkmate");
   return verbose.length;
@@ -93,7 +72,6 @@ function findOverlay(headers) {
   );
 }
 
-/** Iconic score for an already-built catalog entry, matched against overlays. */
 export function overlayIconicFor(entry, seed = SEED) {
   const w = (entry.white || "").toLowerCase();
   const b = (entry.black || "").toLowerCase();
@@ -114,14 +92,12 @@ function winnerSide(result) {
   return "w";
 }
 
-/** Most iconic first; ties broken by year then id for a stable, reproducible order. */
 export function sortCatalog(catalog) {
   return catalog.sort(
     (a, b) => (b.iconic ?? 0) - (a.iconic ?? 0) || (a.year ?? 0) - (b.year ?? 0) || a.id.localeCompare(b.id)
   );
 }
 
-/** Build a full PGN string for a curated inline game from its metadata + movetext. */
 function extraPgn(extra) {
   const date = extra.year ? `${extra.year}.??.??` : "????.??.??";
   const headers = [
@@ -136,7 +112,6 @@ function extraPgn(extra) {
   return `${headers}\n\n${extra.moves.trim()}\n`;
 }
 
-/** Build one catalog entry from a curated inline game (validated like fetched games). */
 function buildExtraEntry(extra, seenIds) {
   const pgn = extraPgn(extra);
   validate(pgn, { White: extra.white, Black: extra.black, Result: extra.result });
@@ -163,7 +138,6 @@ function buildExtraEntry(extra, seenIds) {
   };
 }
 
-/** Build catalog entries for all curated inline games. Throws on any invalid game. */
 export function buildExtraEntries(seed = SEED, seenIds = new Set()) {
   return (seed.extraGames || []).map((extra) => buildExtraEntry(extra, seenIds));
 }
@@ -222,7 +196,6 @@ async function main() {
     });
   }
 
-  // Append curated modern games (validated the same way).
   const extras = buildExtraEntries(SEED, seenIds);
   catalog.push(...extras);
 
@@ -240,7 +213,6 @@ async function main() {
   }
 }
 
-// Only run the full (networked) rebuild when invoked directly.
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main().catch((e) => {
     console.error("BUILD FAILED:", e.message);

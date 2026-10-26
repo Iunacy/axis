@@ -1,16 +1,6 @@
 import type { CoachingDossier } from "./dossier";
 import type { LessonContent, LessonSection } from "./types";
 
-/**
- * Shared AI-coach logic: system prompt, model output types, validation.
- * Used by BOTH the server route (owner's env key) and the browser (user's
- * own key sent directly to api.anthropic.com — BYOK).
- *
- * Anti-hallucination contract: the model may only reference boards via
- * `positionId` from dossier.keyPositions; FENs, best moves and orientations
- * are re-attached from the dossier — never taken from the model. Square and
- * piece claims are restricted to the engine-verified `facts`.
- */
 
 export const SYSTEM_PROMPT = `You are an elite chess coach who writes short, beautiful, personal lessons. You receive a factual "coaching dossier" about one player: their ratings, recurring mistake patterns (verified by Stockfish), time management, conversion of winning positions, and a list of key positions from their real games.
 
@@ -100,12 +90,12 @@ export function sanitize(
       sections.push({
         type: "board",
         heading: s.heading,
-        fen: pos.fen, // dossier truth, never the model's
+        fen: pos.fen,
         orientation: pos.userSide,
         task: String(s.task ?? ""),
         theory: typeof s.theory === "string" ? s.theory.slice(0, 400) : undefined,
         explain: typeof s.explain === "string" ? s.explain.slice(0, 600) : undefined,
-        playedSan: pos.played, // dossier truth — shown to the user after solving
+        playedSan: pos.played,
         answerSan: pos.best ? [pos.best] : undefined,
         answerLine: pos.best ? [pos.best] : undefined,
         overlays: {
@@ -135,7 +125,6 @@ export function sanitize(
     const parsed = new URL(String(model.primarySource?.url));
     if (parsed.protocol === "https:") url = parsed.toString();
   } catch {
-    /* keep default */
   }
 
   return {

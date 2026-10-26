@@ -13,18 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-/**
- * BYOK field (Settings + Lessons page). The user picks an AI provider
- * (Anthropic, OpenAI or Google) and pastes their key. Display rules:
- * - server env key configured and no browser key → render nothing
- * - browser key saved → show "key saved (provider)" + remove button
- * - no key anywhere → show provider picker + input + save + privacy note
- * The key lives in this browser's localStorage only and is sent straight to the
- * chosen provider — never to our server.
- */
 export default function ApiKeyField({ onChanged }: { onChanged?: () => void }) {
   const { t } = useI18n();
-  const saved = useApiKey(); // reactive: reflects save/remove immediately
+  const saved = useApiKey();
   const [value, setValue] = useState("");
   const [provider, setProvider] = useState<AiProviderId>(DEFAULT_PROVIDER_ID);
   const [serverCfg, setServerCfg] = useState<boolean | null>(null);
@@ -51,7 +42,6 @@ export default function ApiKeyField({ onChanged }: { onChanged?: () => void }) {
 
   if (serverCfg === null) return null;
 
-  // Browser key present → only offer removal.
   if (saved) {
     return (
       <div className="flex flex-col gap-2 max-w-lg">
@@ -69,12 +59,10 @@ export default function ApiKeyField({ onChanged }: { onChanged?: () => void }) {
     );
   }
 
-  // Server env key covers everything → nothing to show.
   if (serverCfg) return null;
 
   const active = getProvider(provider);
 
-  // No key anywhere → provider picker + full field.
   return (
     <div className="flex flex-col gap-2 max-w-lg">
       <label className="flex flex-col gap-1.5 text-sm text-muted-foreground">

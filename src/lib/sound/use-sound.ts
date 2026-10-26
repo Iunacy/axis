@@ -55,7 +55,6 @@ export function useSound(
       try {
         sourceRef.current.stop();
       } catch {
-        // Already stopped
       }
       sourceRef.current = null;
     }
@@ -118,7 +117,6 @@ export function useSound(
         try {
           sourceRef.current.stop();
         } catch {
-          // Already stopped
         }
       }
       sourceRef.current = null;

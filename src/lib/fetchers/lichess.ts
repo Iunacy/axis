@@ -18,10 +18,6 @@ interface LichessGame {
   pgn: string;
 }
 
-/**
- * Fetch recent games from lichess as ND-JSON (one JSON game per line).
- * Public endpoint, no token needed for public games.
- */
 export async function fetchLichessGames(username: string, maxGames = 300): Promise<GameRow[]> {
   const url = `https://lichess.org/api/games/user/${encodeURIComponent(
     username

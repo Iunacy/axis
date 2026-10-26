@@ -2,19 +2,17 @@ import { Chess, type Square } from "chess.js";
 import type { AnalysisSummary, Motif, MoveIssue, Phase } from "./types";
 
 export interface PositionEval {
-  cpWhite: number; // centipawns from White's POV; mate mapped to ±10000 - plies
+  cpWhite: number;
   bestUci: string | null;
-  pvUci: string[]; // principal variation (uci), from this position
+  pvUci: string[];
 }
 
 const PIECE_VALUE: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
 
-/** Lichess-style win probability from centipawns (side = White). 0..1 */
 export function winProb(cpWhite: number): number {
   return 1 / (1 + Math.exp(-0.00368208 * Math.max(-1500, Math.min(1500, cpWhite))));
 }
 
-/** Lichess accuracy formula from win% loss (0..100 per move). */
 function moveAccuracy(winLossPct: number): number {
   const a = 103.1668 * Math.exp(-0.04354 * winLossPct) - 3.1669;
   return Math.max(0, Math.min(100, a));
@@ -40,7 +38,6 @@ function uciToSan(fen: string, uci: string): string | null {
   }
 }
 
-/** Count attackers minus defenders on a square (positive = under-defended target). */
 function isUnderdefended(chess: Chess, square: Square, ownerColor: "w" | "b"): boolean {
   const enemy = ownerColor === "w" ? "b" : "w";
   const attackers = chess.attackers(square, enemy).length;
@@ -48,14 +45,12 @@ function isUnderdefended(chess: Chess, square: Square, ownerColor: "w" | "b"): b
   return attackers > defenders;
 }
 
-/** Does `uci` (a move for side to move in fen) attack 2+ pieces worth >= 3? (fork heuristic) */
 function createsForkLike(fen: string, uci: string): boolean {
   try {
     const c = new Chess(fen);
     const mover = c.turn();
     const m = c.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
     if (!m) return false;
-    // After the move it's the opponent's turn; check what the moved piece attacks.
     const to = m.to as Square;
     let valuableTargets = 0;
     for (const row of c.board()) {
@@ -73,38 +68,33 @@ function createsForkLike(fen: string, uci: string): boolean {
 }
 
 function classifyMotif(args: {
-  fenBefore: string; // position before the user's move
-  fenAfter: string; // position after the user's move (opponent to move)
+  fenBefore: string;
+  fenAfter: string;
   userColor: "w" | "b";
   cpBeforeUser: number;
   cpAfterUser: number;
-  bestReplyUci: string | null; // engine best for opponent after user's move
-  bestMoveUci: string | null; // engine best for user instead of played move
+  bestReplyUci: string | null;
+  bestMoveUci: string | null;
 }): Motif {
   const { fenAfter, userColor, cpBeforeUser, cpAfterUser, bestReplyUci, bestMoveUci, fenBefore } = args;
 
   if (cpAfterUser <= -9000) return "allowed_mate";
   if (cpBeforeUser >= 9000 && cpAfterUser < 9000) return "missed_mate";
 
-  // Hanging piece: opponent's best reply captures an under-defended piece of ours.
   if (bestReplyUci) {
     try {
       const c = new Chess(fenAfter);
       const target = c.get(bestReplyUci.slice(2, 4) as Square);
       if (target && target.color === userColor) {
         if (isUnderdefended(c, bestReplyUci.slice(2, 4) as Square, userColor)) return "hanging_piece";
-        // even-defended but bigger value lost = bad trade pattern
         const attacker = c.get(bestReplyUci.slice(0, 2) as Square);
         if (attacker && PIECE_VALUE[target.type] > PIECE_VALUE[attacker.type]) return "bad_trade";
       }
-      // Fork allowed
       if (createsForkLike(fenAfter, bestReplyUci)) return "allowed_fork";
     } catch {
-      /* fall through */
     }
   }
 
-  // Missed tactic: we had a clearly winning continuation and played something else.
   if (cpBeforeUser >= 200 && cpAfterUser < 100 && bestMoveUci) {
     try {
       const c = new Chess(fenBefore);
@@ -113,7 +103,6 @@ function classifyMotif(args: {
         return "missed_tactic";
       }
     } catch {
-      /* ignore */
     }
   }
 
@@ -121,10 +110,10 @@ function classifyMotif(args: {
 }
 
 export interface GameForAnalysis {
-  fens: string[]; // fens[i] = before ply i; length = moves+1
+  fens: string[];
   moves: { san: string; uci: string; color: "w" | "b" }[];
   userColor: "w" | "b";
-  evals: PositionEval[]; // one per fen
+  evals: PositionEval[];
   engineLabel: string;
 }
 
@@ -212,15 +201,6 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
       continuation: legalVariation(g.fens[i], evBefore.pvUci),
     });
 
-    // Puzzle: "what should you have played?" — user to move from fenBefore.
-    //
-    // QUALITY GATES — a position only becomes a puzzle when the best move is
-    // genuinely worth finding (lichess-style), not just "engine's favorite
-    // quiet move in an equal position":
-    //   - "tactic": you had a clear edge (>= +1.5, incl. mate) that the best
-    //     move proves — find the shot.
-    //   - "save": the position was holdable (>= -0.8) and your move collapsed
-    //     it (<= -2.5) — find the move that holds.
     if ((severity === "blunder" || severity === "mistake") && evBefore.pvUci.length > 0) {
       const isMateShot = cpBeforeUser >= 9000;
       const isTactic = cpBeforeUser >= 150;
@@ -242,7 +222,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
           if (!san) break;
           if (k % 2 === 0) sol.push(san);
           else rep.push(san);
-          if (san.includes("#")) break; // stop the line at mate
+          if (san.includes("#")) break;
         }
 
         if (sol.length > 0) {

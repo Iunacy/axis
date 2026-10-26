@@ -16,12 +16,6 @@ export interface CoachRequest {
   focus?: string;
 }
 
-/**
- * Reactive AI-coach availability: usable if a key is saved in this browser
- * (reflected live from the store) OR a server env key is configured. `ready`
- * is false until both the store has hydrated and the server probe has resolved,
- * so callers can avoid flashing the "no key" state on first paint.
- */
 export function useCoachAvailability(): { available: boolean; viaUserKey: boolean; ready: boolean } {
   const apiKey = useApiKey();
   const hydrated = useStoreHydrated();
@@ -50,12 +44,6 @@ export function useCoachAvailability(): { available: boolean; viaUserKey: boolea
   };
 }
 
-/**
- * Generate a lesson. If the user saved their own key, the request goes STRAIGHT
- * from this browser to the chosen provider (Anthropic, OpenAI or Google) — the
- * key never touches our server. Otherwise it goes through /api/coach-lesson
- * (owner's env key).
- */
 export async function requestAiLesson(args: CoachRequest): Promise<LessonContent & { title: string }> {
   const stored = loadAiKey();
 
@@ -70,7 +58,6 @@ export async function requestAiLesson(args: CoachRequest): Promise<LessonContent
     return data.lesson;
   }
 
-  // BYOK: browser → provider, directly.
   const provider = getProvider(stored.provider);
   const { url, headers, body } = provider.buildRequest({
     key: stored.key,

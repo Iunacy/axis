@@ -12,7 +12,6 @@ export interface DashboardStats {
   weaknesses: WeaknessProfile | null;
 }
 
-/** Pure aggregation — data comes from localStorage (see storage.ts). */
 export function computeDashboardStats(games: GameRow[], analyses: Record<string, AnalysisSummary>): DashboardStats {
   const all = [...games].sort((a, b) => new Date(b.played_at).getTime() - new Date(a.played_at).getTime());
   const totalGames = all.length;

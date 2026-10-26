@@ -52,8 +52,8 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
   }
   const displayedFen = issue && showVariation ? variationPositions[Math.min(variation, variationPositions.length - 1)] : issue && practiceState === "correct" ? correctedFen! : parsed.fens[ply];
   const last = ply > 0 && !showVariation ? parsed.moves[ply - 1] : null;
-  const uci = last?.uci;
-  const currentEval = analysis?.evaluations?.[ply];
+  const uci = issue && practiceState === "correct" && !showVariation ? issue.bestUci : last?.uci;
+  const currentEval = issue && (showVariation || practiceState === "correct") ? undefined : analysis?.evaluations?.[ply];
   const evalText = currentEval == null ? "—" : Math.abs(currentEval) >= 9000
     ? `M${Math.max(1, 10000 - Math.abs(currentEval))} ${currentEval > 0 ? "White" : "Black"}`
     : `${currentEval >= 0 ? "+" : ""}${(currentEval / 100).toFixed(2)}`;

@@ -34,16 +34,16 @@ export interface GameRow {
 }
 
 export interface MoveIssue {
-  ply: number; // 1-based ply of the move played by the user
+  ply: number;
   san: string;
   uci: string;
   fenBefore: string;
   severity: "blunder" | "mistake" | "inaccuracy";
   motif: Motif;
   phase: Phase;
-  cpBefore: number; // from user's POV, centipawns (mate mapped to ±10000)
+  cpBefore: number;
   cpAfter: number;
-  winDrop: number; // 0..1 win probability drop
+  winDrop: number;
   bestUci: string | null;
   bestSan: string | null;
   continuation?: string[];
@@ -51,7 +51,7 @@ export interface MoveIssue {
 
 export interface AnalysisSummary {
   acpl: number;
-  accuracy: number; // 0..100
+  accuracy: number;
   blunders: number;
   mistakes: number;
   inaccuracies: number;
@@ -62,11 +62,11 @@ export interface AnalysisSummary {
 }
 
 export interface PuzzleRow {
-  id: string; // `${game_id}#${ply-or-fen-hash}`
+  id: string;
   game_id: string;
   fen: string;
-  solution_san: string[]; // moves the user must find (user side first)
-  reply_san: string[]; // opponent replies interleaved (solution[0], reply[0], solution[1]...)
+  solution_san: string[];
+  reply_san: string[];
   theme: Motif;
   severity: "blunder" | "mistake" | "inaccuracy";
   user_side: "w" | "b";
@@ -78,10 +78,8 @@ export interface PuzzleRow {
   attempts: number;
   solved: boolean;
   created_at: string;
-  /** "tactic" = find the winning shot; "save" = find the only holding move. */
   kind?: "tactic" | "save";
   difficulty?: "easy" | "medium" | "hard";
-  /** The move actually played in the source game. */
   played_san?: string;
 }
 
@@ -104,14 +102,10 @@ export interface LessonSectionBoard {
   fen: string;
   orientation: "w" | "b";
   task: string;
-  answerSan?: string[]; // if present, board is in "find the move" mode
-  /** The move actually played in the user's game (shown after solving). */
+  answerSan?: string[];
   playedSan?: string;
-  /** Short theory note shown BEFORE solving: the philosophy behind the choice (no spoilers). */
   theory?: string;
-  /** Full continuation (user + opponent moves interleaved) playable after success. */
   answerLine?: string[];
-  /** Short theory note shown once the right move is found. */
   explain?: string;
   overlays?: BoardOverlaySpec;
   sourceUrl?: string | null;
@@ -119,7 +113,7 @@ export interface LessonSectionBoard {
 
 export interface LessonQuizQuestion {
   q: string;
-  choices: string[]; // keep choices roughly the same length (teach-skill rule)
+  choices: string[];
   answerIdx: number;
   explain: string;
 }
@@ -133,13 +127,12 @@ export interface LessonSectionQuiz {
 export type LessonSection = LessonSectionText | LessonSectionBoard | LessonSectionQuiz;
 
 export interface LessonContent {
-  concept: string; // the single mental model taught
-  mission: string; // why this matters for THIS player (grounded in their data)
+  concept: string;
+  mission: string;
   sections: LessonSection[];
   primarySource: { label: string; url: string };
 }
 
-/** A generated lesson: stores only data; text is localized at render time. */
 export interface GeneratedLesson {
   slug: string;
   theme: Motif | "lines_of_force";
@@ -154,36 +147,27 @@ export interface LessonExample {
   user_side: "w" | "b";
   solution_san: string[];
   reply_san?: string[];
-  /** The move actually played in the user's game. */
   played?: string;
   source_url: string | null;
 }
 
-/** Engine analysis depth preset. "fast" uses engineMovetimeMs; "deep" is slower but more accurate. */
 export type AnalysisMode = "fast" | "deep";
 
 export interface Settings {
   chesscomUsername: string;
   lichessUsername: string;
   analyzeLastN: number;
-  /** Engine time per position (ms) used by the "fast" analysis mode. */
   engineMovetimeMs: number;
-  /** Default analysis depth used by the dashboard runner. Defaults to "fast". */
   analysisMode?: AnalysisMode;
   boardTheme: string;
-  /** Lesson feedback sounds (correct / wrong / complete). Defaults to on. */
   soundEnabled?: boolean;
-  /** Read-aloud (text-to-speech) buttons in lessons & masters. Defaults to on. */
   voiceEnabled?: boolean;
-  /** Preferred speech-synthesis voice (voiceURI). Empty = auto-pick the best. */
   voiceURI?: string;
-  /** When read-aloud finishes a block on its own, auto-start the next one. Defaults to on. */
   voiceAutoplay?: boolean;
 }
 
-/** A lesson written by the AI coach. Text is in `locale` (generated in the site language). */
 export interface AiLessonRow {
-  id: string; // "ai-<timestamp>"
+  id: string;
   locale: "en" | "fr";
   created_at: string;
   completed: boolean;
@@ -200,38 +184,33 @@ export interface WeaknessProfile {
   worstOpenings: { eco: string; name: string | null; games: number; score: number }[];
 }
 
-// ---------- Masters: learn from iconic grandmaster games ----------
 
-/** A curated, build-time-validated iconic game (see src/lib/masters/catalog.json). */
 export interface MasterGame {
-  id: string; // stable slug, e.g. "byrne-fischer-1956"
-  pgn: string; // validated by parsePgn at build time
+  id: string;
+  pgn: string;
   title: string;
   white: string;
   black: string;
   event: string | null;
   year: number;
-  result: string; // "1-0" | "0-1" | "1/2-1/2" | "*"
-  studySide: "w" | "b"; // whose plan we narrate
+  result: string;
+  studySide: "w" | "b";
   tags: string[];
   sourceUrl: string | null;
   teaser: { en: string; fr: string };
-  /** Iconicity score (0-100). The catalog is sorted by this, most iconic first. */
   iconic?: number;
 }
 
-/** One ply's generated reasoning. */
 export interface MasterMoveNote {
-  ply: number; // 1-based, matches parsePgn move index
-  reasoning: string; // the plan/logic — full, may be long
-  motif?: Motif; // optional tactical/strategic tag
+  ply: number;
+  reasoning: string;
+  motif?: Motif;
 }
 
-/** Cached AI generation for ONE game in ONE locale. */
 export interface MasterAnnotation {
   gameId: string;
   locale: "en" | "fr";
   created_at: string;
-  intro: string; // game-level framing
+  intro: string;
   notes: MasterMoveNote[];
 }

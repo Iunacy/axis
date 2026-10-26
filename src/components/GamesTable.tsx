@@ -23,7 +23,6 @@ export function ResultBadge({ result }: { result: GameRow["result"] }) {
   return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{t.games.results[result]}</span>;
 }
 
-/** Book button: asks the AI coach for a post-mortem lesson on ONE game. Only one at a time. */
 function GameLessonButton({
   game,
   busyId,

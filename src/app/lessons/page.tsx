@@ -14,10 +14,8 @@ import { removeAiLesson, removeLesson } from "@/lib/storage";
 export default function LessonsPage() {
   const { t, locale } = useI18n();
   const hydrated = useStoreHydrated();
-  // Reactive availability — reflects a key added in Settings without a reload.
   const { available: aiAvailable } = useCoachAvailability();
 
-  // Reactive: delete/generate write to the store, so these update on their own.
   const lessons = useLessons();
   const aiLessons = useAiLessons();
 
@@ -27,7 +25,6 @@ export default function LessonsPage() {
     <main className="mx-auto max-w-5xl px-4 py-10 flex flex-col gap-12">
       <h1 className="text-2xl font-semibold text-foreground">{t.lessons.title}</h1>
 
-      {/* ---- Personalized (AI) lessons — front and center ---- */}
       <section className="flex flex-col gap-5 rounded-2xl border border-violet-800/40 bg-gradient-to-br from-violet-500/10 to-transparent p-6">
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-medium text-violet-700 dark:text-violet-200">✦ {t.lessons.personalized}</h2>
@@ -36,8 +33,6 @@ export default function LessonsPage() {
 
         <AiLessonGenerator />
 
-        {/* BYOK field — shown directly, and ONLY when no key exists anywhere
-            (neither the server env key nor a key saved in this browser). */}
         {!aiAvailable && <ApiKeyField />}
 
         {aiLessons.length > 0 && (
@@ -62,7 +57,6 @@ export default function LessonsPage() {
         )}
       </section>
 
-      {/* ---- Classic template lessons ---- */}
       <section className="flex flex-col gap-5">
         <div className="flex items-end justify-between flex-wrap gap-4">
           <div className="flex flex-col gap-1">

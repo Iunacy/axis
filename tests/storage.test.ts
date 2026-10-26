@@ -21,6 +21,11 @@ test("legacy data survives migration and ordered writes restore latest state", a
   assert.equal(await indexedStorage.getItem("cc:store"), old);
   await Promise.all([indexedStorage.setItem("cc:store", "first"), indexedStorage.setItem("cc:store", "latest")]);
   assert.equal(await indexedStorage.getItem("cc:store"), "latest");
+  values.set("cc:store", "newer fallback");
+  assert.equal(await indexedStorage.getItem("cc:store"), "newer fallback");
+  await indexedStorage.setItem("cc:store", "recovered");
+  assert.equal(values.has("cc:store"), false);
+  assert.equal(await indexedStorage.getItem("cc:store"), "recovered");
   await indexedStorage.removeItem("cc:store");
   assert.equal(await indexedStorage.getItem("cc:store"), null);
 });

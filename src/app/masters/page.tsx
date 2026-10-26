@@ -49,7 +49,6 @@ const PRESETS: Record<Platform, Preset[]> = {
   ],
 };
 
-/** Convert an imported GameRow (the searched player's game) into a MasterGame. */
 function toMasterGame(g: GameRow, player: string): MasterGame {
   const opponent = g.opponent_name ?? "?";
   const white = g.user_color === "w" ? player : opponent;
@@ -63,7 +62,7 @@ function toMasterGame(g: GameRow, player: string): MasterGame {
     event: null,
     year: new Date(g.played_at).getFullYear() || 0,
     result: "*",
-    studySide: g.user_color, // study the searched player's plan
+    studySide: g.user_color,
     tags: [],
     sourceUrl: g.url,
     teaser: { en: "", fr: "" },
@@ -74,7 +73,6 @@ export default function MastersPage() {
   const { t, locale } = useI18n();
   const [query, setQuery] = useState("");
 
-  // Importer state
   const [platform, setPlatform] = useState<Platform>("lichess");
   const [handle, setHandle] = useState("");
   const [importing, setImporting] = useState(false);
@@ -111,7 +109,6 @@ export default function MastersPage() {
     }
   }
 
-  // Inline ephemeral viewer for an imported game.
   if (selected) {
     return (
       <main className="mx-auto max-w-5xl px-4 py-10 flex flex-col gap-6">
@@ -133,7 +130,6 @@ export default function MastersPage() {
         <p className="text-sm text-muted-foreground max-w-2xl">{t.masters.sub}</p>
       </div>
 
-      {/* Search */}
       <label className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <input
@@ -144,7 +140,6 @@ export default function MastersPage() {
         />
       </label>
 
-      {/* Curated catalog */}
       {games.length === 0 ? (
         <p className="text-muted-foreground">{t.masters.noMatch}</p>
       ) : (
@@ -181,7 +176,6 @@ export default function MastersPage() {
         </ul>
       )}
 
-      {/* Import a player's real games from chess.com / lichess */}
       <section className="flex flex-col gap-4 rounded-2xl border border-border bg-card/50 p-6">
         <div className="flex flex-col gap-1">
           <h2 className="text-lg font-medium text-foreground">{t.masters.importTitle}</h2>

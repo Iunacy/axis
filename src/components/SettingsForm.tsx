@@ -22,8 +22,6 @@ import { useStoreHydrated } from "@/lib/store";
 import { clearAllData, loadSettings, saveSettings } from "@/lib/storage";
 
 export default function SettingsForm() {
-  // Render nothing until the store is hydrated, so the inner form can lazy-init
-  // its editable state straight from the store without an SSR mismatch.
   const hydrated = useStoreHydrated();
   if (!hydrated) return null;
   return <SettingsFormInner />;
@@ -49,7 +47,6 @@ function SettingsFormInner() {
 
   function clearData() {
     clearAllData();
-    // Store reset is reactive (onboarding reopens); just navigate home — no reload.
     router.push("/");
   }
 

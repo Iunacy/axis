@@ -13,11 +13,6 @@ import type { MasterGame } from "@/lib/types";
 
 export const maxDuration = 60;
 
-/**
- * Server-side per-move reasoning for a master game, using the OWNER's env key.
- * First configured provider wins (Anthropic → OpenAI → Gemini), same as the
- * coach. Users with their own key never hit this route (browser → provider).
- */
 
 interface Body {
   game: MasterGame;

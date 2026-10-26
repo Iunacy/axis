@@ -35,10 +35,14 @@ function notify() {
 export const indexedStorage: StateStorage = {
   async getItem(key) {
     try {
+      const fallback = localStorage.getItem(key);
+      if (fallback !== null) return fallback;
+    } catch {}
+    try {
       const stored = await read(key);
       if (stored !== null) return stored;
     } catch { notify(); }
-    try { return localStorage.getItem(key); } catch { notify(); return null; }
+    return null;
   },
   setItem(key, value) {
     writes = writes.then(async () => {

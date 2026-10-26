@@ -1,7 +1,3 @@
-/**
- * App logo — chess rook from Tabler Icons (MIT license).
- * https://tabler.io/icons/icon/chess-rook
- */
 export default function Logo({ className = "w-6 h-6" }: { className?: string }) {
   return (
     <span className="inline-flex items-center justify-center rounded-lg bg-[#d9b778]/10 p-1.5">

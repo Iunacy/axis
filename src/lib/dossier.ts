@@ -3,38 +3,29 @@ import { extractClocks, parseBaseTime } from "./pgn";
 import { buildWeaknessProfile } from "./stats";
 import type { AnalysisSummary, GameRow, Motif, MoveIssue, Phase } from "./types";
 
-/**
- * The coaching dossier: a compact, factual JSON snapshot of how this player
- * actually plays. It is the ONLY chess-truth source the AI coach is allowed
- * to use — every board it shows must come from `keyPositions` (referenced by
- * id), so the model can never hallucinate a position.
- */
 
 export interface DossierPosition {
   id: string;
   fen: string;
   userSide: "w" | "b";
-  played: string; // SAN the player actually played
-  best: string | null; // engine best (SAN)
-  cpBefore: number; // eval before the move, player's POV (centipawns)
-  winDrop: number; // 0..1
+  played: string;
+  best: string | null;
+  cpBefore: number;
+  winDrop: number;
   motif: Motif;
   phase: Phase;
-  clockSec: number | null; // time left when the move was played
+  clockSec: number | null;
   opening: string | null;
   result: "win" | "loss" | "draw";
   sourceUrl: string | null;
-  /** Board-verified facts (chess.js). The ONLY square/piece claims the coach may make. */
   facts: PositionFacts;
 }
 
 export interface PositionFacts {
   sideToMove: "white" | "black";
-  /** e.g. "queen d1→h5 capturing the knight on h5" */
   playedMove: string | null;
   bestMove: string | null;
   bestGivesCheck: boolean;
-  /** Pieces with more attackers than defenders, e.g. "white queen on h5". */
   hangingPieces: string[];
 }
 
@@ -111,12 +102,12 @@ export interface CoachingDossier {
   };
   timeManagement: {
     hasClockData: boolean;
-    blundersInZeitnotPct: number | null; // % of blunders played with <60s or <10% of base time
+    blundersInZeitnotPct: number | null;
     avgClockAtBlunderSec: number | null;
   };
   conversion: {
-    gamesWithWinningPosition: number; // analyzed games where eval reached >= +3 for the player
-    blownWins: number; // ...that ended in loss or draw
+    gamesWithWinningPosition: number;
+    blownWins: number;
     conversionPct: number | null;
   };
   keyPositions: DossierPosition[];
@@ -125,7 +116,6 @@ export interface CoachingDossier {
 const ZEITNOT_FLOOR_SEC = 60;
 
 export interface DossierOptions {
-  /** Keep only matching issues (e.g. endgame-only, tactics-only) for a focused lesson. */
   issueFilter?: (issue: MoveIssue) => boolean;
 }
 
@@ -138,7 +128,6 @@ export function buildDossier(
   const summaries = analyzedGames.map((g) => analyses[g.id]);
   const profile = buildWeaknessProfile(games, summaries);
 
-  // --- player overview ---
   const byClass = new Map<string, { games: number; latestRating: number | null; latestDate: string }>();
   for (const g of games) {
     const cur = byClass.get(g.time_class) ?? { games: 0, latestRating: null, latestDate: "" };
@@ -153,7 +142,6 @@ export function buildDossier(
     .map(([timeClass, v]) => ({ timeClass, games: v.games, latestRating: v.latestRating }))
     .sort((a, b) => b.games - a.games);
 
-  // Rating trend on the main time class over the last 30 rated games.
   let ratingTrend: CoachingDossier["player"]["ratingTrend"] = null;
   const main = timeClasses[0];
   if (main) {
@@ -172,7 +160,6 @@ export function buildDossier(
   const wins = games.filter((g) => g.result === "win").length;
   const draws = games.filter((g) => g.result === "draw").length;
 
-  // --- collect issues with clock + game context ---
   interface IssueCtx {
     issue: MoveIssue;
     game: GameRow;
@@ -194,7 +181,6 @@ export function buildDossier(
     }
   }
 
-  // --- time management ---
   const blunderCtxs = issueCtxs.filter((c) => c.issue.severity === "blunder");
   const blundersWithClock = blunderCtxs.filter((c) => c.clockSec != null);
   let blundersInZeitnotPct: number | null = null;
@@ -211,7 +197,6 @@ export function buildDossier(
     );
   }
 
-  // --- conversion of winning positions ---
   const winningGames = new Set<string>();
   const blownGames = new Set<string>();
   for (const c of issueCtxs) {
@@ -224,7 +209,6 @@ export function buildDossier(
     ? Math.round(((winningGames.size - blownGames.size) / winningGames.size) * 100)
     : null;
 
-  // --- key positions: worst drops first, diversified by motif ---
   const sorted = [...issueCtxs]
     .filter((c) => c.issue.severity !== "inaccuracy" && c.issue.bestSan)
     .sort((a, b) => b.issue.winDrop - a.issue.winDrop);
@@ -233,7 +217,7 @@ export function buildDossier(
   for (const c of sorted) {
     if (picked.length >= 14) break;
     const count = perMotif.get(c.issue.motif) ?? 0;
-    if (count >= 4) continue; // keep variety
+    if (count >= 4) continue;
     perMotif.set(c.issue.motif, count + 1);
     picked.push(c);
   }

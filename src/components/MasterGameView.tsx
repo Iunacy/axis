@@ -47,14 +47,13 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
   const ai = useCoachAvailability();
   const settings = useSettings();
 
-  const [plyIdx, setPlyIdx] = useState(0); // plies played so far (0 = start)
+  const [plyIdx, setPlyIdx] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [generating, setGenerating] = useState(false);
-  // On-demand engine line from the current position (the only place evals appear).
   const [engineLine, setEngineLine] = useState<EngineStep[] | null>(null);
   const [computing, setComputing] = useState(false);
   const cancelRef = useRef(false);
-  const stopAutoRef = useRef(false); // set true to interrupt auto-play
+  const stopAutoRef = useRef(false);
 
   useEffect(() => {
     cancelRef.current = false;
@@ -63,9 +62,6 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
     };
   }, []);
 
-  // Read-aloud "follow mode": once the user starts the voice (and hasn't stopped
-  // it themselves), navigating to another move stops the current narration and,
-  // if the new move has readable text, plays it automatically.
   const followRef = useRef(false);
   const currentPlay = useRef<(() => void) | null>(null);
   const registerControl = useCallback((play: (() => void) | null) => {
@@ -81,7 +77,6 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
   useEffect(() => {
     stopSpeech();
     if (!followRef.current || settings.voiceAutoplay === false) return;
-    // Let the new move's SpeakButton register its replay handle first.
     const tmo = setTimeout(() => currentPlay.current?.(), 80);
     return () => clearTimeout(tmo);
   }, [plyIdx, settings.voiceAutoplay]);
@@ -153,7 +148,6 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
       }
       if (!cancelRef.current && out.length) setEngineLine(out);
     } catch {
-      /* engine unavailable */
     } finally {
       engine.destroy();
       setComputing(false);
@@ -177,7 +171,6 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-      {/* Board + controls */}
       <div className="flex flex-col gap-3 lg:w-[420px] lg:flex-none">
         <Board
           fen={fen}
@@ -243,7 +236,6 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
           {plyIdx}/{total}
         </p>
 
-        {/* Move list */}
         <div className="flex flex-wrap gap-1 rounded-xl border border-border bg-card p-3 max-h-44 overflow-y-auto">
           {moves.map((m, i) => (
             <button
@@ -262,7 +254,6 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
           ))}
         </div>
 
-        {/* On-demand engine analysis (the only evals on the page) */}
         {engineLine === null ? (
           <button
             onClick={exploreLine}
@@ -288,7 +279,6 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
         )}
       </div>
 
-      {/* Reasoning */}
       <div className="flex-1 flex flex-col gap-4 min-w-0">
         <div>
           <h2 className="text-xl font-semibold text-foreground">

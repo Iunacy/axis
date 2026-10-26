@@ -2,7 +2,6 @@ import { AppError } from "../errors";
 import { normalizeTimeClass, openingNameFromEcoUrl, resultForUser } from "../pgn";
 import type { GameRow, Platform } from "../types";
 
-// Runs in the browser — the chess.com public API allows CORS.
 const BASE = "https://api.chess.com/pub";
 
 interface ChesscomGame {
@@ -27,11 +26,7 @@ async function getJson<T>(url: string): Promise<T | null> {
   return (await res.json()) as T;
 }
 
-/**
- * Fetch recent games for a chess.com user, newest archives first,
- * until `maxGames` standard-rules games are collected.
- */
-export async function fetchChesscomGames(username: string, maxGames = 300): Promise<GameRow[]> {
+export async function fetchChesscomGames(username: string, maxGames = 300, since = 0): Promise<GameRow[]> {
   const res = await fetch(`${BASE}/player/${encodeURIComponent(username.trim())}/games/archives`, { signal: AbortSignal.timeout(20000) });
   if (res.status === 404) throw new AppError("syncUserNotFound");
   if (res.status === 429) throw new AppError("syncRateLimit");
@@ -40,16 +35,20 @@ export async function fetchChesscomGames(username: string, maxGames = 300): Prom
   if (!archives?.archives?.length) return [];
 
   const out: GameRow[] = [];
-  const lower = username.toLowerCase();
+  const lower = username.trim().toLowerCase();
+  const sinceMonth = since > 0 ? new Date(since).toISOString().slice(0, 7).replace("-", "/") : null;
 
   for (const archiveUrl of [...archives.archives].reverse()) {
     if (out.length >= maxGames) break;
+    const archiveMonth = archiveUrl.match(/\/(\d{4}\/\d{2})$/)?.[1];
+    if (sinceMonth && archiveMonth && archiveMonth < sinceMonth) continue;
     const month = await getJson<{ games: ChesscomGame[] }>(archiveUrl);
     if (!month) continue;
 
     for (const g of [...month.games].reverse()) {
       if (out.length >= maxGames) break;
-      if (g.rules !== "chess" || !g.pgn || !g.end_time || !/\[Result "(?:1-0|0-1|1\/2-1\/2)"\]/.test(g.pgn)) continue;
+      if (g.rules !== "chess" || !g.pgn || !g.end_time || g.end_time * 1000 < since || !/\[Result "(?:1-0|0-1|1\/2-1\/2)"\]/.test(g.pgn)) continue;
+      if (![g.white.username.toLowerCase(), g.black.username.toLowerCase()].includes(lower)) continue;
       const userIsWhite = g.white.username.toLowerCase() === lower;
       const userColor: "w" | "b" = userIsWhite ? "w" : "b";
       const me = userIsWhite ? g.white : g.black;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { Chess, type Square } from "chess.js";
 import { getBoardTheme } from "@/lib/board-themes";
 import { useI18n } from "@/lib/i18n";
@@ -25,7 +26,6 @@ interface BoardProps {
   fen: string;
   orientation?: "w" | "b";
   interactive?: boolean;
-  /** Called when the user plays a move. Return false to reject (snap back). */
   onTryMove?: (san: string) => boolean | void;
   defaultOverlays?: BoardOverlaySpec;
   showOverlayControls?: boolean;
@@ -62,7 +62,6 @@ export default function Board({
   const [last, setLast] = useState(lastMove);
   const [anim, setAnim] = useState<{ to: Square; dx: number; dy: number; seq: number } | null>(null);
 
-  // Delta between two squares in DISPLAYED grid coordinates (percent of one square).
   function dispDelta(from: string, to: string) {
     const colOf = (s: string) => {
       const i = FILES.indexOf(s[0] as (typeof FILES)[number]);
@@ -72,8 +71,6 @@ export default function Board({
     return { dx: (colOf(from) - colOf(to)) * 100, dy: (rowOf(from) - rowOf(to)) * 100 };
   }
 
-  // Allow parent to reset/advance the position by changing `fen`.
-  // When a `lastMove` comes with it, slide the moved piece.
   const [externalFen, setExternalFen] = useState(fen);
   if (fen !== externalFen) {
     setExternalFen(fen);
@@ -164,14 +161,11 @@ export default function Board({
 
   return (
     <div className={`flex flex-col gap-3 w-full ${maxW}`}>
-      {/* Square container + cells filling their tracks — same approach as the
-          chess-game project's ChessBoard, so squares never detach. */}
       <div className="grid grid-cols-8 grid-rows-8 aspect-square w-full rounded-lg overflow-hidden shadow-lg ring-1 ring-black/30 select-none">
         {ranks.map((r) =>
           files.map((f) => {
             const square = `${f}${r}` as Square;
             const s = info.get(square)!;
-            // a1 must be DARK ("light square on the right"): dark ⇔ file+rank odd.
             const dark = (FILES.indexOf(f) + r) % 2 === 1;
             const isSel = selected === square || beamSource === square;
             const inBeam = beamTargets.has(square);
@@ -196,7 +190,6 @@ export default function Board({
                   inBeam ? "shadow-[inset_0_0_0_3px_rgba(56,189,248,0.6)]" : "",
                 ].join(" ")}
               >
-                {/* file/rank coordinates */}
                 {f === files[0] && (
                   <span
                     className="absolute top-0.5 left-1 text-[9px] font-semibold pointer-events-none"
@@ -266,7 +259,6 @@ export default function Board({
   );
 }
 
-/** Piece image that slides in from its previous square (Web Animations API). */
 function PieceImg({
   src,
   alt,
@@ -278,20 +270,20 @@ function PieceImg({
 }) {
   const ref = useRef<HTMLSpanElement>(null);
   const seq = slide?.seq;
+  const dx = slide?.dx;
+  const dy = slide?.dy;
   useEffect(() => {
-    if (slide && ref.current?.animate) {
+    if (dx !== undefined && dy !== undefined && ref.current?.animate && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       ref.current.animate(
-        [{ transform: `translate(${slide.dx}%, ${slide.dy}%)` }, { transform: "translate(0, 0)" }],
+        [{ transform: `translate(${dx}%, ${dy}%)` }, { transform: "translate(0, 0)" }],
         { duration: 240, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" }
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seq]);
+  }, [seq, dx, dy]);
 
   return (
     <span ref={ref} className="absolute inset-0 flex items-center justify-center pointer-events-none z-[5]">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} draggable={false} className="w-[86%] h-[86%] object-contain drop-shadow-sm" />
+      <Image src={src} alt={alt} width={64} height={64} unoptimized draggable={false} className="w-[86%] h-[86%] object-contain drop-shadow-sm" />
     </span>
   );
 }

@@ -1,7 +1,3 @@
-/**
- * Board color themes — ported from the chess-game project (lib/chess-themes.ts).
- * "classic" is the default; the user picks a theme in Settings.
- */
 export interface BoardTheme {
   id: string;
   name: string;

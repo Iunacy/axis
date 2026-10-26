@@ -77,7 +77,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <script
           type="application/ld+json"
-          // Structured data for rich results — describes the free web app.
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",

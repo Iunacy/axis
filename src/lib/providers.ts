@@ -1,14 +1,3 @@
-/**
- * AI provider abstraction shared by the browser (BYOK — key sent straight from
- * the browser to the provider) and the server route (owner's env key).
- *
- * Only providers that allow direct browser (CORS) calls are listed here, so the
- * BYOK privacy guarantee holds for every one of them: the user's key never
- * touches this app's server. Each provider knows how to build its own request
- * and pull the assistant text out of the response — everything downstream
- * (JSON parsing, validation) stays provider-agnostic in coach.ts.
- */
-
 export type AiProviderId = "anthropic" | "openai" | "gemini";
 
 export interface BuiltRequest {
@@ -21,11 +10,8 @@ interface BuildOpts {
   key: string;
   system: string;
   user: string;
-  /** Defaults to the provider's recommended model. */
   model?: string;
-  /** Max output tokens. Defaults to 4096; raise for long generations. */
   maxTokens?: number;
-  /** true when the call originates from the browser (BYOK). */
   browser: boolean;
 }
 
@@ -33,18 +19,12 @@ const DEFAULT_MAX_TOKENS = 4096;
 
 export interface AiProvider {
   id: AiProviderId;
-  /** Shown in the provider picker. */
   label: string;
-  /** Example key, used as the input placeholder. */
   placeholder: string;
-  /** Recommended model when the user/owner doesn't override it. */
   defaultModel: string;
-  /** Where to create an API key. */
   consoleUrl: string;
-  /** Server-side env var that holds the owner's key for this provider. */
   envVar: string;
   buildRequest(opts: BuildOpts): BuiltRequest;
-  /** Pull the assistant's text out of the parsed JSON response. */
   extractText(json: unknown): string;
 }
 
@@ -100,7 +80,6 @@ const openai: AiProvider = {
       body: {
         model: model || OPENAI_MODEL,
         max_tokens: maxTokens ?? DEFAULT_MAX_TOKENS,
-        // Our prompt already asks for raw JSON; this hard-guarantees it.
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: system },
@@ -156,12 +135,10 @@ export function isProviderId(v: unknown): v is AiProviderId {
   return AI_PROVIDERS.some((p) => p.id === v);
 }
 
-/** Resolve a provider by id, falling back to the default (Anthropic). */
 export function getProvider(id: AiProviderId | string | undefined | null): AiProvider {
   return AI_PROVIDERS.find((p) => p.id === id) ?? anthropic;
 }
 
-/** Per-provider model override env var, e.g. "OPENAI_MODEL". */
 export function modelEnvVar(id: AiProviderId): string {
   return `${id.toUpperCase()}_MODEL`;
 }

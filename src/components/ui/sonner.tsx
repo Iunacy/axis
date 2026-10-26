@@ -3,7 +3,6 @@
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 
-/** App toaster (shadcn/sonner). Themed via next-themes, rich colors for clear errors. */
 export function Toaster(props: ToasterProps) {
   const { theme = "dark" } = useTheme();
   return (

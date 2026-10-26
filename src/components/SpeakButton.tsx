@@ -16,23 +16,11 @@ import { useSettings } from "@/lib/store";
 interface SpeakButtonProps {
   text: string;
   className?: string;
-  /** Called when the USER starts playback by clicking (not on auto-chain). */
   onUserStart?: () => void;
-  /** Called when the USER stops playback by clicking the button. */
   onUserStop?: () => void;
-  /** Receives a replay handle (or null on unmount) so a parent can replay this block. */
   registerControl?: (play: (() => void) | null) => void;
 }
 
-/**
- * A small speaker button that reads `text` aloud in the current locale via the
- * Web Speech API. Controlled: click to play, click again (or any other button)
- * to stop. Renders nothing when TTS is unsupported, disabled in Settings, or
- * there's no text.
- *
- * Each button registers itself as a chained-playback target so that, when its
- * audio finishes on its own, the next speakable block starts automatically.
- */
 export default function SpeakButton({
   text,
   className = "",
@@ -47,13 +35,11 @@ export default function SpeakButton({
   const speaking = activeId === id;
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  // Keep the latest props so the registered play()/control always read current values.
   const latest = useRef({ text, locale, voiceURI: settings.voiceURI });
   useEffect(() => {
     latest.current = { text, locale, voiceURI: settings.voiceURI };
   });
 
-  // Keep the global chaining flag in sync with the user's setting.
   useEffect(() => {
     setSpeechChaining(settings.voiceAutoplay !== false);
   }, [settings.voiceAutoplay]);
@@ -70,7 +56,6 @@ export default function SpeakButton({
     );
   }, [enabled, id]);
 
-  // Expose a replay handle to an optional parent (e.g. masters follow-mode).
   useEffect(() => {
     if (!enabled || !registerControl) return;
     registerControl(() => speak(id, latest.current.text, latest.current.locale, latest.current.voiceURI));

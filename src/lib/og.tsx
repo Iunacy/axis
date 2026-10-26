@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 
-// Shared 1200×630 social card, used by both opengraph-image and twitter-image.
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
 export const ogAlt =
@@ -45,7 +44,6 @@ export function renderOgImage() {
           position: "relative",
         }}
       >
-        {/* emerald glow */}
         <div
           style={{
             position: "absolute",
@@ -60,7 +58,6 @@ export function renderOgImage() {
           }}
         />
 
-        {/* top: logo + wordmark */}
         <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
           <div
             style={{
@@ -84,7 +81,6 @@ export function renderOgImage() {
           </span>
         </div>
 
-        {/* middle: headline */}
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div
             style={{
@@ -105,7 +101,6 @@ export function renderOgImage() {
           </div>
         </div>
 
-        {/* bottom: feature pills + accent bar */}
         <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
           <div style={{ display: "flex", gap: 16 }}>
             <Pill>Chess.com + Lichess</Pill>
