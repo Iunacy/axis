@@ -58,7 +58,7 @@ export function renderOgImage() {
               border: `1px solid ${BORDER}`,
             }}
           >
-            <svg width="56" height="56" viewBox="0 0 32 32" fill={ACCENT}><path d={AXIS_MARK_PATH}/></svg>
+            <svg width="56" height="56" viewBox="0 0 32 32" fill={ACCENT}><path d={AXIS_MARK_PATH} fillRule="evenodd"/></svg>
           </div>
           <span style={{ fontSize: 40, fontWeight: 700, color: "#fafafa" }}>
             AXIS

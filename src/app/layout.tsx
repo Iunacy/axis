@@ -100,7 +100,7 @@ export default function RootLayout({
             <Nav />
             <div className="axis-content flex-1">{children}</div>
             <footer className="axis-footer">
-              <div className="mx-auto max-w-5xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground/70">
+              <div className="mx-auto max-w-5xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
                 <span>
                   AXIS · built on Chess Coach by{" "}
                   <a

@@ -181,14 +181,7 @@ function SinglePuzzle({
             )}
             {puzzle.difficulty && (
               <span
-                className={[
-                  "inline-block rounded-full px-3 py-1 text-xs",
-                  puzzle.difficulty === "easy"
-                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                    : puzzle.difficulty === "hard"
-                    ? "bg-red-500/10 text-red-500"
-                    : "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-                ].join(" ")}
+                className="axis-tag"
               >
                 {t.puzzles.difficulties[puzzle.difficulty]}
               </span>

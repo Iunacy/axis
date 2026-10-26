@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import WorkspaceLoading from "@/components/WorkspaceLoading";
 import AiLessonGenerator from "@/components/AiLessonGenerator";
 import ApiKeyField from "@/components/ApiKeyField";
 import DeleteLessonButton from "@/components/DeleteLessonButton";
@@ -19,15 +20,47 @@ export default function LessonsPage() {
   const lessons = useLessons();
   const aiLessons = useAiLessons();
 
-  if (!hydrated) return null;
+  if (!hydrated) return <WorkspaceLoading/>;
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 flex flex-col gap-12">
       <h1 className="text-2xl font-semibold text-foreground">{t.lessons.title}</h1>
 
-      <section className="flex flex-col gap-5 rounded-2xl border border-violet-800/40 bg-gradient-to-br from-violet-500/10 to-transparent p-6">
+
+      <section className="axis-panel flex flex-col gap-5">
+        <div className="flex items-end justify-between flex-wrap gap-4">
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-medium text-foreground">{t.lessons.classic}</h2>
+            <p className="text-sm text-muted-foreground max-w-2xl">{t.lessons.classicSub}</p>
+          </div>
+          <GenerateLessonsButton />
+        </div>
+
+        {lessons.length === 0 ? (
+          <div className="axis-empty"><h2>{t.lessons.empty}</h2><p>{t.axis.noTraining}</p><Link href="/games" className="axis-button w-fit">{t.ui.reviewGame}</Link></div>
+        ) : (
+          <ul className="grid sm:grid-cols-2 gap-4">
+            {lessons.map((l, i) => (
+              <li key={l.slug} className="relative">
+                <DeleteLessonButton onConfirm={() => removeLesson(l.slug)} />
+                <Link
+                  href={`/lessons/${l.slug}`}
+                  className="block rounded-xl border border-border bg-card p-5 pr-10 hover:border-ring/60 transition h-full"
+                >
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {t.lessons.lesson} {String(i + 1).padStart(2, "0")}
+                    {l.completed && <span className="text-emerald-600 dark:text-emerald-400 ml-2">✓ {t.lessons.completed}</span>}
+                  </p>
+                  <h3 className="font-medium text-foreground">{lessonTitle(l.slug, locale)}</h3>
+                  <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{lessonConcept(l.slug, locale)}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>      <details className="axis-panel"><summary className="font-medium">{t.ui.advanced}</summary><div className="flex flex-col gap-5 pt-6">
         <div className="flex flex-col gap-1">
-          <h2 className="text-lg font-medium text-violet-700 dark:text-violet-200">✦ {t.lessons.personalized}</h2>
+          <h2 className="text-lg font-medium text-violet-700 dark:text-violet-200">{t.lessons.personalized}</h2>
           <p className="text-sm text-muted-foreground max-w-2xl">{t.lessons.personalizedSub}</p>
         </div>
 
@@ -55,40 +88,8 @@ export default function LessonsPage() {
             ))}
           </ul>
         )}
-      </section>
+      </div></details>
 
-      <section className="flex flex-col gap-5">
-        <div className="flex items-end justify-between flex-wrap gap-4">
-          <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-medium text-foreground">{t.lessons.classic}</h2>
-            <p className="text-sm text-muted-foreground max-w-2xl">{t.lessons.classicSub}</p>
-          </div>
-          <GenerateLessonsButton />
-        </div>
-
-        {lessons.length === 0 ? (
-          <p className="text-muted-foreground">{t.lessons.empty}</p>
-        ) : (
-          <ul className="grid sm:grid-cols-2 gap-4">
-            {lessons.map((l, i) => (
-              <li key={l.slug} className="relative">
-                <DeleteLessonButton onConfirm={() => removeLesson(l.slug)} />
-                <Link
-                  href={`/lessons/${l.slug}`}
-                  className="block rounded-xl border border-border bg-card p-5 pr-10 hover:border-ring/60 transition h-full"
-                >
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {t.lessons.lesson} {String(i + 1).padStart(2, "0")}
-                    {l.completed && <span className="text-emerald-600 dark:text-emerald-400 ml-2">✓ {t.lessons.completed}</span>}
-                  </p>
-                  <h3 className="font-medium text-foreground">{lessonTitle(l.slug, locale)}</h3>
-                  <p className="text-sm text-muted-foreground mt-2 line-clamp-3">{lessonConcept(l.slug, locale)}</p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
     </main>
   );
 }

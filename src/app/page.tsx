@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Target } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import AnalysisRunner from "@/components/AnalysisRunner";
+import Board from "@/components/Board";
 import GamesTable from "@/components/GamesTable";
 import GettingStarted from "@/components/GettingStarted";
+import Logo from "@/components/Logo";
 import RatingChart from "@/components/RatingChart";
 import SyncButton from "@/components/SyncButton";
 import WorkspaceLoading from "@/components/WorkspaceLoading";
@@ -22,15 +24,18 @@ export default function DashboardPage() {
   const puzzles = useStore(state => state.puzzles);
   if (!hydrated) return <WorkspaceLoading/>;
   const stats = computeDashboardStats(games, analyses);
-  const due = duePuzzles(puzzles).length;
-  const accounts = [settings.chesscomUsername && `${settings.chesscomUsername} · Chess.com`, settings.lichessUsername && `${settings.lichessUsername} · Lichess`].filter(Boolean).join(" / ");
-  return <main className="axis-dashboard">
-    <div className="axis-page-head"><div><h1>{t.dashboard.title}</h1><p>{t.ui.overviewHelp}</p>{accounts && <p className="axis-account"><Link href="/settings">{accounts}</Link></p>}</div>{stats.totalGames > 0 && <SyncButton/>}</div>
+  const due = duePuzzles(puzzles);
+  const next = due[0];
+  const reviewed = games.filter(game => game.analysis_status === "done").slice(0, 4);
+  const profile = settings.chesscomUsername || settings.lichessUsername;
+  const accounts = [settings.chesscomUsername && "Chess.com", settings.lichessUsername && "Lichess"].filter(Boolean).join(" / ");
+  return <main className="axis-dashboard axis-instrument">
+    <div className="axis-overview-header"><div className="axis-player"><span className="axis-player-mark"><Logo/></span><div><h1>{profile || t.ui.yourGame}</h1><p>{accounts || t.app.tagline}{profile && <><span className="axis-status-dot"/>{t.ui.localOnly}</>}</p></div></div>{stats.totalGames > 0 && <SyncButton/>}</div>
     {!stats.totalGames ? <GettingStarted/> : <>
-      <div className="axis-stats"><div><span>{t.dashboard.games}</span><strong>{stats.totalGames}</strong><small>{stats.analyzedCount} {t.dashboard.analyzed}</small></div><div><span>{t.dashboard.winRate}</span><strong>{stats.winRate == null ? "—" : `${stats.winRate}%`}</strong></div><div><span>{t.dashboard.accuracy}</span><strong>{stats.avgAccuracy == null ? "—" : `${stats.avgAccuracy}%`}</strong></div><div><span>{t.dashboard.blundersPerGame}</span><strong>{stats.blundersPerGame ?? "—"}</strong></div></div>
-      <div className="axis-dashboard-grid"><section className="axis-panel"><div className="axis-panel-head"><h2>{t.dashboard.progression}</h2></div><RatingChart series={stats.ratingSeries}/></section><section className="axis-panel axis-session"><div><Target size={26}/><h2>{t.ui.nextSession}</h2><h3>{due ? t.ui.ready(due) : puzzles.length ? t.axis.allDone : t.axis.training}</h3><p>{due ? t.ui.trainingHelp : puzzles.length ? t.ui.trainingClear : t.ui.trainingEmpty}</p></div><Link className="axis-button" href={due ? "/training" : "/games"}>{due ? t.ui.startPractice : t.ui.reviewGame}<ArrowUpRight size={16}/></Link></section></div>
-      <div className="axis-dashboard-grid"><AnalysisRunner pendingCount={stats.pendingCount}/><section className="axis-panel"><div className="axis-panel-head"><h2>{t.dashboard.weaknesses}</h2><Link href="/lessons" className="axis-link">{t.nav.lessons}</Link></div>{stats.weaknesses?.topMotifs.length ? <ul className="axis-weakness-list">{stats.weaknesses.topMotifs.map(item => <li key={item.motif}><span>{t.motifs[item.motif].split(" (")[0]}</span><span>{item.count}</span></li>)}</ul> : <p className="axis-muted text-sm leading-7">{t.axis.noTraining}</p>}</section></div>
-      <section className="axis-panel"><div className="axis-panel-head"><h2>{t.dashboard.recentGames}</h2><Link href="/games" className="axis-link">{t.ui.viewAll}</Link></div><GamesTable games={stats.recentGames.slice(0, 6)} showStatus/></section>
+      <div className="axis-intelligence-stage"><section className="axis-rating-region"><RatingChart series={stats.ratingSeries}/></section><section className="axis-session-focus"><div className="axis-session-heading"><h2>{t.ui.nextSession}</h2><span>{due.length ? t.ui.ready(due.length) : t.axis.queue + ": 0"}</span></div><div className="axis-session-content">{next ? <div className="axis-session-preview" aria-hidden="true" inert><Board fen={next.fen} orientation={next.user_side} size="sm" showOverlayControls={false}/></div> : <div className="axis-session-symbol" aria-hidden="true"><Logo className="size-16"/></div>}<div><h3>{next ? t.motifs[next.theme].split(" (")[0] : puzzles.length ? t.ui.trainingClearTitle : t.ui.reviewFirst}</h3><p>{next ? t.ui.sessionPrompt : puzzles.length ? t.ui.trainingClear : t.ui.trainingEmpty}</p></div></div><Link className="axis-button" href={next ? "/training" : "/games"}>{next ? t.ui.continueTraining : t.ui.reviewGame}<ArrowUpRight size={17}/></Link></section></div>
+      <div className="axis-activity-line"><div><strong>{stats.totalGames}</strong><span>{t.dashboard.games}</span></div><div><strong>{stats.analyzedCount}</strong><span>{t.dashboard.analyzed}</span></div><div><strong>{stats.avgAccuracy == null ? "—" : `${stats.avgAccuracy}%`}</strong><span>{t.dashboard.accuracy}</span></div><div><strong>{stats.blundersPerGame ?? "—"}</strong><span>{t.dashboard.blundersPerGame}</span></div></div>
+      <section className="axis-recent-region"><div className="axis-panel-head"><h2>{reviewed.length ? t.ui.recentlyReviewed : t.dashboard.recentGames}</h2><Link href="/games" className="axis-link">{t.ui.viewAll}<ArrowUpRight size={13}/></Link></div><GamesTable games={reviewed.length ? reviewed : stats.recentGames.slice(0, 4)} showStatus/></section>
+      <div className="axis-dashboard-secondary"><AnalysisRunner pendingCount={stats.pendingCount}/><section className="axis-insight-region"><div className="axis-panel-head"><h2>{t.ui.focusAreas}</h2><Link href="/lessons" className="axis-link">{t.nav.lessons}<ArrowUpRight size={13}/></Link></div>{stats.weaknesses?.topMotifs.length ? <ul className="axis-weakness-list">{stats.weaknesses.topMotifs.map(item => <li key={item.motif}><span>{t.motifs[item.motif].split(" (")[0]}</span><span>{item.count}</span></li>)}</ul> : <p className="axis-muted text-sm leading-7">{t.axis.noTraining}</p>}</section></div>
     </>}
   </main>;
 }

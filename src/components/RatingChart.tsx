@@ -43,8 +43,11 @@ export default function RatingChart({ series }: { series: Point[] }) {
 
   if (!series.length) return <p className="text-sm text-muted-foreground">{t.dashboard.noRatedGames}</p>;
 
+  const latest = data[data.length - 1]?.rating;
+  const change = latest == null ? null : latest - data[0].rating;
   return (
-    <div className="flex flex-col gap-3">
+    <div className="axis-rating-chart flex flex-col gap-3">
+      <div className="axis-rating-heading"><h2>{t.dashboard.progression}</h2><div><strong>{latest ?? "—"}</strong>{change != null && <span>{change > 0 ? "+" : ""}{change} <small>{t.ui.ratingHistory}</small></span>}</div></div>
       <div className="flex flex-wrap gap-2">
         {combos.slice(0, 6).map((c) => (
           <button
@@ -61,8 +64,8 @@ export default function RatingChart({ series }: { series: Point[] }) {
           </button>
         ))}
       </div>
-      <div className="h-56 min-w-0">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 500, height: 224 }}>
+      <div className="axis-rating-plot min-w-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} initialDimension={{ width: 500, height: 200 }}>
           <LineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
             <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
             <XAxis dataKey="date" stroke="var(--muted-foreground)" fontSize={11} tickLine={false} minTickGap={40} />

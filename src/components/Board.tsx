@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Chess, type Square } from "chess.js";
 import { getBoardTheme } from "@/lib/board-themes";
@@ -52,9 +52,11 @@ export default function Board({
   size = "md",
 }: BoardProps) {
   const { t } = useI18n();
+  const boardId = useId();
   const [theme] = useState(() => getBoardTheme(loadSettings().boardTheme));
   const [position, setPosition] = useState(fen);
   const [selected, setSelected] = useState<Square | null>(null);
+  const [focusSquare, setFocusSquare] = useState<Square>(orientation === "w" ? "e2" : "e7");
   const [beamSource, setBeamSource] = useState<Square | null>(null);
   const [showWhite, setShowWhite] = useState(Boolean(defaultOverlays?.whiteAttacks));
   const [showBlack, setShowBlack] = useState(Boolean(defaultOverlays?.blackAttacks));
@@ -161,7 +163,7 @@ export default function Board({
 
   return (
     <div className={`flex flex-col gap-3 w-full ${maxW}`}>
-      <div className="grid grid-cols-8 grid-rows-8 aspect-square w-full rounded-lg overflow-hidden shadow-lg ring-1 ring-black/30 select-none">
+      <div role="group" aria-label={t.ui.chessboard} className="grid grid-cols-8 grid-rows-8 aspect-square w-full rounded-xl overflow-hidden border border-border select-none">
         {ranks.map((r) =>
           files.map((f) => {
             const square = `${f}${r}` as Square;
@@ -184,12 +186,26 @@ export default function Board({
                 key={square}
                 onClick={() => handleClick(square)}
                 aria-label={square}
+                aria-describedby={`${boardId}-${square}`}
+                tabIndex={focusSquare === square ? 0 : -1}
+                onFocus={() => setFocusSquare(square)}
+                onKeyDown={event => {
+                  const dx = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0;
+                  const dy = event.key === "ArrowUp" ? -1 : event.key === "ArrowDown" ? 1 : 0;
+                  if (!dx && !dy) return;
+                  event.preventDefault(); event.stopPropagation();
+                  const col = Math.max(0, Math.min(7, files.indexOf(f) + dx));
+                  const row = Math.max(0, Math.min(7, ranks.indexOf(r) + dy));
+                  const buttons = event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button");
+                  buttons?.[row * 8 + col]?.focus();
+                }}
                 style={{ backgroundColor: bg }}
                 className={[
                   "relative w-full h-full flex items-center justify-center",
                   inBeam ? "shadow-[inset_0_0_0_3px_rgba(56,189,248,0.6)]" : "",
                 ].join(" ")}
               >
+                <span className="sr-only" id={`${boardId}-${square}`}>{s.piece ? `${s.piece.color === "w" ? t.axis.white : t.axis.black} ${t.ui.pieces[s.piece.type as keyof typeof t.ui.pieces]}` : t.ui.emptySquare}</span>
                 {f === files[0] && (
                   <span
                     className="absolute top-0.5 left-1 text-[9px] font-semibold pointer-events-none"

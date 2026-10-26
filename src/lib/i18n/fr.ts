@@ -2,6 +2,8 @@ import type { Dict } from "./en";
 
 const fr: Dict = {
   ui: {
+    yourGame: "Votre jeu", continueTraining: "Reprendre l’entraînement", sessionPrompt: "Une position. Retrouvez le coup manqué.", trainingClearTitle: "À jour. Restez affûté.", reviewFirst: "Votre première découverte commence ici.", recentlyReviewed: "Dernières analyses", focusAreas: "Axes de travail", ratingHistory: "sur cette période",
+    chessboard: "Échiquier", emptySquare: "Case vide", pieces: { p: "pion", n: "cavalier", b: "fou", r: "tour", q: "dame", k: "roi" },
     boardTools: "Outils de l’échiquier",
     brandSub: "Analyse & pratique", workspace: "Espace de travail", localOnly: "Enregistré sur cet appareil", menu: "Menu", appearance: "Apparence", system: "Système", dark: "Sombre", light: "Clair",
     overviewHelp: "Comprenez votre jeu. Préparez votre prochain coup.", gamesHelp: "Vos parties terminées, prêtes à être étudiées.", settingsHelp: "Un espace de travail à votre image.", trainingHelp: "Trouvez le coup. Comprenez l’idée. Retenez-la.",

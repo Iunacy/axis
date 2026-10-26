@@ -151,7 +151,7 @@ export default function AnalysisRunner({
               {t.analysis.stop}
             </button>
           </div>
-          <p className="text-xs text-muted-foreground/70">{t.analysis.keepOpen}</p>
+          <p className="text-xs text-muted-foreground">{t.analysis.keepOpen}</p>
         </>
       ) : (
         <>
@@ -173,7 +173,7 @@ export default function AnalysisRunner({
             {label && <span className="text-sm text-muted-foreground">{label}</span>}
             {!label && pendingCount === 0 && <span className="text-sm text-muted-foreground">{t.analysis.none}</span>}
           </div>
-          <p className="text-xs text-muted-foreground/70">
+          <p className="text-xs text-muted-foreground">
             <span className="text-emerald-600 dark:text-emerald-400">{t.analysis.fast}</span> {t.analysis.fastHint} ·{" "}
             <span className="text-violet-600 dark:text-violet-400">{t.analysis.deep}</span> {t.analysis.deepHint}
           </p>

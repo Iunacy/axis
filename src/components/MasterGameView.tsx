@@ -289,7 +289,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
             {game.event ? ` · ${game.event}` : ""}
             {game.year ? ` · ${game.year}` : ""}
           </p>
-          <p className="text-xs text-muted-foreground/80 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {t.masters.studyingAs(studyingName)}
           </p>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, use, useEffect, useMemo, useState } from "react";
+import { Fragment, use, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Chess } from "chess.js";
 import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
@@ -19,6 +19,7 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
   const game = useGames().find(g => g.id === decodeURIComponent(id));
   const analysis = useAnalyses()[decodeURIComponent(id)];
   const parsed = useMemo(() => game ? parsePgn(game.pgn) : null, [game]);
+  const boardRef = useRef<HTMLElement>(null);
   const [ply, setPly] = useState(0);
   const [selectedIssue, setSelectedIssue] = useState<MoveIssue | null>(null);
   const [practiceState, setPracticeState] = useState<"idle" | "wrong" | "correct" | "revealed">("idle");
@@ -72,13 +73,14 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
     setPracticeState("idle");
     setShowVariation(false);
     setVariation(0);
+    if (window.matchMedia("(max-width: 760px)").matches) boardRef.current?.scrollIntoView({ block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   }
 
   return <main className="axis-shell axis-review">
     <Link href="/games" className="axis-link inline-flex items-center gap-2"><ArrowLeft size={16}/>{t.axis.backGames}</Link>
     <div className="axis-page-head"><div><h1>{game.opponent_name ?? t.axis.review}</h1><p>{new Date(game.played_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")} · {game.opening_name ?? game.eco ?? game.time_class} · {t.games.results[game.result]}</p></div><div className="axis-actions"><span className="axis-tag">{game.platform === "pgn" ? "PGN" : game.platform === "chesscom" ? "Chess.com" : "Lichess"}</span>{analysis && analysis.issues.length > 0 && <Link href="/training" className="axis-button">{t.ui.practiceThese}</Link>}</div></div>
     <div className="axis-review-grid">
-      <section className="axis-board-column">
+      <section ref={boardRef} className="axis-board-column">
         <Board key={`${id}:${ply}:${showVariation ? variation : "game"}:${practiceState === "idle"}`} fen={displayedFen} orientation={game.user_color} size="lg" showOverlayControls={false}
           lastMove={uci ? { from: uci.slice(0, 2), to: uci.slice(2, 4) } : null}
           interactive={Boolean(issue && !showVariation && (practiceState === "idle" || practiceState === "wrong"))}
@@ -91,7 +93,6 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
           <button aria-label={t.axis.last} disabled={ply === parsed.moves.length} onClick={() => { setPly(parsed.moves.length); setSelectedIssue(null); setShowVariation(false); }}><ChevronsRight size={20}/></button>
         </div>
         <div className="axis-evaluation"><span>{t.axis.engine}</span><strong>{evalText}</strong></div>
-        {analysis?.evaluations && <EvaluationGraph evaluations={analysis.evaluations} ply={ply} onSelect={p => { setPly(p); setSelectedIssue(null); setShowVariation(false); }} label={t.axis.evaluation}/>}
       </section>
       <section className="axis-review-panel">
         {game.analysis_status !== "done" && <AnalysisRunner pendingCount={1} gameId={game.id}/>}
@@ -116,6 +117,7 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
         <h2>{t.ui.moves}</h2><div className="axis-move-labels"><span></span><span>{t.ui.moveWhite}</span><span>{t.ui.moveBlack}</span></div><div className="axis-moves">{moveRows.map(row => <Fragment key={row.number}><span>{row.number}</span>{(["w", "b"] as const).map(color => { const move = row[color]; return move ? <button key={color} onClick={() => { setPly(move.index + 1); setSelectedIssue(null); setShowVariation(false); }} aria-current={ply === move.index + 1 && !issue ? "step" : undefined} className={ply === move.index + 1 && !issue ? "active" : ""}>{move.san}</button> : <span key={color}>—</span>; })}</Fragment>)}</div>
 
       </section>
+        {analysis?.evaluations && <EvaluationGraph evaluations={analysis.evaluations} ply={ply} onSelect={p => { setPly(p); setSelectedIssue(null); setShowVariation(false); }} label={t.axis.evaluation}/>}
     </div>
   </main>;
 }

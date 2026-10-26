@@ -54,7 +54,7 @@ export default function ApiKeyField({ onChanged }: { onChanged?: () => void }) {
             {t.settings.apiKeyRemove}
           </button>
         </div>
-        <p className="text-xs text-muted-foreground/80 leading-relaxed">{t.settings.apiKeyNote}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">{t.settings.apiKeyNote}</p>
       </div>
     );
   }
@@ -103,7 +103,7 @@ export default function ApiKeyField({ onChanged }: { onChanged?: () => void }) {
         </div>
       </label>
 
-      <p className="text-xs text-muted-foreground/80 leading-relaxed">
+      <p className="text-xs text-muted-foreground leading-relaxed">
         {t.settings.apiKeyNote}{" "}
         <a
           href={active.consoleUrl}

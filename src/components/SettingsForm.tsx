@@ -76,12 +76,13 @@ function SettingsFormInner() {
         />
       </label>
 
-      </fieldset><fieldset className="axis-panel"><h2>{t.ui.boardAppearance}</h2><AppearanceControl/><label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-        {t.settings.language}
+      </fieldset><fieldset className="axis-panel"><h2>{t.ui.boardAppearance}</h2><AppearanceControl/><div role="group" aria-label={t.settings.language} className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+        <span>{t.settings.language}</span>
         <div className="flex gap-2">
           {(["fr", "en"] as Locale[]).map((l) => (
             <button
               key={l}
+              aria-pressed={locale === l}
               type="button"
               onClick={() => setLocale(l)}
               className={[
@@ -95,7 +96,7 @@ function SettingsFormInner() {
             </button>
           ))}
         </div>
-      </label>
+      </div>
 
       <div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.boardTheme}
@@ -182,7 +183,7 @@ function SettingsFormInner() {
         </div>
         {(form.voiceEnabled ?? true) &&
           (!speechSupported ? (
-            <p className="text-xs text-muted-foreground/70">{t.settings.voiceUnsupported}</p>
+            <p className="text-xs text-muted-foreground">{t.settings.voiceUnsupported}</p>
           ) : (
             <div className="flex gap-2 max-w-md">
               <Select
@@ -215,7 +216,7 @@ function SettingsFormInner() {
             </div>
           ))}
         {(form.voiceEnabled ?? true) && speechSupported && (
-          <label className="flex items-center gap-2 pt-1 text-xs text-muted-foreground/90 cursor-pointer select-none">
+          <label className="flex items-center gap-2 pt-1 text-xs text-muted-foreground cursor-pointer select-none">
             <input
               type="checkbox"
               checked={form.voiceAutoplay ?? true}
@@ -255,7 +256,7 @@ function SettingsFormInner() {
             );
           })}
         </div>
-        <p className="text-xs text-muted-foreground/70">{t.settings.analysisModeHint}</p>
+        <p className="text-xs text-muted-foreground">{t.settings.analysisModeHint}</p>
       </div>
 
       <label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
@@ -291,7 +292,7 @@ function SettingsFormInner() {
         >
           {t.settings.save}
         </button>
-        {state === "saved" && <span className="text-sm text-emerald-600 dark:text-emerald-400">✓ {t.settings.saved}</span>}
+        {state === "saved" && <span className="text-sm text-emerald-600 dark:text-emerald-400">{t.settings.saved}</span>}
         {state === "cleared" && <span className="text-sm text-amber-600 dark:text-amber-400">{t.settings.cleared}</span>}
       </div>
 

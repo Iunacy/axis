@@ -61,7 +61,7 @@ function toMasterGame(g: GameRow, player: string): MasterGame {
     black,
     event: null,
     year: new Date(g.played_at).getFullYear() || 0,
-    result: "*",
+    result: g.result === "draw" ? "1/2-1/2" : (g.result === "win") === (g.user_color === "w") ? "1-0" : "0-1",
     studySide: g.user_color,
     tags: [],
     sourceUrl: g.url,

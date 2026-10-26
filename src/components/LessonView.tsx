@@ -90,7 +90,7 @@ function LessonContentView({
           </div>
         </div>
         <p className="text-sm text-muted-foreground italic leading-relaxed">{content.mission}</p>
-        {note && <p className="text-xs text-muted-foreground/70">{note}</p>}
+        {note && <p className="text-xs text-muted-foreground">{note}</p>}
       </header>
 
       {content.sections.map((s, i) => {
@@ -385,7 +385,7 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
                   ))}
                 </div>
               </div>
-              <p className="text-[11px] text-muted-foreground/80">{t.lessons.engineLineNote}</p>
+              <p className="text-[11px] text-muted-foreground">{t.lessons.engineLineNote}</p>
             </div>
           )}
         </div>

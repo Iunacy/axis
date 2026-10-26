@@ -1,5 +1,7 @@
 const en = {
   ui: {
+    yourGame: "Your game", continueTraining: "Continue training", sessionPrompt: "One position. Find the move you missed.", trainingClearTitle: "Nothing due. Stay sharp.", reviewFirst: "Your first insight starts here.", recentlyReviewed: "Recently reviewed", focusAreas: "Focus areas", ratingHistory: "in this history",
+    chessboard: "Chessboard", emptySquare: "Empty square", pieces: { p: "pawn", n: "knight", b: "bishop", r: "rook", q: "queen", k: "king" },
     boardTools: "Board tools",
     brandSub: "Analysis & practice", workspace: "Workspace", localOnly: "Saved on this device", menu: "Menu", appearance: "Appearance", system: "System", dark: "Dark", light: "Light",
     overviewHelp: "A clearer view of your game. A focused plan for your next move.", gamesHelp: "Your completed games, ready for a closer look.", settingsHelp: "Make this workspace your own.", trainingHelp: "Find the move. Understand the idea. Make it stick.",
