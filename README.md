@@ -1,59 +1,40 @@
-# ♞ Chess Coach
+# AXIS
 
-Personal chess training app: it fetches your games from **Chess.com** and **Lichess**, analyzes them with **Stockfish** (WASM, in your browser), detects your recurring weaknesses, and generates **personalized lessons and puzzles built from your own games** — inspired by the "lines of force" teaching approach.
+**Analyze. Understand. Improve.**
 
-**No database, no account, no server** for the MVP: everything runs and stays in your browser (localStorage). UI in **French and English** — lessons follow the site language.
-
-Built with Next.js (App Router) + Tailwind v4 + chess.js + Stockfish WASM.
+Adaptive eXplanation & Improvement System turns completed Chess.com, Lichess, and PGN games into browser-based Stockfish analysis, mistake review, personalized lessons, and spaced practice. No account or paid AI key is required. English and French supported.
 
 ## How it works
 
-```
-chess.com / lichess public APIs ──► browser fetch ──► localStorage (games)
-                                                          │
-                  Stockfish WASM (Web Worker) ◄── pending games
-                            │
-                            ▼
-        evals → blunders / motifs / puzzles ──► localStorage
-                            │
-                weakness profile ──► localized lesson templates (FR/EN)
-```
+![AXIS architecture: public APIs feed browser imports, Stockfish evaluates pending games in a worker, and evaluations produce motifs, puzzles, weakness profiles, and localized lessons. Games and progress are saved in IndexedDB.](public/media/axis-architecture.png)
+
+## Demo
+
+![Actual AXIS UI: select a mistake, play Bxe7, receive feedback, and step through Stockfish's verified continuation.](public/media/axis-demo.gif)
+
+[Static preview](public/media/axis-demo.png) · Recorded from a completed game, using the production build.
 
 ## Run it
 
 ```bash
-npm install   # postinstall copies the Stockfish engine into public/stockfish/
+npm ci
 npm run dev
 ```
 
-Open http://localhost:3000 → **Sync** → **Analyze pending games** (keep the tab open; ~5–10s per game) → **Generate lessons**. Language switch (FR/EN) is in the nav and in Settings.
-
-No environment variables needed. Deploy anywhere that serves a Next.js app (Vercel, etc.).
+Open [localhost:3000](http://localhost:3000), enter your public username or import PGN, then choose a game to analyze. Try a correction before revealing the answer; return to Training for scheduled reviews.
 
 ## Features
 
-- **Dashboard** — win rate, accuracy, blunders/game, rating progression chart, top weaknesses
-- **Engine analysis** — blunder/mistake detection with motif classification (hanging pieces, missed tactics, allowed forks, mating-net issues, bad trades) and phase breakdown
-- **Puzzles** — every blunder becomes a "find the best move" puzzle from your real games
-- **Lessons (FR/EN)** — generated from your weakness profile; each teaches one mental model with interactive boards (attack overlays — *see the lines of force*), drills from your games, and retrieval-practice quizzes. Lesson text is rendered in the current site language.
-- **AI coach lessons (optional)** — the "✦ AI coach lesson" button compiles a full coaching dossier (weaknesses, key positions with engine-verified facts, clock habits via `%clk`, winning-position conversion) and asks an AI model to write a bespoke lesson in your language, with filters (theme, date range, opponent Elo, platform). Works with **Anthropic (Claude), OpenAI (GPT) or Google (Gemini)**. Two ways to enable it:
-  - **Bring your own key**: pick a provider and paste your API key in Settings. It is stored in your browser only and sent **directly from your browser to that provider** (these three all allow direct browser calls) — it never reaches this app's server and is never stored anywhere else. Removable anytime in Settings.
-  - **Server key**: set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or `GEMINI_API_KEY` in `.env.local` (self-hosting). When several are set, priority is Anthropic > OpenAI > Google.
+- **Review:** legal move navigation, engine evaluations, mistake classifications, evaluation chart, and verified continuations.
+- **Learn:** recurring weaknesses, lessons, exercises from your games, attempts, and reviews after 1, 3, 7, 14, and 30 days. Failed reviews restart at one day.
+- **Customize:** board themes, language, analysis depth, sound, and optional AI coaching with your own provider key.
 
-  **Fallback**: without any key, a notice appears and template lessons keep working.
-- **Board themes & pieces** — Colorful piece set and 12 board themes (ported from the chess-game project), selectable in Settings.
-- **Settings** — language, board theme, usernames, number of games to analyze, engine time per position, clear local data
+## Deploy and verify
 
-## Project docs
+Import this repository into Vercel using **main** and the Next.js preset. No environment variables are required; optionally set `NEXT_PUBLIC_SITE_URL` to your domain. Installation copies the Stockfish worker, WASM, and GPL license into public assets. Verify with `npm test`, `npm run lint`, `npm run typecheck`, and `npm run build`.
 
-- **`docs/POST-MVP-GUIDE.md`** — read this first before extending the app (vision, phases: IndexedDB → DB + auth → Stripe → AI lessons, conventions, known pitfalls). Written to orient future AI coding sessions.
-- **`docs/teaching-principles.md`** — the pedagogy rules the lesson generator follows.
+Progress is stored on this device in IndexedDB, with localStorage fallback. Clearing browser data removes it. Imports require network access; engine depth and device resources affect analysis. Coaching cues are heuristic and identified separately from engine calculations. Use completed games only.
 
 ## License
 
-MIT — see [LICENSE](./LICENSE). Stockfish (GPL-3.0) is not distributed in this repo; it is fetched from npm at install time and runs locally in your browser.
-
-## Notes
-
-- Data lives in this browser only (per device). Clearing site data clears your analysis.
-- Chess.com accuracy values are kept when available; otherwise a lichess-style accuracy is computed from engine evals.
+MIT, built on [Chess Coach by Leonel Ngoya](https://github.com/ln-dev7/chess-coach); see [LICENSE](LICENSE). Stockfish.js is GPL-3.0; its license and [corresponding source](https://github.com/nmrugg/stockfish.js/tree/32d4b5ae40c01db88219bfbe2b82dbe6dec93832) are linked from the app's Licenses page.
