@@ -26,10 +26,10 @@ export async function fetchLichessGames(username: string, maxGames = 300): Promi
   const url = `https://lichess.org/api/games/user/${encodeURIComponent(
     username
   )}?max=${maxGames}&pgnInJson=true&opening=true&perfType=ultraBullet,bullet,blitz,rapid,classical,correspondence`;
-  const res = await fetch(url, { headers: { Accept: "application/x-ndjson" } });
+  const res = await fetch(url, { headers: { Accept: "application/x-ndjson" }, signal: AbortSignal.timeout(30000) });
   if (res.status === 404) throw new AppError("syncUserNotFound");
   if (res.status === 429) throw new AppError("syncRateLimit");
-  if (!res.ok) return [];
+  if (!res.ok) throw new AppError("network");
   const text = await res.text();
   const lower = username.toLowerCase();
   const out: GameRow[] = [];
@@ -42,7 +42,7 @@ export async function fetchLichessGames(username: string, maxGames = 300): Promi
     } catch {
       continue;
     }
-    if (g.variant !== "standard" || !g.pgn) continue;
+    if (g.variant !== "standard" || !g.pgn || ["created", "started"].includes(g.status)) continue;
     const whiteName = g.players.white.user?.name?.toLowerCase() ?? "";
     const userIsWhite = whiteName === lower;
     const userColor: "w" | "b" = userIsWhite ? "w" : "b";

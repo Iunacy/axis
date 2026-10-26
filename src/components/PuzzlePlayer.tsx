@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import Board from "./Board";
 import { useI18n } from "@/lib/i18n";
-import { updatePuzzle } from "@/lib/storage";
+import { recordReview } from "@/lib/storage";
 import type { PuzzleRow } from "@/lib/types";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -46,6 +46,8 @@ function SinglePuzzle({
   const [state, setState] = useState<"playing" | "wrong" | "solved" | "revealed">("playing");
   const [boardKey, setBoardKey] = useState(0);
   const cancelRef = useRef(false);
+  const reported = useRef(false);
+  const [waiting, setWaiting] = useState(false);
 
   useEffect(() => {
     // Reset on (re)mount — React StrictMode mounts/unmounts/remounts in dev,
@@ -67,11 +69,13 @@ function SinglePuzzle({
   }, [puzzle]);
 
   function report(solved: boolean) {
-    updatePuzzle(puzzle.id, { attempts: puzzle.attempts + 1, ...(solved ? { solved: true } : {}) });
+    if (reported.current) return;
+    reported.current = true;
+    recordReview(puzzle.id, solved);
   }
 
   function tryMove(san: string): boolean {
-    if (state !== "playing") return false;
+    if (state !== "playing" || waiting) return false;
     if (clean(san) !== clean(puzzle.solution_san[step] ?? "")) {
       setState("wrong");
       report(false);
@@ -94,6 +98,7 @@ function SinglePuzzle({
       return false;
     }
     if (reply) {
+      setWaiting(true);
       setTimeout(() => {
         if (cancelRef.current) return;
         try {
@@ -105,15 +110,18 @@ function SinglePuzzle({
         } catch {
           /* corrupt reply — let the user continue from their move */
         }
+        setWaiting(false);
         setStep((s) => s + 1);
       }, 480);
     } else {
+      setFen(c.fen());
       setStep(step + 1);
     }
     return true;
   }
 
   async function showSolution() {
+    report(false);
     setState("revealed");
     // Remount the board on the initial position, then replay every move.
     setFen(puzzle.fen);
@@ -152,7 +160,7 @@ function SinglePuzzle({
         fen={fen}
         lastMove={lastMove}
         orientation={puzzle.user_side}
-        interactive={state === "playing"}
+        interactive={state === "playing" && !waiting}
         onTryMove={tryMove}
         showOverlayControls
       />
@@ -229,6 +237,7 @@ function SinglePuzzle({
           )}
           {state !== "solved" && state !== "revealed" && (
             <button
+              disabled={waiting}
               onClick={showSolution}
               className="rounded-lg border border-input px-4 py-2 text-sm text-foreground/90 hover:border-ring/60"
             >

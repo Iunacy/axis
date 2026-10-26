@@ -11,10 +11,14 @@ import type { PositionEval } from "./analysis";
 export class Engine {
   private worker: Worker | null = null;
   private ready = false;
+  private pendingReject: ((error: Error) => void) | null = null;
 
   async init(hashMb = 32): Promise<void> {
     if (this.ready) return;
-    const manifest = await fetch("/stockfish/manifest.json").then((r) => r.json());
+    if (typeof Worker === "undefined" || typeof WebAssembly === "undefined") throw new Error("This browser cannot run Stockfish. Try a current browser with WebAssembly support.");
+    const response = await fetch("/stockfish/manifest.json", { signal: AbortSignal.timeout(15000) });
+    if (!response.ok) throw new Error("Stockfish is unavailable. Reconnect and try again.");
+    const manifest = await response.json();
     this.worker = new Worker(`/stockfish/${manifest.js}`);
     await this.send("uci", (line) => line === "uciok");
     await this.send("setoption name Threads value 1");
@@ -24,7 +28,7 @@ export class Engine {
   }
 
   private send(cmd: string, until?: (line: string) => boolean): Promise<string[]> {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const w = this.worker!;
       if (!until) {
         w.postMessage(cmd);
@@ -32,11 +36,22 @@ export class Engine {
         return;
       }
       const lines: string[] = [];
+      const cleanup = () => {
+        clearTimeout(timer);
+        w.removeEventListener("message", onMsg);
+        w.removeEventListener("error", onError);
+        this.pendingReject = null;
+      };
+      const fail = (error: Error) => { cleanup(); reject(error); };
+      const onError = () => fail(new Error("Stockfish stopped. Close other tabs and retry with fast analysis."));
+      const timer = setTimeout(() => fail(new Error("Stockfish timed out. Retry with fast analysis.")), 45000);
+      this.pendingReject = fail;
+      w.addEventListener("error", onError);
       const onMsg = (e: MessageEvent) => {
         const line = typeof e.data === "string" ? e.data : "";
         lines.push(line);
         if (until(line)) {
-          w.removeEventListener("message", onMsg);
+          cleanup();
           resolve(lines);
         }
       };
@@ -52,7 +67,7 @@ export class Engine {
     const lines = await this.send(`go movetime ${movetimeMs}`, (l) => l.startsWith("bestmove"));
 
     const sideToMove = fen.split(" ")[1] === "w" ? 1 : -1;
-    let cp = 0;
+    let cp: number | null = null;
     let pv: string[] = [];
     for (const line of lines) {
       if (!line.startsWith("info") || !line.includes(" score ")) continue;
@@ -69,6 +84,13 @@ export class Engine {
     }
     const best = lines.find((l) => l.startsWith("bestmove"))?.split(/\s+/)[1] ?? null;
 
+    if (cp === null) {
+      const { Chess } = await import("chess.js");
+      const position = new Chess(fen);
+      if (position.isCheckmate()) cp = -10000;
+      else if (position.isDraw()) cp = 0;
+      else throw new Error("Stockfish returned no evaluation. Please retry analysis.");
+    }
     return {
       cpWhite: cp * sideToMove,
       bestUci: best && best !== "(none)" ? best : null,
@@ -77,6 +99,7 @@ export class Engine {
   }
 
   destroy() {
+    this.pendingReject?.(new Error("Analysis cancelled."));
     this.worker?.terminate();
     this.worker = null;
     this.ready = false;

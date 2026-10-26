@@ -22,7 +22,7 @@ export function computeDashboardStats(games: GameRow[], analyses: Record<string,
 
   const summaries = Object.values(analyses);
   const analyzedCount = summaries.length;
-  const pendingCount = all.filter((g) => g.analysis_status === "pending").length;
+  const pendingCount = all.filter((g) => ["pending", "failed"].includes(g.analysis_status)).length;
 
   const avgAccuracy = analyzedCount
     ? Math.round((summaries.reduce((s, a) => s + (a.accuracy || 0), 0) / analyzedCount) * 10) / 10

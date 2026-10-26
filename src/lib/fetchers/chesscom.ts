@@ -21,8 +21,9 @@ interface ChesscomGame {
 }
 
 async function getJson<T>(url: string): Promise<T | null> {
-  const res = await fetch(url);
-  if (!res.ok) return null;
+  const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
+  if (res.status === 429) throw new AppError("syncRateLimit");
+  if (!res.ok) throw new AppError("network");
   return (await res.json()) as T;
 }
 
@@ -31,10 +32,10 @@ async function getJson<T>(url: string): Promise<T | null> {
  * until `maxGames` standard-rules games are collected.
  */
 export async function fetchChesscomGames(username: string, maxGames = 300): Promise<GameRow[]> {
-  const res = await fetch(`${BASE}/player/${encodeURIComponent(username)}/games/archives`);
+  const res = await fetch(`${BASE}/player/${encodeURIComponent(username.trim())}/games/archives`, { signal: AbortSignal.timeout(20000) });
   if (res.status === 404) throw new AppError("syncUserNotFound");
   if (res.status === 429) throw new AppError("syncRateLimit");
-  if (!res.ok) return [];
+  if (!res.ok) throw new AppError("network");
   const archives = (await res.json()) as { archives: string[] };
   if (!archives?.archives?.length) return [];
 
@@ -48,7 +49,7 @@ export async function fetchChesscomGames(username: string, maxGames = 300): Prom
 
     for (const g of [...month.games].reverse()) {
       if (out.length >= maxGames) break;
-      if (g.rules !== "chess" || !g.pgn) continue;
+      if (g.rules !== "chess" || !g.pgn || !g.end_time || !/\[Result "(?:1-0|0-1|1\/2-1\/2)"\]/.test(g.pgn)) continue;
       const userIsWhite = g.white.username.toLowerCase() === lower;
       const userColor: "w" | "b" = userIsWhite ? "w" : "b";
       const me = userIsWhite ? g.white : g.black;
@@ -60,9 +61,9 @@ export async function fetchChesscomGames(username: string, maxGames = 300): Prom
       const ecoUrlMatch = g.pgn.match(/\[ECOUrl "([^"]+)"\]/);
 
       out.push({
-        id: `chesscom:${g.uuid}`,
+        id: `chesscom:${g.uuid || g.url}`,
         platform: "chesscom" as Platform,
-        external_id: g.uuid,
+        external_id: g.uuid || g.url,
         analysis_status: "pending",
         url: g.url,
         pgn: g.pgn,

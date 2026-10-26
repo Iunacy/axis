@@ -46,6 +46,7 @@ export interface MoveIssue {
   winDrop: number; // 0..1 win probability drop
   bestUci: string | null;
   bestSan: string | null;
+  continuation?: string[];
 }
 
 export interface AnalysisSummary {
@@ -57,6 +58,7 @@ export interface AnalysisSummary {
   issues: MoveIssue[];
   byPhase: Record<Phase, { blunders: number; mistakes: number; moves: number }>;
   engineDepthOrTime: string;
+  evaluations?: number[];
 }
 
 export interface PuzzleRow {
@@ -69,6 +71,10 @@ export interface PuzzleRow {
   severity: "blunder" | "mistake" | "inaccuracy";
   user_side: "w" | "b";
   source_url: string | null;
+  due_at?: string;
+  last_reviewed_at?: string;
+  streak?: number;
+  reviews?: { at: string; solved: boolean }[];
   attempts: number;
   solved: boolean;
   created_at: string;

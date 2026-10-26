@@ -115,7 +115,6 @@ function classifyMotif(args: {
     } catch {
       /* ignore */
     }
-    return "missed_tactic";
   }
 
   return "other";
@@ -210,6 +209,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
       winDrop: Math.round(winDrop * 1000) / 1000,
       bestUci: bestMoveUci,
       bestSan: bestMoveUci ? uciToSan(g.fens[i], bestMoveUci) : null,
+      continuation: legalVariation(g.fens[i], evBefore.pvUci),
     });
 
     // Puzzle: "what should you have played?" — user to move from fenBefore.
@@ -279,6 +279,18 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     issues,
     byPhase,
     engineDepthOrTime: g.engineLabel,
+    evaluations: g.evals.map((e) => e.cpWhite),
   };
   return { summary, puzzles };
+}
+
+export function legalVariation(fen: string, moves: string[]): string[] {
+  const chess = new Chess(fen);
+  const line: string[] = [];
+  for (const uci of moves.slice(0, 8)) {
+    try {
+      line.push(chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }).san);
+    } catch { break; }
+  }
+  return line;
 }

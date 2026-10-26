@@ -1,6 +1,8 @@
 "use client";
 
 import { create } from "zustand";
+import { indexedStorage } from "./indexed-storage";
+import { scheduleReview } from "./training";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { type AiProviderId, isProviderId } from "./providers";
 import type {
@@ -66,6 +68,7 @@ interface StoreState extends PersistedState {
   setGameStatus: (id: string, status: GameRow["analysis_status"], accuracy?: number | null) => void;
   setAnalysis: (id: string, summary: AnalysisSummary) => void;
   upsertPuzzles: (incoming: PuzzleRow[]) => void;
+  recordReview: (id: string, solved: boolean) => void;
   updatePuzzle: (id: string, patch: Partial<Pick<PuzzleRow, "attempts" | "solved">>) => void;
   setLessons: (lessons: GeneratedLesson[]) => void;
   setLessonCompletedAction: (slug: string, completed: boolean) => void;
@@ -135,6 +138,8 @@ export const useStore = create<StoreState>()(
         if (fresh.length) set({ puzzles: [...fresh, ...existing] });
       },
 
+      recordReview: (id, solved) => set({ puzzles: get().puzzles.map(p => p.id === id ? scheduleReview(p, solved) : p) }),
+
       updatePuzzle: (id, patch) =>
         set({ puzzles: get().puzzles.map((p) => (p.id === id ? { ...p, ...patch } : p)) }),
 
@@ -184,7 +189,7 @@ export const useStore = create<StoreState>()(
     {
       name: STORE_KEY,
       version: 1,
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => indexedStorage),
       partialize: ({
         settings,
         games,
@@ -206,6 +211,14 @@ export const useStore = create<StoreState>()(
         apiKey,
         onboardedFlag,
       }),
+      merge: (persisted, current) => {
+        const saved = (persisted ?? {}) as Partial<PersistedState>;
+        return {
+          ...current, ...saved,
+          settings: { ...DEFAULT_SETTINGS, ...saved.settings },
+          games: (saved.games ?? []).map(g => g.analysis_status === "analyzing" ? { ...g, analysis_status: "pending" as const } : g),
+        };
+      },
       // Hydrate explicitly after mount (see hydrateStore) so SSR and the first
       // client render agree, and the persisted read never lands inside an effect.
       skipHydration: true,
@@ -295,12 +308,14 @@ function readLegacy(): PersistedState | null {
  */
 export function hydrateStore(): void {
   if (typeof window === "undefined") return;
+  try {
   if (!localStorage.getItem(STORE_KEY)) {
     const migrated = readLegacy();
     if (migrated) {
       localStorage.setItem(STORE_KEY, JSON.stringify({ state: migrated, version: 1 }));
     }
   }
+  } catch {}
   void useStore.persist.rehydrate();
 }
 

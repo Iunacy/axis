@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Engine } from "@/lib/engine";
 import { summarizeGame, type PositionEval } from "@/lib/analysis";
@@ -22,8 +22,10 @@ type Status = "idle" | "running" | "done" | "error";
 export default function AnalysisRunner({
   pendingCount,
   onProgress,
+  gameId,
 }: {
   pendingCount: number;
+  gameId?: string;
   onProgress?: () => void;
 }) {
   const { t } = useI18n();
@@ -32,18 +34,22 @@ export default function AnalysisRunner({
   const [progress, setProgress] = useState(0);
   const [runningMode, setRunningMode] = useState<AnalysisMode>("fast");
   const stopRef = useRef(false);
+  const engineRef = useRef<Engine | null>(null);
+  useEffect(() => () => { stopRef.current = true; engineRef.current?.destroy(); }, []);
 
   async function run(mode: AnalysisMode) {
     setStatus("running");
     setRunningMode(mode);
     stopRef.current = false;
     const engine = new Engine();
+    engineRef.current = engine;
+    let activeGame: string | null = null;
 
     try {
       const settings = loadSettings();
       const params = resolveAnalysisParams(settings, mode);
       const games = loadGames()
-        .filter((g) => g.analysis_status === "pending")
+        .filter((g) => (!gameId || g.id === gameId) && ["pending", "failed"].includes(g.analysis_status))
         .slice(0, settings.analyzeLastN);
 
       if (!games.length) {
@@ -56,6 +62,8 @@ export default function AnalysisRunner({
       for (let gi = 0; gi < games.length; gi++) {
         if (stopRef.current) break;
         const game = games[gi];
+        activeGame = game.id;
+        setGameStatus(game.id, "analyzing");
         const parsed = parsePgn(game.pgn);
         if (!parsed || parsed.moves.length < 8) {
           setGameStatus(game.id, "skipped");
@@ -71,7 +79,7 @@ export default function AnalysisRunner({
           );
           setProgress(Math.round(((gi + (i + 1) / parsed.fens.length) / games.length) * 100));
         }
-        if (stopRef.current) break;
+        if (stopRef.current) { setGameStatus(game.id, "pending"); break; }
 
         const { summary, puzzles } = summarizeGame({
           fens: parsed.fens,
@@ -99,11 +107,14 @@ export default function AnalysisRunner({
       setStatus("done");
       setLabel(t.analysis.none);
     } catch (e) {
+      if (activeGame) setGameStatus(activeGame, stopRef.current ? "pending" : "failed");
+      if (stopRef.current) return;
       setStatus("error");
       setLabel((e as Error).message);
       toast.error(describeError(e, t));
     } finally {
       engine.destroy();
+      engineRef.current = null;
       onProgress?.();
     }
   }

@@ -65,6 +65,9 @@ export function saveAnalysis(gameId: string, summary: AnalysisSummary): void {
 }
 
 // ---------- Puzzles ----------
+export function recordReview(id: string, solved: boolean): void {
+  st().recordReview(id, solved);
+}
 export function loadPuzzles(): PuzzleRow[] {
   return st().puzzles;
 }

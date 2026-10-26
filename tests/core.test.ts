@@ -1,0 +1,58 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { Chess } from "chess.js";
+import { parsePgn, resultForUser } from "../src/lib/pgn";
+import { legalVariation, summarizeGame, winProb } from "../src/lib/analysis";
+import { scheduleReview, duePuzzles } from "../src/lib/training";
+import type { PuzzleRow } from "../src/lib/types";
+
+const puzzle: PuzzleRow = {
+  id: "test", game_id: "game", fen: new Chess().fen(), solution_san: ["e4"], reply_san: [],
+  theme: "other", severity: "mistake", user_side: "w", source_url: null,
+  attempts: 0, solved: false, created_at: "2026-01-01T00:00:00.000Z",
+};
+
+test("PGN replay preserves legal positions and rejects malformed games", () => {
+  const parsed = parsePgn('1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 1-0')!;
+  assert.equal(parsed.moves.length, 6);
+  assert.equal(parsed.fens.length, 7);
+  assert.equal(new Chess(parsed.fens[6]).get("a6")?.type, "p");
+  assert.equal(parsePgn('1. e4 e5 2. Qh9'), null);
+  assert.equal(resultForUser("0-1", "b"), "win");
+});
+
+test("variations contain only verified legal moves", () => {
+  assert.deepEqual(legalVariation(new Chess().fen(), ["e2e4", "e7e5", "e1e8", "g1f3"]), ["e4", "e5"]);
+});
+
+test("evaluation interpretation and puzzle generation work for Black", () => {
+  assert.equal(winProb(0), 0.5);
+  assert.ok(winProb(300) > winProb(-300));
+  const parsed = parsePgn("1. f3 e5 2. g4 a6 *")!;
+  const result = summarizeGame({ ...parsed, userColor: "b", engineLabel: "test", evals: parsed.fens.map((_, i) => ({
+    cpWhite: i === 3 ? -9999 : 0,
+    bestUci: i === 3 ? "d8h4" : null,
+    pvUci: i === 3 ? ["d8h4"] : [],
+  })) });
+  assert.equal(result.summary.issues[0].motif, "missed_mate");
+  assert.equal(result.summary.issues[0].bestSan, "Qh4#");
+  assert.deepEqual(result.puzzles[0].solution_san, ["Qh4#"]);
+  assert.equal(new Chess(result.puzzles[0].fen).turn(), "b");
+});
+
+test("spaced retrieval schedules 1, 3, 7, 14, 30 days and resets after failure", () => {
+  let current = puzzle;
+  let now = new Date("2026-01-01T00:00:00Z");
+  for (const days of [1, 3, 7, 14, 30, 30]) {
+    current = scheduleReview(current, true, now);
+    assert.equal(Date.parse(current.due_at!) - now.getTime(), days * 86400000);
+    now = new Date(current.due_at!);
+  }
+  current = scheduleReview(current, false, now);
+  assert.equal(current.streak, 0);
+  assert.equal(current.attempts, 7);
+  assert.equal(current.reviews?.length, 7);
+  assert.equal(duePuzzles([current], now).length, 0);
+  assert.equal(duePuzzles([current], new Date(current.due_at!)).length, 1);
+  assert.equal(duePuzzles([puzzle], now).length, 1);
+});
