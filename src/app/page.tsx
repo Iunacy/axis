@@ -33,11 +33,11 @@ export default function LandingPage() {
       </nav>
     </header>
     <section className="axis-hero" aria-labelledby="hero-heading">
-      <div className="axis-hero-copy"><h1 id="hero-heading">{fr ? <>Chaque coup<br/>laisse une trace.</> : <>Every move<br/>leaves a pattern.</>}</h1><p>{fr ? "Comprenez vos décisions. Entraînez ce qui compte." : "Understand your decisions. Train what matters."}</p>
+      <div className="axis-hero-copy"><span className="axis-hero-index" aria-hidden="true">AXIS / 01</span><h1 id="hero-heading">{fr ? <><span>Chaque coup</span><span>laisse une trace.</span></> : <><span>Every move</span><span>leaves a pattern.</span></>}</h1><p>{fr ? "Comprenez vos décisions. Entraînez ce qui compte." : "Understand your decisions. Train what matters."}</p>
         <Link href="/dashboard" className="axis-button axis-hero-cta">{fr ? "Analyser mes parties" : "Analyze your games"}<ArrowUpRight size={19}/></Link>
       </div>
       <AxisSculpture/>
-      <div className="axis-hero-wordmark" aria-hidden="true">AXIS</div>
+      <div className="axis-hero-geometry" aria-hidden="true"><span>ORBITAL / 45°</span><i/></div>
       <div className="axis-hero-caption"><span>{fr ? "L’intelligence de votre jeu." : "Intelligence for your game."}</span><a href="#method">{fr ? "Explorer la méthode" : "Explore the method"}<ArrowDownRight size={17}/></a><span>{fr ? "Privé par conception" : "Private by design"}</span></div>
     </section>
     <section id="method" className="axis-method" aria-labelledby="method-heading">
