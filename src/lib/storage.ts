@@ -13,6 +13,7 @@ import type {
   GameRow,
   GeneratedLesson,
   MasterAnnotation,
+  PuzzleReview,
   PuzzleRow,
   Settings,
 } from "./types";
@@ -54,8 +55,8 @@ export function saveAnalysis(gameId: string, summary: AnalysisSummary): void {
   st().setAnalysis(gameId, summary);
 }
 
-export function recordReview(id: string, solved: boolean): void {
-  st().recordReview(id, solved);
+export function recordReview(id: string, solved: boolean, evidence?: Partial<Omit<PuzzleReview, "at" | "solved">>): void {
+  st().recordReview(id, solved, evidence);
 }
 export function loadPuzzles(): PuzzleRow[] {
   return st().puzzles;

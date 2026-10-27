@@ -654,10 +654,11 @@ body { background: var(--edit-paper); color: var(--edit-ink); }
 .axis-issue-list button { border-width: 0 0 1px; padding-inline: .1rem; }
 .axis-issue-detail { border-width: 1px 0; background: transparent; padding-inline: 0; }
 .axis-graph svg { background: transparent; border-radius: 0; }
-.axis-training-counts { border-block: 2px solid var(--edit-ink); }
+.axis-training-counts { border-block: 2px solid var(--edit-ink); flex-wrap: wrap; }
 .axis-training-counts > div { border-radius: 0; }
 .axis-puzzle { gap: 6%; }
 .axis-puzzle-detail { border-top: 1px solid var(--edit-line); }
+.axis-puzzle-hint { border-left: 2px solid var(--edit-accent); padding: .7rem 1rem; color: var(--edit-muted); font: italic 1rem/1.4 Georgia, serif; }
 .axis-content .axis-puzzle-detail h2 { font: 400 clamp(2rem, 3vw, 3.5rem) Georgia, serif; }
 .axis-catalog { gap: 0; }
 .axis-catalog > li { border-radius: 0; border-top: 1px solid var(--edit-line); }

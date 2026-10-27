@@ -74,13 +74,39 @@ export interface PuzzleRow {
   due_at?: string;
   last_reviewed_at?: string;
   streak?: number;
-  reviews?: { at: string; solved: boolean }[];
+  reviews?: PuzzleReview[];
   attempts: number;
   solved: boolean;
   created_at: string;
   kind?: "tactic" | "save";
   difficulty?: "easy" | "medium" | "hard";
   played_san?: string;
+  solution_lines_uci?: string[][];
+}
+
+export interface PuzzleReview {
+  at: string;
+  solved: boolean;
+  firstAttempt?: boolean;
+  hintsUsed?: number;
+  elapsedMs?: number;
+  wrongMoves?: number;
+  solutionRevealed?: boolean;
+}
+
+export interface TrainingSession {
+  id: string;
+  startedAt: string;
+  remainingIds: string[];
+  active: TrainingAttempt;
+}
+
+export interface TrainingAttempt {
+  puzzleId: string;
+  startedAt: string;
+  path: string[];
+  hintLevel: number;
+  status: "playing" | "wrong" | "solved" | "revealed";
 }
 
 export interface LessonSectionText {

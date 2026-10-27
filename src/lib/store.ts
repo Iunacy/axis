@@ -12,8 +12,11 @@ import type {
   GameRow,
   GeneratedLesson,
   MasterAnnotation,
+  PuzzleReview,
   PuzzleRow,
   Settings,
+  TrainingSession,
+  TrainingAttempt,
 } from "./types";
 
 
@@ -41,6 +44,7 @@ interface PersistedState {
   games: GameRow[];
   analyses: Record<string, AnalysisSummary>;
   puzzles: PuzzleRow[];
+  trainingSession: TrainingSession | null;
   lessons: GeneratedLesson[];
   aiLessons: AiLessonRow[];
   masterAnnotations: MasterAnnotation[];
@@ -57,7 +61,10 @@ interface StoreState extends PersistedState {
   setGameStatus: (id: string, status: GameRow["analysis_status"], accuracy?: number | null) => void;
   setAnalysis: (id: string, summary: AnalysisSummary) => void;
   upsertPuzzles: (incoming: PuzzleRow[]) => void;
-  recordReview: (id: string, solved: boolean) => void;
+  recordReview: (id: string, solved: boolean, evidence?: Partial<Omit<PuzzleReview, "at" | "solved">>) => void;
+  startTrainingSession: (ids: string[]) => void;
+  advanceTrainingSession: (id: string) => void;
+  updateTrainingAttempt: (attempt: TrainingAttempt) => void;
   updatePuzzle: (id: string, patch: Partial<Pick<PuzzleRow, "attempts" | "solved">>) => void;
   setLessons: (lessons: GeneratedLesson[]) => void;
   setLessonCompletedAction: (slug: string, completed: boolean) => void;
@@ -78,6 +85,7 @@ const initialPersisted: PersistedState = {
   games: [],
   analyses: {},
   puzzles: [],
+  trainingSession: null,
   lessons: [],
   aiLessons: [],
   masterAnnotations: [],
@@ -127,7 +135,30 @@ export const useStore = create<StoreState>()(
         if (fresh.length) set({ puzzles: [...fresh, ...existing] });
       },
 
-      recordReview: (id, solved) => set({ puzzles: get().puzzles.map(p => p.id === id ? scheduleReview(p, solved) : p) }),
+      recordReview: (id, solved, evidence) => set({ puzzles: get().puzzles.map(p => p.id === id ? scheduleReview(p, solved, new Date(), evidence) : p) }),
+
+      startTrainingSession: (ids) => {
+        if (get().trainingSession || !ids.length) return;
+        const available = new Set(get().puzzles.map(p => p.id));
+        const remainingIds = [...new Set(ids)].filter(id => available.has(id));
+        if (remainingIds.length) {
+          const now = new Date().toISOString();
+          set({ trainingSession: { id: crypto.randomUUID(), startedAt: now, remainingIds, active: { puzzleId: remainingIds[0], startedAt: now, path: [], hintLevel: 0, status: "playing" } } });
+        }
+      },
+
+      advanceTrainingSession: (id) => {
+        const session = get().trainingSession;
+        if (!session || session.remainingIds[0] !== id) return;
+        const remainingIds = session.remainingIds.slice(1);
+        set({ trainingSession: remainingIds.length ? { ...session, remainingIds, active: { puzzleId: remainingIds[0], startedAt: new Date().toISOString(), path: [], hintLevel: 0, status: "playing" } } : null });
+      },
+
+      updateTrainingAttempt: (attempt) => {
+        const session = get().trainingSession;
+        if (session?.remainingIds[0] !== attempt.puzzleId) return;
+        set({ trainingSession: { ...session, active: attempt } });
+      },
 
       updatePuzzle: (id, patch) =>
         set({ puzzles: get().puzzles.map((p) => (p.id === id ? { ...p, ...patch } : p)) }),
@@ -183,6 +214,7 @@ export const useStore = create<StoreState>()(
         games,
         analyses,
         puzzles,
+        trainingSession,
         lessons,
         aiLessons,
         masterAnnotations,
@@ -193,6 +225,7 @@ export const useStore = create<StoreState>()(
         games,
         analyses,
         puzzles,
+        trainingSession,
         lessons,
         aiLessons,
         masterAnnotations,
@@ -272,6 +305,7 @@ function readLegacy(): PersistedState | null {
     games: readJSON<GameRow[]>(LEGACY_KEYS.games, []),
     analyses: readJSON<Record<string, AnalysisSummary>>(LEGACY_KEYS.analyses, {}),
     puzzles: readJSON<PuzzleRow[]>(LEGACY_KEYS.puzzles, []),
+    trainingSession: null,
     lessons: readJSON<GeneratedLesson[]>(LEGACY_KEYS.lessons, []),
     aiLessons: readJSON<AiLessonRow[]>(LEGACY_KEYS.aiLessons, []),
     masterAnnotations: [],
