@@ -100,6 +100,9 @@ export interface PuzzleReview {
   elapsedMs?: number;
   wrongMoves?: number;
   solutionRevealed?: boolean;
+  recognitionPending?: boolean;
+  chosenPattern?: PatternId;
+  recognizedPattern?: boolean;
 }
 
 export interface TrainingSession {

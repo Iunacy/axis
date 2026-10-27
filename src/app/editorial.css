@@ -794,6 +794,26 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .edit-pattern-complete { padding: 5rem 0; max-width: 620px; }
 .axis-content .edit-pattern-complete h2 { font: 400 clamp(3rem, 5vw, 5rem)/.96 Georgia, serif; letter-spacing: -.07em; margin: 1rem 0; }
 .edit-pattern-complete p { color: var(--edit-muted); font: 1.1rem/1.5 Georgia, serif; }
+.edit-pattern-review-link { display: grid; grid-template-columns: 11rem minmax(0, 1fr) minmax(10rem, 19rem); gap: 2rem; align-items: center; margin-top: 2.5rem; padding: 1.5rem 0; border-block: 1px solid var(--edit-ink); transition: color .2s ease, padding .2s ease; }
+.edit-pattern-review-link:hover { color: var(--edit-accent); padding-left: .8rem; }
+.edit-pattern-review-link strong { font: 400 clamp(2rem, 3.4vw, 3.5rem)/1 Georgia, serif; letter-spacing: -.06em; }
+.edit-pattern-review-link > span:last-child { color: var(--edit-muted); font: .95rem/1.4 Georgia, serif; }
+.edit-mixed-start { display: grid; grid-template-columns: 1fr 1fr 1.5fr; border-top: 2px solid var(--edit-ink); border-bottom: 1px solid var(--edit-line); }
+.edit-mixed-start > div { padding: 2rem; border-right: 1px solid var(--edit-line); }
+.edit-mixed-start > div:first-child { padding-left: 0; }
+.edit-mixed-start > div:last-child { border-right: 0; }
+.edit-mixed-start strong { display: block; margin: 1.5rem 0 .5rem; font: 400 5rem/.8 Georgia, serif; letter-spacing: -.08em; }
+.edit-mixed-start p { color: var(--edit-muted); font: 1rem/1.45 Georgia, serif; }
+.edit-mixed-start-action { display: flex; flex-direction: column; justify-content: space-between; align-items: start; gap: 2rem; }
+.edit-mixed-stage { border-top: 2px solid var(--edit-ink); padding-top: 1.5rem; }
+.edit-mixed-board { max-width: 460px; margin: 2rem 0; }
+.edit-recognition-quiz { margin: 2rem 0; padding: 2rem 0; border-block: 1px solid var(--edit-line); }
+.axis-content .edit-recognition-quiz h2 { font: 400 clamp(2.2rem, 4vw, 4.2rem)/1 Georgia, serif; letter-spacing: -.06em; margin: 1rem 0 1.5rem; }
+.edit-recognition-quiz p { color: var(--edit-muted); font: 1.15rem/1.5 Georgia, serif; max-width: 670px; }
+.edit-recognition-quiz p a { display: inline-block; color: var(--edit-accent); text-decoration: underline; text-underline-offset: 4px; }
+.edit-recognition-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--edit-line); border: 1px solid var(--edit-line); }
+.edit-recognition-choices button { background: var(--edit-paper); text-align: left; padding: 1.4rem; font: 1.15rem/1.2 Georgia, serif; transition: background .18s ease, color .18s ease; }
+.edit-recognition-choices button:hover, .edit-recognition-choices button:focus-visible { background: var(--edit-panel); color: var(--edit-accent); }
 @media (max-width: 780px) {
   .edit-pattern-intro, .edit-pattern-detail-head { grid-template-columns: 1fr; gap: 1.5rem; padding: 3rem 0; }
   .axis-content .edit-pattern-intro h1, .axis-content .edit-pattern-detail-head h1 { font-size: clamp(3.1rem, 12vw, 5.5rem); }
@@ -805,4 +825,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .edit-pattern-stages > div:first-child { padding-left: 0; }
   .edit-pattern-stages span { font-size: 8px; }
   .edit-pattern-prompt { flex-direction: column; }
+  .edit-pattern-review-link { grid-template-columns: 1fr; gap: .6rem; }
+  .edit-mixed-start { grid-template-columns: repeat(2, 1fr); }
+  .edit-mixed-start > div { padding: 1.2rem; }
+  .edit-mixed-start > div:nth-child(2) { border-right: 0; }
+  .edit-mixed-start-action { grid-column: 1 / -1; border-top: 1px solid var(--edit-line); }
+  .edit-recognition-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

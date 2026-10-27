@@ -11,7 +11,7 @@ import type { PuzzleRow, TrainingAttempt } from "@/lib/types";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress, hideTheme = false, postSolveText }: { puzzles: PuzzleRow[]; onAdvance?: (id: string) => void; progress?: TrainingAttempt; onProgress?: (attempt: TrainingAttempt) => void; hideTheme?: boolean; postSolveText?: string }) {
+export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress, hideTheme = false, postSolveText, blind = false, recognitionPrompt = false, nextDisabled = false }: { puzzles: PuzzleRow[]; onAdvance?: (id: string) => void; progress?: TrainingAttempt; onProgress?: (attempt: TrainingAttempt) => void; hideTheme?: boolean; postSolveText?: string; blind?: boolean; recognitionPrompt?: boolean; nextDisabled?: boolean }) {
   const { t } = useI18n();
   const [idx, setIdx] = useState(0);
 
@@ -29,6 +29,9 @@ export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress,
       onProgress={onProgress}
       hideTheme={hideTheme}
       postSolveText={postSolveText}
+      blind={blind}
+      recognitionPrompt={recognitionPrompt}
+      nextDisabled={nextDisabled}
     />
   );
 }
@@ -42,6 +45,9 @@ function SinglePuzzle({
   onProgress,
   hideTheme,
   postSolveText,
+  blind,
+  recognitionPrompt,
+  nextDisabled,
 }: {
   puzzle: PuzzleRow;
   index: number;
@@ -51,6 +57,9 @@ function SinglePuzzle({
   onProgress?: (attempt: TrainingAttempt) => void;
   hideTheme: boolean;
   postSolveText?: string;
+  blind: boolean;
+  recognitionPrompt: boolean;
+  nextDisabled: boolean;
 }) {
   const { t, locale } = useI18n();
   const prepared = useMemo(() => preparePuzzle(puzzle), [puzzle]);
@@ -99,6 +108,7 @@ function SinglePuzzle({
       elapsedMs: Math.max(0, Date.now() - (startedAt.current ?? Date.now())),
       wrongMoves: wrongMoves.current,
       solutionRevealed,
+      recognitionPending: recognitionPrompt && (solved || solutionRevealed),
     });
     hadAttempt.current = true;
   }
@@ -199,15 +209,15 @@ function SinglePuzzle({
       <div className="axis-puzzle-detail">
         <div>
           <div className="flex flex-wrap gap-1.5 mb-2">
-            {!hideTheme && <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs text-foreground/90">
+            {!hideTheme && !blind && <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs text-foreground/90">
               {t.motifs[puzzle.theme]?.split(" (")[0] ?? puzzle.theme}
             </span>}
-            {puzzle.kind && (
+            {!blind && puzzle.kind && (
               <span className="inline-block rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-300 px-3 py-1 text-xs">
                 {t.puzzles.kinds[puzzle.kind]}
               </span>
             )}
-            {puzzle.difficulty && (
+            {!blind && puzzle.difficulty && (
               <span
                 className="axis-tag"
               >
@@ -220,7 +230,7 @@ function SinglePuzzle({
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
             {t.puzzles.counter(index, total)}
-            {puzzle.source_url && (
+            {puzzle.source_url && (!blind || state === "solved" || state === "revealed") && (
               <>
                 {" · "}
                 <a href={puzzle.source_url} target="_blank" className="underline hover:text-foreground/90">
@@ -272,7 +282,7 @@ function SinglePuzzle({
           )}
           <button
             onClick={onNext}
-            disabled={state === "playing" || waiting}
+            disabled={state === "playing" || waiting || nextDisabled}
             className="axis-button secondary"
           >
             {t.puzzles.next}

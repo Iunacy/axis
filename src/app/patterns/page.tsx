@@ -19,6 +19,7 @@ export default function PatternsPage() {
       const reviewed = rows.filter(row => row?.reviews?.length).length;
       return <Link href={`/patterns/${pattern.id}`} key={pattern.id} className="edit-pattern-row"><span className="edit-pattern-number">0{index + 1}</span><div><span className="edit-kicker">{locale === "fr" ? "VOIE DE MAT" : "MATING PATH"}</span><h2>{pattern.name[locale]}</h2><p>{pattern.principle[locale]}</p></div><div className="edit-pattern-progress"><strong>{learned}<span> / 3</span></strong><small>{locale === "fr" ? "résolus" : "solved"}</small><small>{reviewed} {locale === "fr" ? "vus" : "seen"}</small></div><span className="edit-pattern-arrow" aria-hidden="true">↗</span></Link>;
     })}</section>
+    <Link href="/patterns/review" className="edit-pattern-review-link"><span className="edit-kicker">{locale === "fr" ? "APRÈS L’APPRENTISSAGE" : "AFTER THE PATHS"}</span><strong>{locale === "fr" ? "Révision sans étiquette" : "Unlabeled review"}</strong><span>{locale === "fr" ? "Tester la reconnaissance sans nommer le motif à l’avance" : "Test recognition without revealing the motif first"} ↗</span></Link>
     <p className="edit-source-note">{loading ? locale === "fr" ? "Vérification des positions…" : "Verifying positions…" : locale === "fr" ? "Positions vérifiées · licence CC0 1.0" : "Verified positions · CC0 1.0"} · <a href="https://database.lichess.org/#puzzles" target="_blank" rel="noreferrer">Lichess open database</a></p>
   </main>;
 }

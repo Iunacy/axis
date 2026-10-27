@@ -48,6 +48,9 @@ function puzzle(value: unknown): value is PuzzleRow {
     && (value.reviews === undefined || (Array.isArray(value.reviews) && value.reviews.every(review => object(review) && date(review.at) && typeof review.solved === "boolean"
       && (review.firstAttempt === undefined || typeof review.firstAttempt === "boolean")
       && (review.solutionRevealed === undefined || typeof review.solutionRevealed === "boolean")
+      && (review.recognitionPending === undefined || typeof review.recognitionPending === "boolean")
+      && (review.chosenPattern === undefined || patterns.includes(String(review.chosenPattern)))
+      && (review.recognizedPattern === undefined || typeof review.recognizedPattern === "boolean")
       && [review.hintsUsed, review.elapsedMs, review.wrongMoves].every(n => n === undefined || (finite(n) && n >= 0)))))
     && (value.streak === undefined || (finite(value.streak) && value.streak >= 0))
     && (value.due_at === undefined || date(value.due_at));

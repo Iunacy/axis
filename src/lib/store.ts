@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { indexedStorage } from "./indexed-storage";
-import { scheduleReview } from "./training";
+import { identifyPattern, scheduleReview } from "./training";
 import { restorePersistedState } from "./state-validation";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { type AiProviderId, isProviderId } from "./providers";
@@ -14,6 +14,7 @@ import type {
   MasterAnnotation,
   PuzzleReview,
   PuzzleRow,
+  PatternId,
   Settings,
   TrainingSession,
   TrainingAttempt,
@@ -62,6 +63,7 @@ interface StoreState extends PersistedState {
   setAnalysis: (id: string, summary: AnalysisSummary) => void;
   upsertPuzzles: (incoming: PuzzleRow[]) => void;
   recordReview: (id: string, solved: boolean, evidence?: Partial<Omit<PuzzleReview, "at" | "solved">>) => void;
+  recordPatternRecognition: (id: string, chosenPattern: PatternId) => void;
   startTrainingSession: (ids: string[]) => void;
   advanceTrainingSession: (id: string) => void;
   updateTrainingAttempt: (attempt: TrainingAttempt) => void;
@@ -136,6 +138,7 @@ export const useStore = create<StoreState>()(
       },
 
       recordReview: (id, solved, evidence) => set({ puzzles: get().puzzles.map(p => p.id === id ? scheduleReview(p, solved, new Date(), evidence) : p) }),
+      recordPatternRecognition: (id, chosenPattern) => set({ puzzles: get().puzzles.map(p => p.id === id ? identifyPattern(p, chosenPattern) : p) }),
 
       startTrainingSession: (ids) => {
         if (get().trainingSession || !ids.length) return;

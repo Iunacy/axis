@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { Chess } from "chess.js";
 import { playPuzzleMove, preparePuzzle, replayPuzzlePath } from "../src/lib/puzzle-solution";
 import { restorePersistedState } from "../src/lib/state-validation";
-import { scheduleReview } from "../src/lib/training";
+import { identifyPattern, mixedPatternQueue, scheduleReview } from "../src/lib/training";
 import { DEFAULT_SETTINGS } from "../src/lib/store";
 import type { PuzzleRow } from "../src/lib/types";
 
@@ -56,4 +56,21 @@ test("training evidence and the remaining queue survive restoration", () => {
   const repaired = restorePersistedState({ puzzles: [reviewed], trainingSession: { id: "session", startedAt: "2026-01-02T00:00:00Z", remainingIds: [reviewed.id], active: { ...active, path: ["e2e5"] } } }, DEFAULT_SETTINGS);
   assert.deepEqual(repaired.trainingSession?.active.path, []);
   assert.equal(restorePersistedState({ trainingSession: { id: "session", startedAt: "2026-01-02T00:00:00Z", remainingIds: ["missing"] } }, DEFAULT_SETTINGS).trainingSession, null);
+});
+
+test("mixed review prioritizes due learned patterns and persists independent identification", () => {
+  const now = new Date("2026-01-03T00:00:00Z");
+  const due: PuzzleRow = { ...basic, id: "lichess:due01", source: "lichess", pattern: "boden", due_at: "2026-01-02T00:00:00Z", reviews: [{ at: "2026-01-01T00:00:00Z", solved: true }] };
+  const ahead: PuzzleRow = { ...basic, id: "lichess:ahead", source: "lichess", pattern: "smothered", due_at: "2026-01-08T00:00:00Z", reviews: [{ at: "2026-01-01T00:00:00Z", solved: true }] };
+  const fresh: PuzzleRow = { ...basic, id: "lichess:fresh", source: "lichess", pattern: "arabian" };
+  assert.deepEqual(mixedPatternQueue([ahead, fresh, due], now).map(row => row.id), [due.id, ahead.id]);
+  const pending = scheduleReview(due, true, now, { recognitionPending: true, hintsUsed: 1 });
+  const recognized = identifyPattern(pending, "boden");
+  assert.equal(recognized.reviews?.at(-1)?.recognizedPattern, true);
+  assert.equal(recognized.reviews?.at(-1)?.chosenPattern, "boden");
+  assert.equal(recognized.reviews?.at(-1)?.hintsUsed, 1);
+  assert.equal(identifyPattern(pending, "smothered").reviews?.at(-1)?.recognizedPattern, false);
+  assert.equal(identifyPattern(recognized, "smothered"), recognized);
+  const restored = restorePersistedState({ puzzles: [recognized] }, DEFAULT_SETTINGS);
+  assert.equal(restored.puzzles[0].reviews?.at(-1)?.recognizedPattern, true);
 });
