@@ -121,6 +121,7 @@ export default function Monolith({ view }: { view: View }) {
                 alt=""
                 width={1254}
                 height={1254}
+                loading="eager"
               />
             </div>
             <div className="mono-stage-board">
