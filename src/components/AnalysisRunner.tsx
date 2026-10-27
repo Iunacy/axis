@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Engine } from "@/lib/engine";
 import { summarizeGame, type PositionEval } from "@/lib/analysis";
-import { resolveAnalysisParams } from "@/lib/analysis-modes";
 import { describeError } from "@/lib/errors";
 import { useI18n } from "@/lib/i18n";
 import { parsePgn } from "@/lib/pgn";
@@ -15,7 +14,7 @@ import {
   setGameStatus,
   upsertPuzzles,
 } from "@/lib/storage";
-import type { AnalysisMode, PuzzleRow } from "@/lib/types";
+import type { PuzzleRow } from "@/lib/types";
 
 type Status = "idle" | "running" | "done" | "error";
 
@@ -28,21 +27,19 @@ export default function AnalysisRunner({
   gameId?: string;
   onProgress?: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [status, setStatus] = useState<Status>("idle");
   const [label, setLabel] = useState("");
   const [progress, setProgress] = useState(0);
-  const [runningMode, setRunningMode] = useState<AnalysisMode>("fast");
   const stopRef = useRef(false);
   const runningRef = useRef(false);
   const engineRef = useRef<Engine | null>(null);
   useEffect(() => () => { stopRef.current = true; engineRef.current?.destroy(); }, []);
 
-  async function run(mode: AnalysisMode) {
+  async function run() {
     if (runningRef.current) return;
     runningRef.current = true;
     setStatus("running");
-    setRunningMode(mode);
     stopRef.current = false;
     const engine = new Engine();
     engineRef.current = engine;
@@ -50,9 +47,10 @@ export default function AnalysisRunner({
 
     try {
       const settings = loadSettings();
-      const params = resolveAnalysisParams(settings, mode);
+      const search = { depth: 16, nodes: 60000, multiPv: 1 };
+      const engineLabel = "Stockfish 18 · depth ≤16 · 60000 nodes · 1 thread";
       const games = loadGames()
-        .filter((g) => (!gameId || g.id === gameId) && ["pending", "failed", "skipped"].includes(g.analysis_status))
+        .filter((g) => (!gameId || g.id === gameId) && (["pending", "failed", "skipped"].includes(g.analysis_status) || Boolean(gameId && g.analysis_status === "done")))
         .slice(0, settings.analyzeLastN);
 
       if (!games.length) {
@@ -60,7 +58,6 @@ export default function AnalysisRunner({
         setLabel(t.analysis.none);
         return;
       }
-      await engine.init(params.hashMb);
 
       for (let gi = 0; gi < games.length; gi++) {
         if (stopRef.current) break;
@@ -76,7 +73,11 @@ export default function AnalysisRunner({
         const evals: PositionEval[] = [];
         for (let i = 0; i < parsed.fens.length; i++) {
           if (stopRef.current) break;
-          evals.push(await engine.evaluate(parsed.fens[i], params.movetimeMs));
+          evals.push(await engine.analyze(parsed.fens[i], search, { initialFen: parsed.fens[0], moves: parsed.moves.slice(0, i).map(move => move.uci) }));
+          if (i > 0 && i < parsed.moves.length && (i === 1 || i % 8 === 0)) {
+            const partial = summarizeGame({ fens: parsed.fens.slice(0, i + 1), moves: parsed.moves.slice(0, i), userColor: game.user_color, evals, engineLabel }).summary;
+            saveAnalysis(game.id, { ...partial, complete: false, totalPlies: parsed.moves.length });
+          }
           setLabel(
             `${t.analysis.progress(gi + 1, games.length)} — ${t.analysis.moveProgress(i + 1, parsed.fens.length)}`
           );
@@ -89,10 +90,10 @@ export default function AnalysisRunner({
           moves: parsed.moves,
           userColor: game.user_color,
           evals,
-          engineLabel: params.label,
+          engineLabel,
         });
 
-        saveAnalysis(game.id, summary);
+        saveAnalysis(game.id, { ...summary, complete: true, totalPlies: parsed.moves.length });
         const rows: PuzzleRow[] = puzzles.map((p, k) => ({
           ...p,
           id: `${game.id}#${k}:${p.fen.split(" ")[0]}`,
@@ -107,8 +108,8 @@ export default function AnalysisRunner({
         onProgress?.();
       }
 
-      setStatus("done");
-      setLabel(t.analysis.none);
+      setStatus(stopRef.current ? "idle" : "done");
+      setLabel(stopRef.current ? "" : gameId ? locale === "fr" ? "Revue conservée" : "Review saved" : t.analysis.none);
     } catch (e) {
       if (activeGame) setGameStatus(activeGame, stopRef.current ? "pending" : "failed");
       if (stopRef.current) { setStatus("idle"); setLabel(""); return; }
@@ -126,9 +127,9 @@ export default function AnalysisRunner({
   return (
     <div className="axis-panel flex flex-col gap-5">
       <div className="flex items-center justify-between">
-        <h2 className="font-medium text-foreground">{t.analysis.title}</h2>
+        <h2 className="font-medium text-foreground">{locale === "fr" ? "Revue de partie" : "Game review"}</h2>
         <span className="text-xs text-muted-foreground">
-          {pendingCount} {t.dashboard.pendingAnalysis}
+          {gameId && pendingCount === 0 ? locale === "fr" ? "Revue conservée" : "Saved review" : `${pendingCount} ${t.dashboard.pendingAnalysis}`}
         </span>
       </div>
 
@@ -136,15 +137,12 @@ export default function AnalysisRunner({
         <>
           <div className="axis-analysis-progress h-1 bg-accent overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={t.analysis.title}>
             <div
-              className={`h-full transition-all ${runningMode === "deep" ? "bg-violet-500" : "bg-emerald-500"}`}
+              className="h-full transition-all bg-[var(--edit-accent)]"
               style={{ transform: `scaleX(${progress / 100})`, transformOrigin: "left" }}
             />
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>
-              <span className="text-foreground/80">
-                {runningMode === "deep" ? t.analysis.deep : t.analysis.fast} ·{" "}
-              </span>
               {label}
             </span>
             <button onClick={() => { stopRef.current = true; engineRef.current?.destroy(); }} className="text-red-500 hover:text-red-600 dark:text-red-300">
@@ -157,25 +155,17 @@ export default function AnalysisRunner({
         <>
           <div className="flex flex-wrap items-center gap-2">
             <button
-              onClick={() => run("fast")}
-              disabled={pendingCount === 0}
+              onClick={() => void run()}
+              disabled={pendingCount === 0 && !gameId}
               className="axis-button"
             >
-              {t.analysis.fast}
-            </button>
-            <button
-              onClick={() => run("deep")}
-              disabled={pendingCount === 0}
-              className="axis-button secondary"
-            >
-              {t.analysis.deep}
+              {locale === "fr" ? gameId ? pendingCount === 0 ? "Relancer la revue" : "Analyser cette partie" : "Analyser les parties en attente" : gameId ? pendingCount === 0 ? "Review again" : "Review this game" : "Review pending games"}
             </button>
             {label && <span className="text-sm text-muted-foreground">{label}</span>}
             {!label && pendingCount === 0 && <span className="text-sm text-muted-foreground">{t.analysis.none}</span>}
           </div>
           <p className="text-xs text-muted-foreground">
-            <span className="text-emerald-600 dark:text-emerald-400">{t.analysis.fast}</span> {t.analysis.fastHint} ·{" "}
-            <span className="text-violet-600 dark:text-violet-400">{t.analysis.deep}</span> {t.analysis.deepHint}
+            {locale === "fr" ? "Stockfish analyse localement. Les résultats apparaissent progressivement et sont conservés ; approfondissez une position dans l’explorateur." : "Stockfish runs locally. Results appear progressively and are saved; study a position further in the explorer."}
           </p>
         </>
       )}

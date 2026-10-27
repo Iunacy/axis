@@ -26,6 +26,10 @@ function analysis(value: unknown): value is AnalysisSummary {
   const byPhase = value.byPhase;
   if (!phases.every(phase => { const item = byPhase[phase]; return object(item) && finite(item.blunders) && finite(item.mistakes) && finite(item.moves); })) return false;
   if (value.evaluations !== undefined && (!Array.isArray(value.evaluations) || !value.evaluations.every(finite))) return false;
+  if (value.positionEvals !== undefined && (!Array.isArray(value.positionEvals) || !value.positionEvals.every(row => object(row) && finite(row.cpWhite) && strings(row.pvUci) && (row.bestUci === null || typeof row.bestUci === "string")))) return false;
+  if (value.accuracyByColor !== undefined && (!object(value.accuracyByColor) || ![value.accuracyByColor.w, value.accuracyByColor.b].every(score => score === null || finite(score)))) return false;
+  if (value.complete !== undefined && typeof value.complete !== "boolean") return false;
+  if (value.totalPlies !== undefined && (!finite(value.totalPlies) || value.totalPlies < 0)) return false;
   return value.issues.every(issue => object(issue) && finite(issue.ply) && issue.ply > 0 && fen(issue.fenBefore) && typeof issue.san === "string" && typeof issue.uci === "string"
     && motifs.includes(String(issue.motif)) && severities.includes(String(issue.severity)) && phases.includes(String(issue.phase))
     && finite(issue.cpBefore) && finite(issue.cpAfter) && finite(issue.winDrop)
@@ -90,7 +94,7 @@ export function restorePersistedState(value: unknown, defaults: Settings) {
   if (rawSettings.analysisMode === "fast" || rawSettings.analysisMode === "deep") settings.analysisMode = rawSettings.analysisMode;
   const analyses: Record<string, AnalysisSummary> = {};
   if (object(saved.analyses)) for (const [id, summary] of Object.entries(saved.analyses)) if (analysis(summary)) analyses[id] = summary;
-  const games = list(saved.games, game).map(item => item.analysis_status === "analyzing" || (item.analysis_status === "done" && !analyses[item.id]) ? { ...item, analysis_status: "pending" as const } : item);
+  const games = list(saved.games, game).map(item => item.analysis_status === "analyzing" || (item.analysis_status === "done" && (!analyses[item.id] || analyses[item.id].complete === false)) ? { ...item, analysis_status: "pending" as const } : item);
   const apiKey = object(saved.apiKey) && isProviderId(saved.apiKey.provider) && typeof saved.apiKey.key === "string" ? { provider: saved.apiKey.provider, key: saved.apiKey.key } : null;
   const puzzles = list(saved.puzzles, puzzle);
   const puzzleIds = new Set(puzzles.map(item => item.id));

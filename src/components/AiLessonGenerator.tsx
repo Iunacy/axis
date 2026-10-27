@@ -70,7 +70,7 @@ export default function AiLessonGenerator() {
 
   async function generate() {
     const analyses = loadAnalyses();
-    const analyzedGames = loadGames().filter((g) => analyses[g.id]);
+    const analyzedGames = loadGames().filter((g) => analyses[g.id] && analyses[g.id].complete !== false);
 
     if (analyzedGames.length === 0) {
       toast.error(t.errors.needAnalysis, {

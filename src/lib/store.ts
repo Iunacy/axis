@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { indexedStorage } from "./indexed-storage";
 import { identifyPattern, scheduleReview } from "./training";
 import { restorePersistedState } from "./state-validation";
+import { clearEvaluationCache } from "./evaluation-cache";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { type AiProviderId, isProviderId } from "./providers";
 import type {
@@ -126,7 +127,7 @@ export const useStore = create<StoreState>()(
           games: get().games.map((g) => {
             if (g.id !== id) return g;
             const next: GameRow = { ...g, analysis_status: status };
-            if (accuracy != null && g.accuracy_user == null) next.accuracy_user = accuracy;
+            if (accuracy != null) next.accuracy_user = accuracy;
             return next;
           }),
         }),
@@ -209,7 +210,7 @@ export const useStore = create<StoreState>()(
 
       clearApiKeyAction: () => set({ apiKey: null }),
 
-      clearAllAction: () => set({ ...initialPersisted }),
+      clearAllAction: () => { void clearEvaluationCache(); set({ ...initialPersisted }); },
     }),
     {
       name: STORE_KEY,

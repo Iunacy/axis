@@ -12,7 +12,7 @@ export default function GenerateLessonsButton({ onGenerated }: { onGenerated?: (
 
   function generate() {
     setMsg("");
-    const analyses = Object.values(loadAnalyses());
+    const analyses = Object.values(loadAnalyses()).filter(summary => summary.complete !== false);
     if (!analyses.length) {
       setMsg(t.lessons.needAnalysis);
       return;

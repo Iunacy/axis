@@ -1,11 +1,7 @@
 import { Chess, type Square } from "chess.js";
-import type { AnalysisSummary, Motif, MoveIssue, Phase } from "./types";
+import type { AnalysisSummary, Motif, MoveIssue, Phase, PositionEvaluation } from "./types";
 
-export interface PositionEval {
-  cpWhite: number;
-  bestUci: string | null;
-  pvUci: string[];
-}
+export type PositionEval = PositionEvaluation;
 
 const PIECE_VALUE: Record<string, number> = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
 
@@ -75,11 +71,13 @@ function classifyMotif(args: {
   cpAfterUser: number;
   bestReplyUci: string | null;
   bestMoveUci: string | null;
+  beforeMate?: PositionEval["mate"];
+  afterMate?: PositionEval["mate"];
 }): Motif {
-  const { fenAfter, userColor, cpBeforeUser, cpAfterUser, bestReplyUci, bestMoveUci, fenBefore } = args;
+  const { fenAfter, userColor, cpBeforeUser, cpAfterUser, bestReplyUci, bestMoveUci, fenBefore, beforeMate, afterMate } = args;
 
-  if (cpAfterUser <= -9000) return "allowed_mate";
-  if (cpBeforeUser >= 9000 && cpAfterUser < 9000) return "missed_mate";
+  if (afterMate && afterMate.winner !== userColor) return "allowed_mate";
+  if (beforeMate?.winner === userColor && cpAfterUser < 200) return "missed_mate";
 
   if (bestReplyUci) {
     try {
@@ -140,15 +138,21 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
   let cpLossSum = 0;
   let accSum = 0;
   let userMoves = 0;
+  const accuracyByColor = { w: { sum: 0, count: 0 }, b: { sum: 0, count: 0 } };
 
   const sign = g.userColor === "w" ? 1 : -1;
 
   for (let i = 0; i < g.moves.length; i++) {
     const move = g.moves[i];
-    if (move.color !== g.userColor) continue;
     const evBefore = g.evals[i];
     const evAfter = g.evals[i + 1];
     if (!evBefore || !evAfter) continue;
+    const moverSign = move.color === "w" ? 1 : -1;
+    const isEngineBest = move.uci === evBefore.bestUci;
+    const moverDrop = isEngineBest ? 0 : Math.max(0, winProb(moverSign * evBefore.cpWhite) - winProb(moverSign * evAfter.cpWhite));
+    accuracyByColor[move.color].sum += moveAccuracy(moverDrop * 100);
+    accuracyByColor[move.color].count += 1;
+    if (move.color !== g.userColor) continue;
 
     userMoves++;
     const phase = phaseOf(g.fens[i], i);
@@ -158,9 +162,9 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     const cpAfterUser = sign * evAfter.cpWhite;
     const wpBefore = g.userColor === "w" ? winProb(evBefore.cpWhite) : 1 - winProb(evBefore.cpWhite);
     const wpAfter = g.userColor === "w" ? winProb(evAfter.cpWhite) : 1 - winProb(evAfter.cpWhite);
-    const winDrop = Math.max(0, wpBefore - wpAfter);
+    const winDrop = isEngineBest ? 0 : Math.max(0, wpBefore - wpAfter);
 
-    const cpLoss = Math.max(0, cpBeforeUser - cpAfterUser);
+    const cpLoss = isEngineBest ? 0 : Math.max(0, cpBeforeUser - cpAfterUser);
     cpLossSum += Math.min(cpLoss, 1000);
     accSum += moveAccuracy(winDrop * 100);
 
@@ -183,6 +187,8 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
       cpAfterUser,
       bestReplyUci,
       bestMoveUci,
+      beforeMate: evBefore.mate,
+      afterMate: evAfter.mate,
     });
 
     issues.push({
@@ -202,7 +208,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     });
 
     if ((severity === "blunder" || severity === "mistake") && evBefore.pvUci.length > 0) {
-      const isMateShot = cpBeforeUser >= 9000;
+      const isMateShot = evBefore.mate?.winner === g.userColor;
       const isTactic = cpBeforeUser >= 150;
       const isSave = cpBeforeUser >= -80 && cpAfterUser <= -250;
 
@@ -260,6 +266,9 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     byPhase,
     engineDepthOrTime: g.engineLabel,
     evaluations: g.evals.map((e) => e.cpWhite),
+    positionEvals: g.evals.slice(),
+    accuracyByColor: { w: accuracyByColor.w.count ? Math.round(accuracyByColor.w.sum / accuracyByColor.w.count * 10) / 10 : null, b: accuracyByColor.b.count ? Math.round(accuracyByColor.b.sum / accuracyByColor.b.count * 10) / 10 : null },
+    analysisVersion: 2,
   };
   return { summary, puzzles };
 }

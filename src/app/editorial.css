@@ -860,6 +860,20 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .axis-manual-line button { min-height: 40px; padding: .4rem .6rem; }
 .axis-manual-line button[aria-current=step] { background: var(--edit-panel); color: var(--edit-accent); }
 .axis-manual-line .axis-return-game { margin-left: auto; text-decoration: underline; text-underline-offset: 4px; }
+.axis-position-explorer { padding-bottom: 1.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--edit-ink); }
+.axis-explorer-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+.axis-explorer-heading > strong { font: 400 2.4rem/1 Georgia, serif; letter-spacing: -.06em; }
+.axis-position-explorer > p { font: .95rem/1.5 Georgia, serif; color: var(--edit-muted); }
+.axis-explorer-controls { display: flex; flex-wrap: wrap; align-items: end; gap: .8rem; margin: 1.4rem 0; }
+.axis-explorer-controls label { display: grid; gap: .5rem; font: 9px var(--font-geist-mono), monospace; color: var(--edit-muted); }
+.axis-explorer-controls select { min-height: 44px; border: 1px solid var(--edit-line); color: var(--edit-ink); background: var(--edit-paper); padding: .5rem 1rem; }
+.axis-position-explorer .axis-explorer-evidence, .axis-position-explorer > small { font: 9px/1.5 var(--font-geist-mono), monospace; color: var(--edit-muted); }
+.axis-engine-lines { margin: 1rem 0; border-top: 1px solid var(--edit-line); }
+.axis-engine-lines button { display: grid; grid-template-columns: 1.3rem 3.5rem minmax(0, 1fr) 1rem; align-items: baseline; gap: .6rem; width: 100%; padding: 1rem 0; border-bottom: 1px solid var(--edit-line); text-align: left; }
+.axis-engine-lines button:hover { color: var(--edit-accent); background: var(--edit-panel); }
+.axis-engine-lines button > span { font: 10px/1.6 var(--font-geist-mono), monospace; overflow-wrap: anywhere; }
+.axis-engine-lines button > strong { font: 1.1rem Georgia, serif; }
+.axis-partial-review { padding: .8rem 0; color: var(--edit-accent); font: 10px var(--font-geist-mono), monospace; }
 @media (max-width: 780px) {
   .edit-pattern-intro, .edit-pattern-detail-head { grid-template-columns: 1fr; gap: 1.5rem; padding: 3rem 0; }
   .axis-content .edit-pattern-intro h1, .axis-content .edit-pattern-detail-head h1 { font-size: clamp(3.1rem, 12vw, 5.5rem); }

@@ -33,6 +33,7 @@ test("evaluation interpretation and puzzle generation work for Black", () => {
     cpWhite: i === 3 ? -9999 : 0,
     bestUci: i === 3 ? "d8h4" : null,
     pvUci: i === 3 ? ["d8h4"] : [],
+    mate: i === 3 ? { winner: "b" as const, moves: 1 } : undefined,
   })) });
   assert.equal(result.summary.issues[0].motif, "missed_mate");
   assert.equal(result.summary.issues[0].bestSan, "Qh4#");
@@ -55,4 +56,12 @@ test("spaced retrieval schedules 1, 3, 7, 14, 30 days and resets after failure",
   assert.equal(duePuzzles([current], now).length, 0);
   assert.equal(duePuzzles([current], new Date(current.due_at!)).length, 1);
   assert.equal(duePuzzles([puzzle], now).length, 1);
+});
+
+test("the root best move is not penalized when a bounded child search loses the mate horizon", () => {
+  const parsed = parsePgn('[SetUp "1"]\n[FEN "7k/P7/8/8/8/8/8/7K w - - 0 1"]\n\n1. a8=Q+ *')!;
+  const { summary } = summarizeGame({ ...parsed, userColor: "w", engineLabel: "bounded fixture", evals: [{ cpWhite: 9986, bestUci: "a7a8q", pvUci: ["a7a8q"], mate: { winner: "w", moves: 14 } }, { cpWhite: 650, bestUci: "h8h7", pvUci: ["h8h7"] }] });
+  assert.equal(summary.accuracy, 100);
+  assert.equal(summary.acpl, 0);
+  assert.equal(summary.issues.length, 0);
 });

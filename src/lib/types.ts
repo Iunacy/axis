@@ -60,6 +60,32 @@ export interface AnalysisSummary {
   byPhase: Record<Phase, { blunders: number; mistakes: number; moves: number }>;
   engineDepthOrTime: string;
   evaluations?: number[];
+  positionEvals?: PositionEvaluation[];
+  accuracyByColor?: { w: number | null; b: number | null };
+  complete?: boolean;
+  totalPlies?: number;
+  analysisVersion?: number;
+}
+
+export interface EngineLine {
+  cpWhite: number;
+  pvUci: string[];
+  depth: number;
+  nodes: number;
+  mate?: { winner: "w" | "b"; moves: number };
+  wdlWhite?: [number, number, number];
+}
+
+export interface PositionEvaluation {
+  cpWhite: number;
+  bestUci: string | null;
+  pvUci: string[];
+  depth?: number;
+  nodes?: number;
+  mate?: { winner: "w" | "b"; moves: number };
+  wdlWhite?: [number, number, number];
+  lines?: EngineLine[];
+  cacheHit?: boolean;
 }
 
 export interface PuzzleRow {

@@ -19,7 +19,7 @@ export function computeDashboardStats(games: GameRow[], analyses: Record<string,
   const draws = all.filter((g) => g.result === "draw").length;
   const winRate = totalGames ? Math.round(((wins + draws * 0.5) / totalGames) * 1000) / 10 : null;
 
-  const summaries = Object.values(analyses);
+  const summaries = Object.values(analyses).filter(summary => summary.complete !== false);
   const analyzedCount = summaries.length;
   const pendingCount = all.filter((g) => ["pending", "failed"].includes(g.analysis_status)).length;
 

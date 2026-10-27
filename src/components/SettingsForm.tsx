@@ -217,28 +217,7 @@ function SettingsFormInner() {
         )}
       </div>
 
-      </div></details><fieldset className="axis-panel"><h2>{t.ui.engineSettings}</h2><div className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-        {t.settings.analysisMode}
-        <div className="flex gap-2">
-          {(["fast", "deep"] as const).map((m) => {
-            const active = (form.analysisMode ?? "fast") === m;
-            return (
-              <button
-                key={m}
-                type="button"
-                onClick={() => {
-                  setForm({ ...form, analysisMode: m });
-                  saveSettings({ ...loadSettings(), analysisMode: m });
-                }}
-                aria-pressed={active} className="axis-choice"
-              >
-                {m === "fast" ? t.settings.analysisModeFast : t.settings.analysisModeDeep}
-              </button>
-            );
-          })}
-        </div>
-        <p className="text-xs text-muted-foreground">{t.settings.analysisModeHint}</p>
-      </div>
+      </div></details><fieldset className="axis-panel"><h2>{t.ui.engineSettings}</h2><p className="axis-muted">{locale === "fr" ? "Une revue de partie utilise un budget de calcul fixe. La profondeur et les lignes alternatives se règlent dans l’explorateur de position." : "Game review uses a fixed search budget. Set depth and alternative lines in the position explorer."}</p>
 
       <label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.analyzeLastN}
@@ -249,18 +228,6 @@ function SettingsFormInner() {
           onChange={(e) => setForm({ ...form, analyzeLastN: Number(e.target.value) })}
           min={10}
           max={500}
-        />
-      </label>
-      <label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
-        {t.settings.movetime}
-        <input
-          type="number"
-          className={input}
-          value={form.engineMovetimeMs}
-          onChange={(e) => setForm({ ...form, engineMovetimeMs: Number(e.target.value) })}
-          min={40}
-          max={2000}
-          step={10}
         />
       </label>
 

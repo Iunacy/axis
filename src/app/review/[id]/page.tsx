@@ -7,6 +7,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Flip
 import { toast } from "sonner";
 import Board from "@/components/Board";
 import BoardFocusMode from "@/components/BoardFocusMode";
+import PositionExplorer from "@/components/PositionExplorer";
 import { EmptyState } from "@/components/Workspace";
 import AnalysisRunner from "@/components/AnalysisRunner";
 import WorkspaceLoading from "@/components/WorkspaceLoading";
@@ -15,10 +16,15 @@ import { useI18n } from "@/lib/i18n";
 import { useAnalyses, useGames, useSettings, useStore, useStoreHydrated } from "@/lib/store";
 import { matchesUciMove } from "@/lib/board-interaction";
 import { winProb } from "@/lib/analysis";
-import type { MoveIssue } from "@/lib/types";
+import { evaluationLabel, validCachedEvaluation } from "@/lib/engine-protocol";
+import type { MoveIssue, PositionEvaluation } from "@/lib/types";
 
 export default function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  return <ReviewWorkspace key={id} id={id}/>;
+}
+
+function ReviewWorkspace({ id }: { id: string }) {
   const { t, locale } = useI18n();
   const hydrated = useStoreHydrated();
   const settings = useSettings();
@@ -38,6 +44,7 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
   const [explorer, setExplorer] = useState(false);
   const [manual, setManual] = useState<{ fens: string[]; moves: { san: string; uci: string }[]; index: number } | null>(null);
   const [showBest, setShowBest] = useState(false);
+  const [positionResult, setPositionResult] = useState<{ identity: string; result: PositionEvaluation } | null>(null);
 
   const goTo = useCallback((next: number, stopPlayback = true) => {
     setPly(Math.max(0, Math.min(parsed?.moves.length ?? 0, next)));
@@ -90,10 +97,15 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
   const displayedFen = manual ? manual.fens[manual.index] : issue && showVariation ? variationPositions[Math.min(variation, variationPositions.length - 1)] : issue && practiceState === "correct" ? correctedFen! : parsed.fens[ply];
   const last = ply > 0 && !showVariation ? parsed.moves[ply - 1] : null;
   const uci = manual ? manual.moves[manual.index - 1]?.uci : issue && practiceState === "correct" && !showVariation ? issue.bestUci : last?.uci;
-  const currentEval = manual || issue && (showVariation || practiceState === "correct") ? undefined : analysis?.evaluations?.[ply];
+  const history = { initialFen: parsed.fens[0], moves: [...parsed.moves.slice(0, ply).map(move => move.uci), ...(manual?.moves.slice(0, manual.index).map(move => move.uci) ?? [])] };
+  const positionIdentity = JSON.stringify([displayedFen, history]);
+  const savedEval = !manual && displayedFen === parsed.fens[ply] ? analysis?.positionEvals?.[ply] : undefined;
+  const verifiedEval = savedEval && validCachedEvaluation(savedEval, displayedFen) ? savedEval : undefined;
+  const knownEval = positionResult?.identity === positionIdentity ? positionResult.result : verifiedEval;
+  const currentEval = knownEval?.cpWhite ?? (manual || issue && (showVariation || practiceState === "correct") ? undefined : analysis?.evaluations?.[ply]);
   const boardOrientation = flipped ? game.user_color === "w" ? "b" : "w" : game.user_color;
-  const bestArrow = !manual && !showVariation && issue && (practiceState === "revealed") ? issue.bestUci : null;
-  const evalText = currentEval == null ? "—" : Math.abs(currentEval) >= 9000
+  const bestArrow = explorer ? knownEval?.bestUci : !manual && !showVariation && issue && practiceState === "revealed" ? issue.bestUci : null;
+  const evalText = knownEval ? evaluationLabel(knownEval) : currentEval == null ? "—" : Math.abs(currentEval) >= 9000
     ? `M${Math.max(1, 10000 - Math.abs(currentEval))} ${currentEval > 0 ? "White" : "Black"}`
     : `${currentEval >= 0 ? "+" : ""}${(currentEval / 100).toFixed(2)}`;
 
@@ -116,6 +128,17 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
     const url = URL.createObjectURL(new Blob([game!.pgn], { type: "application/x-chess-pgn;charset=utf-8" }));
     const link = document.createElement("a"); link.href = url; link.download = "axis-game.pgn"; link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  function inspectLine(movesUci: string[]) {
+    const chess = new Chess(displayedFen);
+    const fens = manual ? manual.fens.slice(0, manual.index + 1) : [displayedFen];
+    const moves = manual ? manual.moves.slice(0, manual.index) : [];
+    const start = moves.length;
+    try {
+      for (const uci of movesUci) { const move = chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }); fens.push(chess.fen()); moves.push({ san: move.san, uci }); }
+      setManual({ fens, moves, index: Math.min(start + 1, moves.length) }); setPlaying(false);
+    } catch { toast.error(locale === "fr" ? "Cette ligne ne correspond pas à la position." : "This line does not match the position."); }
   }
 
   return <main className="axis-shell axis-review">
@@ -164,6 +187,7 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
         <div className="axis-review-export"><button type="button" aria-label={locale === "fr" ? "Copier FEN" : "Copy FEN"} onClick={() => void copy(displayedFen)}><Copy size={14}/>FEN</button><button type="button" aria-label={locale === "fr" ? "Copier PGN" : "Copy PGN"} onClick={() => void copy(game.pgn)}><Copy size={14}/>PGN</button><button type="button" aria-label={locale === "fr" ? "Exporter PGN" : "Export PGN"} onClick={exportPgn}><Download size={14}/>PGN</button><span>← → / Home / End / Space</span></div>
       </section>
       <section className="axis-review-panel">
+        {explorer && <PositionExplorer key={positionIdentity} fen={displayedFen} history={history} initial={knownEval} onEvaluation={result => setPositionResult({ identity: positionIdentity, result })} onOpenLine={inspectLine}/>}
         <div className="axis-analysis-tabs" role="tablist" aria-label={t.axis.review} onKeyDown={event => {
           if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
           event.preventDefault();
@@ -174,10 +198,11 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
           <button role="tab" id="moments-tab" tabIndex={tab === "moments" ? 0 : -1} aria-controls="moments-panel" aria-selected={tab === "moments"} onClick={() => setTab("moments")}>{t.axis.issues}<span>{analysis?.issues.length ?? 0}</span></button>
           <button role="tab" id="moves-tab" tabIndex={tab === "moves" ? 0 : -1} aria-controls="moves-panel" aria-selected={tab === "moves"} onClick={() => setTab("moves")}>{t.ui.moves}<span>{parsed.moves.length}</span></button>
         </div>
-        {analysis && <div className="axis-analysis-summary"><div><strong>{analysis.accuracy}%</strong><span>{t.games.accuracy}</span></div><div><strong>{analysis.blunders}</strong><span>{t.ui.classifications.blunder}</span></div><div><strong>{analysis.mistakes}</strong><span>{t.ui.classifications.mistake}</span></div></div>}
+        {analysis?.complete === false && <p className="axis-partial-review" role="status">{locale === "fr" ? "Revue partielle" : "Partial review"} · {(analysis.evaluations?.length ?? 1) - 1} / {analysis.totalPlies ?? parsed.moves.length} {locale === "fr" ? "demi-coups analysés" : "plies analyzed"}</p>}
+        {analysis && <div className="axis-analysis-summary">{analysis.accuracyByColor ? (["w", "b"] as const).map(color => <div key={color}><strong>{analysis.accuracyByColor?.[color] == null ? "—" : `${analysis.accuracyByColor[color]}%`}</strong><span>{color === "w" ? t.axis.white : t.axis.black} · {t.games.accuracy}</span></div>) : <div><strong>{analysis.accuracy}%</strong><span>{game.user_color === "w" ? t.axis.white : t.axis.black} · {t.games.accuracy}</span></div>}<div><strong>{analysis.blunders}</strong><span>{t.ui.classifications.blunder}</span></div></div>}
         <div id="moments-panel" role="tabpanel" aria-labelledby="moments-tab" hidden={tab !== "moments"} className="axis-analysis-tab-content">
         {analysis && analysis.issues.length > 0 && !issue && <EmptyState title={t.ui.selectMoment} description={t.ui.selectedMoment}/>}
-        {game.analysis_status !== "done" && <AnalysisRunner pendingCount={1} gameId={game.id}/>}
+        <AnalysisRunner pendingCount={game.analysis_status === "done" ? 0 : 1} gameId={game.id}/>
         {!analysis && <p className="axis-muted">{t.axis.unanalysed}</p>}
         {issue && <div className="axis-issue-detail" aria-live="polite">
           <span className={`axis-tag axis-classification ${issue.severity}`}>{t.axis.move} {Number(issue.fenBefore.split(" ")[5])} · {t.ui.classifications[issue.severity]}</span>
@@ -208,5 +233,6 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
 function EvaluationGraph({ evaluations, ply, onSelect, label }: { evaluations: number[]; ply: number; onSelect: (ply: number) => void; label: string }) {
   const width = 600;
   const points = evaluations.map((value, index) => `${(index / Math.max(1, evaluations.length - 1)) * width},${60 - Math.max(-600, Math.min(600, value)) / 10}`).join(" ");
-  return <div className="axis-graph"><p>{label}</p><svg viewBox="0 0 600 120" role="img" aria-label={label}><line x1="0" y1="60" x2="600" y2="60" stroke="currentColor" opacity=".25"/><polyline fill="none" stroke="var(--chart-line)" strokeWidth="2.5" points={points}/><line x1={(ply / Math.max(1, evaluations.length - 1)) * width} y1="0" x2={(ply / Math.max(1, evaluations.length - 1)) * width} y2="120" stroke="currentColor" opacity=".7"/></svg><input aria-label={label} type="range" min="0" max={evaluations.length - 1} value={ply} onChange={e => onSelect(Number(e.target.value))}/></div>;
+  const selected = Math.min(ply, evaluations.length - 1);
+  return <div className="axis-graph"><p>{label}</p><svg viewBox="0 0 600 120" role="img" aria-label={label}><line x1="0" y1="60" x2="600" y2="60" stroke="currentColor" opacity=".25"/><polyline fill="none" stroke="var(--chart-line)" strokeWidth="2.5" points={points}/><line x1={(selected / Math.max(1, evaluations.length - 1)) * width} y1="0" x2={(selected / Math.max(1, evaluations.length - 1)) * width} y2="120" stroke="currentColor" opacity=".7"/></svg><input aria-label={label} type="range" min="0" max={evaluations.length - 1} value={selected} onChange={e => onSelect(Number(e.target.value))}/></div>;
 }
