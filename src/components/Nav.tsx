@@ -21,7 +21,7 @@ export default function Nav() {
     { href: "/masters", label: t.nav.masters, icon: Orbit },
     { href: "/settings", label: t.nav.settings, icon: Settings2 },
   ];
-  if (pathname === "/") return null;
+  if (pathname === "/" || pathname.startsWith("/design-lab")) return null;
   return <><header className={`axis-nav ${open ? "is-open" : ""}`}>
     <Link href="/" className="axis-brand" aria-label="AXIS"><span className="axis-brand-symbol"><Logo/></span><span className="axis-wordmark">AXIS<span>{t.ui.brandSub}</span></span></Link>
     <button className="axis-menu-button" onClick={() => setOpenPath(open ? null : pathname)} onKeyDown={event => { if (event.key === "Escape") setOpenPath(null); }} aria-label={t.ui.menu} aria-expanded={open} aria-controls="workspace-navigation">{open ? <X size={20}/> : <Menu size={20}/>}</button>
