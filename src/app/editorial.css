@@ -874,6 +874,31 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .axis-engine-lines button > span { font: 10px/1.6 var(--font-geist-mono), monospace; overflow-wrap: anywhere; }
 .axis-engine-lines button > strong { font: 1.1rem Georgia, serif; }
 .axis-partial-review { padding: .8rem 0; color: var(--edit-accent); font: 10px var(--font-geist-mono), monospace; }
+.axis-move-badge { --grade-bg: #596c4d; --grade-ink: #fff; display: inline-flex; width: 22px; height: 22px; flex: 0 0 22px; align-items: center; justify-content: center; background: var(--grade-bg); color: var(--grade-ink); border-radius: 50%; font: 700 11px/1 var(--font-geist-mono), monospace; letter-spacing: -.08em; }
+.axis-grade-brilliant { --grade-bg: #256c68; --grade-ink: #fff; }
+.axis-grade-great { --grade-bg: #3d6e5d; --grade-ink: #fff; }
+.axis-grade-best, .axis-grade-excellent { --grade-bg: #596c4d; --grade-ink: #fff; }
+.axis-grade-good, .axis-grade-book { --grade-bg: #656b62; --grade-ink: #fff; }
+.axis-grade-inaccuracy { --grade-bg: #856027; --grade-ink: #fff; }
+.axis-grade-mistake, .axis-grade-miss { --grade-bg: #985431; --grade-ink: #fff; }
+.axis-grade-blunder { --grade-bg: #943f37; --grade-ink: #fff; }
+.axis-board-grade { position: absolute; right: 1px; top: 1px; z-index: 18; pointer-events: none; }
+.axis-board-grade .axis-move-badge { width: clamp(18px, 2vw, 28px); height: clamp(18px, 2vw, 28px); }
+.axis-moves button { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
+.axis-moves .axis-move-badge { width: 18px; height: 18px; flex-basis: 18px; font-size: 9px; }
+.axis-issue-list button > span:first-child, .axis-classification { display: inline-flex; align-items: center; gap: .6rem; }
+.axis-grade-summary { padding: 1rem 0; border-bottom: 1px solid var(--edit-line); margin-bottom: 1.5rem; }
+.axis-grade-summary > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem 1.5rem; margin: 1rem 0; }
+.axis-grade-summary > div > span { display: flex; align-items: center; gap: .5rem; font: 10px var(--font-geist-mono), monospace; }
+.axis-grade-summary > div > span > strong { margin-left: auto; }
+.axis-grade-summary > p, .axis-grade-summary details { font: 9px/1.5 var(--font-geist-mono), monospace; color: var(--edit-muted); }
+.axis-grade-summary details { margin-top: .6rem; }
+.axis-grade-summary summary { cursor: pointer; min-height: 36px; padding-top: .5rem; }
+.axis-grade-summary details p { margin: .5rem 0; max-width: 480px; }
+.axis-graph-grade { cursor: pointer; }
+.axis-graph-grade circle { fill: var(--grade-bg); stroke: var(--edit-paper); stroke-width: 1.5; }
+.axis-graph-grade text { fill: var(--grade-ink); font: 700 10px var(--font-geist-mono), monospace; letter-spacing: -.08em; }
+.axis-graph-grade:focus-visible circle, .axis-graph-grade:hover circle { stroke: var(--edit-ink); stroke-width: 2; }
 @media (max-width: 780px) {
   .edit-pattern-intro, .edit-pattern-detail-head { grid-template-columns: 1fr; gap: 1.5rem; padding: 3rem 0; }
   .axis-content .edit-pattern-intro h1, .axis-content .edit-pattern-detail-head h1 { font-size: clamp(3.1rem, 12vw, 5.5rem); }

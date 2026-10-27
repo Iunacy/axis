@@ -79,7 +79,8 @@ export function validCachedEvaluation(value: unknown, fen: string): value is Pos
     && (line.wdlWhite === undefined || Array.isArray(line.wdlWhite) && line.wdlWhite.length === 3 && line.wdlWhite.every(value => Number.isInteger(value) && value >= 0) && line.wdlWhite.reduce((sum, number) => sum + number, 0) === 1000);
   return score(row) && Array.isArray(row.pvUci) && legalPv(fen, row.pvUci)
     && (row.bestUci === null || typeof row.bestUci === "string" && row.pvUci[0] === row.bestUci)
-    && Array.isArray(row.lines) && row.lines.every(line => line && score(line) && Array.isArray(line.pvUci) && legalPv(fen, line.pvUci));
+    && Array.isArray(row.lines) && new Set(row.lines.map(line => line?.pvUci?.[0])).size === row.lines.length && row.lines.every(line => line && score(line) && Array.isArray(line.pvUci) && line.pvUci.length > 0 && legalPv(fen, line.pvUci))
+    && (row.bestUci === null ? row.pvUci.length === 0 && row.lines.length === 0 : row.lines.length > 0 && row.lines[0].cpWhite === row.cpWhite && row.lines[0].depth === row.depth && row.lines[0].pvUci.join(" ") === row.pvUci.join(" "));
 }
 
 export function evaluationLabel(result: PositionEvaluation): string {

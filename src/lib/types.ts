@@ -3,6 +3,17 @@ export type TimeClass = "bullet" | "blitz" | "rapid" | "daily" | "classical" | "
 export type GameResult = "win" | "loss" | "draw";
 export type Phase = "opening" | "middlegame" | "endgame";
 export type PatternId = "back-rank" | "smothered" | "arabian" | "anastasia" | "boden" | "swallows-tail";
+export type MoveClassification = "brilliant" | "great" | "best" | "excellent" | "good" | "book" | "inaccuracy" | "mistake" | "miss" | "blunder";
+
+export interface MoveAssessment {
+  ply: number;
+  color: "w" | "b";
+  classification: MoveClassification | null;
+  expectedLoss: number | null;
+  confidence: "limited" | "supported" | "confirmed";
+  reason: string;
+  depth: number;
+}
 
 export type Motif =
   | "hanging_piece"
@@ -48,10 +59,12 @@ export interface MoveIssue {
   bestUci: string | null;
   bestSan: string | null;
   continuation?: string[];
+  classification?: MoveClassification;
 }
 
 export interface AnalysisSummary {
   acpl: number;
+  acplSamples?: number;
   accuracy: number;
   blunders: number;
   mistakes: number;
@@ -65,6 +78,8 @@ export interface AnalysisSummary {
   complete?: boolean;
   totalPlies?: number;
   analysisVersion?: number;
+  moveAssessments?: MoveAssessment[];
+  opening?: { eco: string; name: string };
 }
 
 export interface EngineLine {

@@ -1,5 +1,7 @@
 import { Chess, type Square } from "chess.js";
-import type { AnalysisSummary, Motif, MoveIssue, Phase, PositionEvaluation } from "./types";
+import type { AnalysisSummary, Motif, MoveIssue, Phase, PositionEvaluation, MoveAssessment } from "./types";
+import { classifyMove, expectedLoss } from "./move-classification";
+import { identifyOpening, isBookMove } from "./opening-book";
 
 export type PositionEval = PositionEvaluation;
 
@@ -113,6 +115,7 @@ export interface GameForAnalysis {
   userColor: "w" | "b";
   evals: PositionEval[];
   engineLabel: string;
+  confirmations?: Record<number, PositionEval>;
 }
 
 export interface PuzzleCandidate {
@@ -129,6 +132,7 @@ export interface PuzzleCandidate {
 
 export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; puzzles: PuzzleCandidate[] } {
   const issues: MoveIssue[] = [];
+  const assessments: MoveAssessment[] = [];
   const puzzles: PuzzleCandidate[] = [];
   const byPhase: AnalysisSummary["byPhase"] = {
     opening: { blunders: 0, mistakes: 0, moves: 0 },
@@ -136,6 +140,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     endgame: { blunders: 0, mistakes: 0, moves: 0 },
   };
   let cpLossSum = 0;
+  let cpSamples = 0;
   let accSum = 0;
   let userMoves = 0;
   const accuracyByColor = { w: { sum: 0, count: 0 }, b: { sum: 0, count: 0 } };
@@ -147,11 +152,12 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     const evBefore = g.evals[i];
     const evAfter = g.evals[i + 1];
     if (!evBefore || !evAfter) continue;
-    const moverSign = move.color === "w" ? 1 : -1;
     const isEngineBest = move.uci === evBefore.bestUci;
-    const moverDrop = isEngineBest ? 0 : Math.max(0, winProb(moverSign * evBefore.cpWhite) - winProb(moverSign * evAfter.cpWhite));
+    const moverDrop = isEngineBest ? 0 : expectedLoss(evBefore, evAfter, move.color);
     accuracyByColor[move.color].sum += moveAccuracy(moverDrop * 100);
     accuracyByColor[move.color].count += 1;
+    const assessment = classifyMove({ fen: g.fens[i], fenAfter: g.fens[i + 1], uci: move.uci, before: evBefore, after: evAfter, ply: i + 1, book: isBookMove(g.fens[0], g.moves.slice(0, i + 1).map(move => move.uci)), confirmation: g.confirmations?.[i] });
+    assessments.push(assessment);
     if (move.color !== g.userColor) continue;
 
     userMoves++;
@@ -160,18 +166,15 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
 
     const cpBeforeUser = sign * evBefore.cpWhite;
     const cpAfterUser = sign * evAfter.cpWhite;
-    const wpBefore = g.userColor === "w" ? winProb(evBefore.cpWhite) : 1 - winProb(evBefore.cpWhite);
-    const wpAfter = g.userColor === "w" ? winProb(evAfter.cpWhite) : 1 - winProb(evAfter.cpWhite);
-    const winDrop = isEngineBest ? 0 : Math.max(0, wpBefore - wpAfter);
+    const winDrop = assessment.expectedLoss ?? moverDrop;
 
     const cpLoss = isEngineBest ? 0 : Math.max(0, cpBeforeUser - cpAfterUser);
-    cpLossSum += Math.min(cpLoss, 1000);
-    accSum += moveAccuracy(winDrop * 100);
+    if (!evBefore.mate && !evAfter.mate) { cpLossSum += Math.min(cpLoss, 1000); cpSamples++; }
+    accSum += moveAccuracy(moverDrop * 100);
 
     let severity: MoveIssue["severity"] | null = null;
-    if (winDrop >= 0.3) severity = "blunder";
-    else if (winDrop >= 0.2) severity = "mistake";
-    else if (winDrop >= 0.1) severity = "inaccuracy";
+    if (assessment.classification === "blunder" || assessment.classification === "mistake" || assessment.classification === "inaccuracy") severity = assessment.classification;
+    else if (assessment.classification === "miss") severity = winDrop >= .2 ? "blunder" : winDrop >= .1 ? "mistake" : "inaccuracy";
     if (!severity) continue;
 
     if (severity === "blunder") byPhase[phase].blunders++;
@@ -179,7 +182,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
 
     const bestMoveUci = evBefore.bestUci;
     const bestReplyUci = evAfter.bestUci;
-    const motif = classifyMotif({
+    const motif = assessment.classification === "miss" && evBefore.mate?.winner === g.userColor ? "missed_mate" : classifyMotif({
       fenBefore: g.fens[i],
       fenAfter: g.fens[i + 1],
       userColor: g.userColor,
@@ -205,9 +208,10 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
       bestUci: bestMoveUci,
       bestSan: bestMoveUci ? uciToSan(g.fens[i], bestMoveUci) : null,
       continuation: legalVariation(g.fens[i], evBefore.pvUci),
+      classification: assessment.classification ?? undefined,
     });
 
-    if ((severity === "blunder" || severity === "mistake") && evBefore.pvUci.length > 0) {
+    if ((severity === "blunder" || severity === "mistake" || assessment.classification === "miss") && evBefore.pvUci.length > 0) {
       const isMateShot = evBefore.mate?.winner === g.userColor;
       const isTactic = cpBeforeUser >= 150;
       const isSave = cpBeforeUser >= -80 && cpAfterUser <= -250;
@@ -257,7 +261,8 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
   }
 
   const summary: AnalysisSummary = {
-    acpl: userMoves ? Math.round(cpLossSum / userMoves) : 0,
+    acpl: cpSamples ? Math.round(cpLossSum / cpSamples) : 0,
+    acplSamples: cpSamples,
     accuracy: userMoves ? Math.round((accSum / userMoves) * 10) / 10 : 0,
     blunders: issues.filter((x) => x.severity === "blunder").length,
     mistakes: issues.filter((x) => x.severity === "mistake").length,
@@ -268,7 +273,9 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     evaluations: g.evals.map((e) => e.cpWhite),
     positionEvals: g.evals.slice(),
     accuracyByColor: { w: accuracyByColor.w.count ? Math.round(accuracyByColor.w.sum / accuracyByColor.w.count * 10) / 10 : null, b: accuracyByColor.b.count ? Math.round(accuracyByColor.b.sum / accuracyByColor.b.count * 10) / 10 : null },
-    analysisVersion: 2,
+    analysisVersion: 3,
+    moveAssessments: assessments,
+    opening: identifyOpening(g.fens[0], g.moves.map(move => move.uci)),
   };
   return { summary, puzzles };
 }

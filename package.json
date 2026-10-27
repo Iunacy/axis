@@ -10,6 +10,9 @@
     "postinstall": "node scripts/copy-stockfish.mjs",
     "test": "tsx --test tests/*.test.ts",
     "puzzles:verify": "tsx scripts/verify-pattern-catalog.ts",
+    "openings:import": "tsx scripts/import-openings.ts",
+    "openings:verify": "tsx scripts/import-openings.ts --check",
+    "engine:verify": "tsx scripts/verify-classification.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

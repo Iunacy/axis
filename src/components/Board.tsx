@@ -6,7 +6,8 @@ import { Chess, type Square } from "chess.js";
 import { getBoardTheme } from "@/lib/board-themes";
 import { useI18n } from "@/lib/i18n";
 import { loadSettings } from "@/lib/storage";
-import type { BoardOverlaySpec } from "@/lib/types";
+import type { BoardOverlaySpec, MoveClassification } from "@/lib/types";
+import MoveBadge from "./MoveBadge";
 import { boardPoint, promotionChoices } from "@/lib/board-interaction";
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
@@ -36,6 +37,7 @@ interface BoardProps {
   annotationEnabled?: boolean;
   suggestedMove?: { from: string; to: string } | null;
   evaluation?: { whiteShare: number | null; label: string };
+  moveBadge?: { square: string; classification: MoveClassification };
 }
 
 interface SquareInfo {
@@ -59,6 +61,7 @@ export default function Board({
   annotationEnabled = false,
   suggestedMove,
   evaluation,
+  moveBadge,
 }: BoardProps) {
   const { t, locale } = useI18n();
   const boardId = useId();
@@ -276,6 +279,7 @@ export default function Board({
                     slide={anim && anim.to === square ? anim : undefined}
                   />
                 )}
+                {moveBadge?.square === square && <span className="axis-board-grade"><MoveBadge classification={moveBadge.classification}/></span>}
                 {legalTargets.has(square) && (
                   <span
                     className={[

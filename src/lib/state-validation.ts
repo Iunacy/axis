@@ -7,6 +7,7 @@ const motifs = ["hanging_piece", "missed_tactic", "allowed_fork", "allowed_mate"
 const severities = ["blunder", "mistake", "inaccuracy"];
 const phases = ["opening", "middlegame", "endgame"];
 const patterns = ["back-rank", "smothered", "arabian", "anastasia", "boden", "swallows-tail"];
+const classifications = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
 const object = (value: unknown): value is Record<string, unknown> => Boolean(value && typeof value === "object" && !Array.isArray(value));
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
 const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(item => typeof item === "string");
@@ -30,10 +31,15 @@ function analysis(value: unknown): value is AnalysisSummary {
   if (value.accuracyByColor !== undefined && (!object(value.accuracyByColor) || ![value.accuracyByColor.w, value.accuracyByColor.b].every(score => score === null || finite(score)))) return false;
   if (value.complete !== undefined && typeof value.complete !== "boolean") return false;
   if (value.totalPlies !== undefined && (!finite(value.totalPlies) || value.totalPlies < 0)) return false;
+  if (value.acplSamples !== undefined && (!finite(value.acplSamples) || value.acplSamples < 0 || !Number.isInteger(value.acplSamples))) return false;
+  if (value.analysisVersion !== undefined && !finite(value.analysisVersion)) return false;
+  if (value.opening !== undefined && (!object(value.opening) || typeof value.opening.name !== "string" || !/^[A-E]\d{2}$/.test(String(value.opening.eco)))) return false;
+  if (value.moveAssessments !== undefined && (!Array.isArray(value.moveAssessments) || !value.moveAssessments.every(row => object(row) && finite(row.ply) && row.ply > 0 && side(row.color) && (row.classification === null || classifications.includes(String(row.classification))) && (row.expectedLoss === null || finite(row.expectedLoss) && row.expectedLoss >= 0 && row.expectedLoss <= 1) && ["limited", "supported", "confirmed"].includes(String(row.confidence)) && typeof row.reason === "string" && finite(row.depth)))) return false;
   return value.issues.every(issue => object(issue) && finite(issue.ply) && issue.ply > 0 && fen(issue.fenBefore) && typeof issue.san === "string" && typeof issue.uci === "string"
     && motifs.includes(String(issue.motif)) && severities.includes(String(issue.severity)) && phases.includes(String(issue.phase))
     && finite(issue.cpBefore) && finite(issue.cpAfter) && finite(issue.winDrop)
     && (issue.bestSan === null || typeof issue.bestSan === "string") && (issue.bestUci === null || typeof issue.bestUci === "string")
+    && (issue.classification === undefined || classifications.includes(String(issue.classification)))
     && (issue.continuation === undefined || strings(issue.continuation)));
 }
 

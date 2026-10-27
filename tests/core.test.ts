@@ -4,7 +4,7 @@ import { Chess } from "chess.js";
 import { parsePgn, resultForUser } from "../src/lib/pgn";
 import { legalVariation, summarizeGame, winProb } from "../src/lib/analysis";
 import { scheduleReview, duePuzzles } from "../src/lib/training";
-import type { PuzzleRow } from "../src/lib/types";
+import type { PositionEvaluation, PuzzleRow } from "../src/lib/types";
 
 const puzzle: PuzzleRow = {
   id: "test", game_id: "game", fen: new Chess().fen(), solution_san: ["e4"], reply_san: [],
@@ -29,12 +29,12 @@ test("evaluation interpretation and puzzle generation work for Black", () => {
   assert.equal(winProb(0), 0.5);
   assert.ok(winProb(300) > winProb(-300));
   const parsed = parsePgn("1. f3 e5 2. g4 a6 *")!;
-  const result = summarizeGame({ ...parsed, userColor: "b", engineLabel: "test", evals: parsed.fens.map((_, i) => ({
-    cpWhite: i === 3 ? -9999 : 0,
-    bestUci: i === 3 ? "d8h4" : null,
-    pvUci: i === 3 ? ["d8h4"] : [],
-    mate: i === 3 ? { winner: "b" as const, moves: 1 } : undefined,
-  })) });
+  const result = summarizeGame({ ...parsed, userColor: "b", engineLabel: "test", evals: parsed.fens.map((fen, i) => {
+    const move = new Chess(fen).moves({ verbose: true })[0];
+    const bestUci = i === 3 ? "d8h4" : `${move.from}${move.to}${move.promotion ?? ""}`;
+    const line = { cpWhite: i === 3 ? -9999 : 0, pvUci: [bestUci], depth: 16, nodes: 50000, mate: i === 3 ? { winner: "b" as const, moves: 1 } : undefined };
+    return { ...line, bestUci, lines: [line] };
+  }) });
   assert.equal(result.summary.issues[0].motif, "missed_mate");
   assert.equal(result.summary.issues[0].bestSan, "Qh4#");
   assert.deepEqual(result.puzzles[0].solution_san, ["Qh4#"]);
@@ -64,4 +64,24 @@ test("the root best move is not penalized when a bounded child search loses the 
   assert.equal(summary.accuracy, 100);
   assert.equal(summary.acpl, 0);
   assert.equal(summary.issues.length, 0);
+});
+
+
+test("a missed mate still creates legitimate training when the advantage survives", () => {
+  const parsed = parsePgn("1. f3 e5 2. g4 a6 *")!;
+  const evals: PositionEvaluation[] = parsed.fens.map((fen, index) => {
+    const move = new Chess(fen).moves({ verbose: true })[0];
+    const bestUci = index === 3 ? "d8h4" : `${move.from}${move.to}${move.promotion ?? ""}`;
+    const line = { cpWhite: -900, pvUci: [bestUci], depth: 16, nodes: 50000, wdlWhite: [0, 20, 980] as [number, number, number], mate: index === 3 ? { winner: "b" as const, moves: 1 } : undefined };
+    return { ...line, bestUci, lines: [line] };
+  });
+  const { summary, puzzles } = summarizeGame({ ...parsed, evals, userColor: "b", engineLabel: "synthetic outcome regression" });
+  const miss = summary.issues.find(issue => issue.ply === 4)!;
+  assert.equal(miss.classification, "miss");
+  assert.equal(miss.severity, "inaccuracy");
+  assert.equal(miss.motif, "missed_mate");
+  assert.deepEqual(puzzles.find(puzzle => puzzle.fen === parsed.fens[3])?.solution_san, ["Qh4#"]);
+  assert.equal(summary.acplSamples, 1);
+  assert.equal(summary.acpl, 0);
+  assert.ok(summary.accuracy > 95);
 });

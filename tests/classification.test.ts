@@ -1,0 +1,90 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import { Chess } from "chess.js";
+import fixture from "./fixtures/boden-review.json";
+import { parseEngineResult } from "../src/lib/engine-protocol";
+import { classifyMove, sustainedSacrifice } from "../src/lib/move-classification";
+import { isBookMove } from "../src/lib/opening-book";
+import type { PositionEvaluation } from "../src/lib/types";
+
+const start = new Chess().fen();
+const e4 = new Chess(); e4.move("e4");
+
+function simulated(fen: string, pv: string[], wdlWhite: [number, number, number], depth = 20, alternative?: { pv: string[]; wdl: [number, number, number] }): PositionEvaluation {
+  const black = new Chess(fen).turn() === "b";
+  const line = (index: number, moves: string[], wdl: number[]) => `info depth ${depth} multipv ${index} score cp 0 wdl ${(black ? [...wdl].reverse() : wdl).join(" ")} nodes 500000 pv ${moves.join(" ")}`;
+  return parseEngineResult(fen, [line(1, pv, wdlWhite), ...(alternative ? [line(2, alternative.pv, alternative.wdl)] : []), `bestmove ${pv[0]}`], alternative ? 2 : 1);
+}
+
+test("expected-outcome policy distinguishes excellent, good, inaccuracy, mistake and blunder", () => {
+  const before = simulated(start, ["d2d4", "d7d5"], [100, 800, 100]);
+  const cases = [
+    ["excellent", [90, 810, 100]], ["good", [60, 830, 110]], ["inaccuracy", [40, 800, 160]], ["mistake", [0, 760, 240]], ["blunder", [0, 500, 500]],
+  ] as const;
+  for (const [classification, wdl] of cases) {
+    const after = simulated(e4.fen(), ["e7e5", "g1f3"], [...wdl]);
+    assert.equal(classifyMove({ fen: start, fenAfter: e4.fen(), uci: "e2e4", before, after, ply: 1 }).classification, classification);
+  }
+});
+
+test("best and book use exact move identity and a real opening reference", () => {
+  const before = simulated(start, ["e2e4", "e7e5"], [100, 800, 100]);
+  const after = simulated(e4.fen(), ["e7e5", "g1f3"], [0, 500, 500]);
+  const input = { fen: start, fenAfter: e4.fen(), uci: "e2e4", before, after, ply: 1 };
+  assert.equal(classifyMove(input).classification, "best");
+  assert.equal(classifyMove(input).expectedLoss, 0);
+  assert.equal(isBookMove(start, ["e2e4"]), true);
+  assert.equal(classifyMove({ ...input, book: isBookMove(start, ["e2e4"]) }).classification, "book");
+});
+
+test("great requires a larger confirming search and a meaningful second-choice gap", () => {
+  const alternative = { pv: ["d2d4", "d7d5"], wdl: [100, 400, 500] as [number, number, number] };
+  const before = simulated(start, ["e2e4", "e7e5"], [300, 600, 100], 18, alternative);
+  const after = simulated(e4.fen(), ["e7e5", "g1f3"], [300, 600, 100]);
+  const confirmation = simulated(start, ["e2e4", "e7e5"], [300, 600, 100], 20, alternative);
+  const input = { fen: start, fenAfter: e4.fen(), uci: "e2e4", before, after, ply: 1 };
+  assert.equal(classifyMove(input).classification, "best");
+  assert.equal(classifyMove({ ...input, confirmation }).classification, "great");
+  assert.equal(classifyMove({ ...input, confirmation: { ...confirmation, bestUci: "d2d4" } }).classification, "best");
+  const closeAlternative = simulated(start, ["e2e4", "e7e5"], [300, 600, 100], 20, { ...alternative, wdl: [290, 600, 110] });
+  assert.equal(classifyMove({ ...input, confirmation: closeAlternative }).classification, "best");
+});
+
+test("a missed legal forced mate is distinguished from an ordinary outcome loss", () => {
+  const chess = new Chess(); for (const move of ["f3", "e5", "g4"]) chess.move(move);
+  const fen = chess.fen();
+  const before = parseEngineResult(fen, ["info depth 20 score mate 1 wdl 1000 0 0 nodes 50000 pv d8h4", "bestmove d8h4"]);
+  chess.move("a6");
+  const after = simulated(chess.fen(), ["e2e4", "b8c6"], [100, 800, 100]);
+  assert.equal(classifyMove({ fen, fenAfter: chess.fen(), uci: "a7a6", before, after, ply: 4 }).classification, "miss");
+  const stillWinning = simulated(chess.fen(), ["e2e4", "b8c6"], [0, 20, 980]);
+  const missedQuickMate = classifyMove({ fen, fenAfter: chess.fen(), uci: "a7a6", before, after: stillWinning, ply: 4 });
+  assert.equal(missedQuickMate.classification, "miss");
+  assert.equal(missedQuickMate.reason, "missed-mate-in-one");
+  assert.equal(missedQuickMate.expectedLoss, .01);
+});
+
+test("brilliant is backed by recorded Stockfish searches on the real Lichess Boden sacrifice", () => {
+  const source = fixture.searches;
+  const before = parseEngineResult(source.before.fen, source.before.output, source.before.multiPv);
+  const after = parseEngineResult(source.after.fen, source.after.output, source.after.multiPv);
+  const confirmation = parseEngineResult(source.confirmation.fen, source.confirmation.output, source.confirmation.multiPv);
+  assert.deepEqual(before.pvUci, fixture.source.solution);
+  assert.equal(sustainedSacrifice(source.before.fen, before.pvUci), true);
+  const assessment = classifyMove({ fen: source.before.fen, fenAfter: source.after.fen, uci: fixture.uci, before, after, confirmation, ply: 1 });
+  assert.equal(assessment.classification, "brilliant");
+  assert.equal(assessment.confidence, "confirmed");
+});
+
+test("temporary material losses, insufficient depth and contradictory position evidence do not earn awards", () => {
+  const exchange = "3rk2q/8/8/3p4/4B3/8/8/1N1QK3 w - - 0 1";
+  const line = ["e4d5", "d8d5", "d1d5", "e8f8", "d5e4", "f8g8", "e1f2", "g8f7"];
+  assert.equal(sustainedSacrifice(exchange, line, false), true);
+  assert.equal(sustainedSacrifice(exchange, line), false);
+  const before = simulated(start, ["e2e4", "e7e5"], [100, 800, 100], 8);
+  const after = simulated(e4.fen(), ["e7e5", "g1f3"], [100, 800, 100]);
+  const input = { fen: start, fenAfter: e4.fen(), uci: "e2e4", before, after, ply: 1 };
+  assert.equal(classifyMove(input).classification, null);
+  assert.equal(classifyMove({ ...input, before: { ...before, cpWhite: NaN, depth: 20 } }).classification, null);
+  assert.equal(classifyMove({ ...input, fenAfter: start }).classification, null);
+});

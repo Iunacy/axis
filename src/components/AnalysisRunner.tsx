@@ -7,6 +7,7 @@ import { summarizeGame, type PositionEval } from "@/lib/analysis";
 import { describeError } from "@/lib/errors";
 import { useI18n } from "@/lib/i18n";
 import { parsePgn } from "@/lib/pgn";
+import { verificationCandidates } from "@/lib/move-classification";
 import {
   loadGames,
   loadSettings,
@@ -47,8 +48,8 @@ export default function AnalysisRunner({
 
     try {
       const settings = loadSettings();
-      const search = { depth: 16, nodes: 60000, multiPv: 1 };
-      const engineLabel = "Stockfish 18 · depth ≤16 · 60000 nodes · 1 thread";
+      const search = { depth: 16, nodes: 150000, multiPv: 1 };
+      const engineLabel = "Stockfish 18 · depth ≤16 · 150000 nodes · selective critical searches · 1 thread";
       const games = loadGames()
         .filter((g) => (!gameId || g.id === gameId) && (["pending", "failed", "skipped"].includes(g.analysis_status) || Boolean(gameId && g.analysis_status === "done")))
         .slice(0, settings.analyzeLastN);
@@ -81,7 +82,28 @@ export default function AnalysisRunner({
           setLabel(
             `${t.analysis.progress(gi + 1, games.length)} — ${t.analysis.moveProgress(i + 1, parsed.fens.length)}`
           );
-          setProgress(Math.round(((gi + (i + 1) / parsed.fens.length) / games.length) * 100));
+          setProgress(Math.round(((gi + .8 * (i + 1) / parsed.fens.length) / games.length) * 100));
+        }
+        if (stopRef.current) { setGameStatus(game.id, "pending"); break; }
+
+        const candidates = verificationCandidates(parsed.fens, parsed.moves, evals);
+        const confirmations: Record<number, PositionEval> = {};
+        const stronger = (old: PositionEval, next: PositionEval) => (next.depth ?? 0) >= (old.depth ?? 0) ? next : old;
+        for (let index = 0; index < candidates.length; index++) {
+          if (stopRef.current) break;
+          const ply = candidates[index];
+          setLabel(locale === "fr" ? `Vérification de la décision ${ply + 1}…` : `Verifying decision ${ply + 1}…`);
+          const history = { initialFen: parsed.fens[0], moves: parsed.moves.slice(0, ply).map(move => move.uci) };
+          evals[ply] = stronger(evals[ply], await engine.analyze(parsed.fens[ply], { depth: 20, nodes: 600000, multiPv: 2 }, history));
+          evals[ply + 1] = stronger(evals[ply + 1], await engine.analyze(parsed.fens[ply + 1], { depth: 18, nodes: 200000, multiPv: 1 }, { ...history, moves: [...history.moves, parsed.moves[ply].uci] }));
+          if (evals[ply].bestUci === parsed.moves[ply].uci && (evals[ply].lines?.length ?? 0) > 1) {
+            const confirmation = await engine.analyze(parsed.fens[ply], { depth: 22, nodes: 1500000, multiPv: 2 }, history);
+            if (confirmation.bestUci === evals[ply].bestUci) confirmations[ply] = confirmation;
+            else evals[ply] = stronger(evals[ply], confirmation);
+          }
+          const partial = summarizeGame({ fens: parsed.fens, moves: parsed.moves, userColor: game.user_color, evals, engineLabel, confirmations }).summary;
+          saveAnalysis(game.id, { ...partial, complete: false, totalPlies: parsed.moves.length });
+          setProgress(Math.round((gi + .8 + .2 * (index + 1) / candidates.length) / games.length * 100));
         }
         if (stopRef.current) { setGameStatus(game.id, "pending"); break; }
 
@@ -91,6 +113,7 @@ export default function AnalysisRunner({
           userColor: game.user_color,
           evals,
           engineLabel,
+          confirmations,
         });
 
         saveAnalysis(game.id, { ...summary, complete: true, totalPlies: parsed.moves.length });
@@ -105,6 +128,7 @@ export default function AnalysisRunner({
         }));
         upsertPuzzles(rows);
         setGameStatus(game.id, "done", summary.accuracy);
+        setProgress(Math.round((gi + 1) / games.length * 100));
         onProgress?.();
       }
 

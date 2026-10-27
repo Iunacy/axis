@@ -1,0 +1,48 @@
+{
+  "source": {
+    "url": "https://lichess.org/training/5SmZW",
+    "license": "CC0-1.0",
+    "solution": [
+      "d3c3",
+      "b2c3",
+      "f8a3"
+    ]
+  },
+  "engine": "stockfish.js 18.0.7 lite single, threads 1, hash 32 MiB",
+  "recorded": "2026-10-27",
+  "uci": "d3c3",
+  "searches": {
+    "before": {
+      "fen": "2k2b1r/ppp2ppp/8/4Pb2/8/2Pr2B1/PP1N1PPP/2KR3R b - - 1 14",
+      "depth": 20,
+      "multiPv": 2,
+      "nodes": 2000000,
+      "output": [
+        "info depth 20 seldepth 4 multipv 1 score mate 2 wdl 1000 0 0 nodes 483585 nps 454924 hashfull 83 time 1063 pv d3c3 b2c3 f8a3",
+        "info depth 20 seldepth 39 multipv 2 score cp 12 wdl 3 996 1 nodes 483585 nps 454924 hashfull 83 time 1063 pv g7g6 d2b3 f8h6 f2f4 h8e8 d1d2 d3d2 b3d2 g6g5 h1f1 f5d3 f1f2 g5f4 g3f4 h6f4 f2f4 e8e5 c1d1 e5b5 b2b4 a7a5 a2a4 b5f5 f4f5 d3f5 d2f3",
+        "bestmove d3c3 ponder b2c3"
+      ]
+    },
+    "confirmation": {
+      "fen": "2k2b1r/ppp2ppp/8/4Pb2/8/2Pr2B1/PP1N1PPP/2KR3R b - - 1 14",
+      "depth": 22,
+      "multiPv": 2,
+      "nodes": 2000000,
+      "output": [
+        "info depth 22 seldepth 4 multipv 1 score mate 2 wdl 1000 0 0 nodes 1213735 nps 472270 hashfull 248 time 2570 pv d3c3 b2c3 f8a3",
+        "info depth 22 seldepth 38 multipv 2 score cp 11 wdl 3 996 1 nodes 1213735 nps 472270 hashfull 248 time 2570 pv g7g6 d2b3 f8h6 f2f4 d3d1 c1d1 h8d8 d1e1 f5b1 a2a3 b1e4 h1g1 g6g5 f4g5 h6g5 g1f1 e4g2 f1f7 g2d5 f7g7 d5b3 g7g5 b7b6 g5h5 d8d1 e1f2",
+        "bestmove d3c3 ponder b2c3"
+      ]
+    },
+    "after": {
+      "fen": "2k2b1r/ppp2ppp/8/4Pb2/8/2r3B1/PP1N1PPP/2KR3R w - - 0 15",
+      "depth": 20,
+      "multiPv": 1,
+      "nodes": 2000000,
+      "output": [
+        "info depth 20 seldepth 3 multipv 1 score mate -1 wdl 0 0 1000 nodes 41 nps 41000 hashfull 0 time 1 pv b2c3 f8a3",
+        "bestmove b2c3 ponder f8a3"
+      ]
+    }
+  }
+}

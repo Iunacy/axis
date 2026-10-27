@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import Board from "@/components/Board";
 import BoardFocusMode from "@/components/BoardFocusMode";
 import PositionExplorer from "@/components/PositionExplorer";
+import MoveBadge from "@/components/MoveBadge";
+import { CLASSIFICATION_META } from "@/lib/classification-meta";
 import { EmptyState } from "@/components/Workspace";
 import AnalysisRunner from "@/components/AnalysisRunner";
 import WorkspaceLoading from "@/components/WorkspaceLoading";
@@ -17,7 +19,7 @@ import { useAnalyses, useGames, useSettings, useStore, useStoreHydrated } from "
 import { matchesUciMove } from "@/lib/board-interaction";
 import { winProb } from "@/lib/analysis";
 import { evaluationLabel, validCachedEvaluation } from "@/lib/engine-protocol";
-import type { MoveIssue, PositionEvaluation } from "@/lib/types";
+import type { MoveIssue, PositionEvaluation, MoveAssessment, MoveClassification } from "@/lib/types";
 
 export default function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -108,6 +110,7 @@ function ReviewWorkspace({ id }: { id: string }) {
   const evalText = knownEval ? evaluationLabel(knownEval) : currentEval == null ? "—" : Math.abs(currentEval) >= 9000
     ? `M${Math.max(1, 10000 - Math.abs(currentEval))} ${currentEval > 0 ? "White" : "Black"}`
     : `${currentEval >= 0 ? "+" : ""}${(currentEval / 100).toFixed(2)}`;
+  const boardGrade = !manual && !issue && !showVariation ? analysis?.moveAssessments?.find(assessment => assessment.ply === ply)?.classification : null;
 
   function selectIssue(next: MoveIssue) {
     setPlaying(false); setExplorer(false); setManual(null);
@@ -143,13 +146,13 @@ function ReviewWorkspace({ id }: { id: string }) {
 
   return <main className="axis-shell axis-review">
     <Link href="/games" className="axis-link inline-flex items-center gap-2"><ArrowLeft size={16}/>{t.axis.backGames}</Link>
-    <div className="axis-page-head"><div><h1>{game.opponent_name ?? t.axis.review}</h1><p>{new Date(game.played_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")} · {game.opening_name ?? game.eco ?? game.time_class} · {t.games.results[game.result]}</p></div><div className="axis-actions"><button className="axis-button secondary axis-flip-button" aria-label={locale === "fr" ? "Retourner l’échiquier" : "Flip board"} onClick={() => setFlipped(value => !value)}><FlipVertical2 size={16}/><span>{locale === "fr" ? "Retourner" : "Flip board"}</span></button><span className="axis-tag">{game.platform === "pgn" ? "PGN" : game.platform === "chesscom" ? "Chess.com" : "Lichess"}</span>{analysis && analysis.issues.length > 0 && <Link href="/training" className="axis-button">{t.ui.practiceThese}</Link>}</div></div>
+    <div className="axis-page-head"><div><h1>{game.opponent_name ?? t.axis.review}</h1><p>{new Date(game.played_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")} · {analysis?.opening?.name ?? game.opening_name ?? game.eco ?? game.time_class} · {t.games.results[game.result]}</p></div><div className="axis-actions"><button className="axis-button secondary axis-flip-button" aria-label={locale === "fr" ? "Retourner l’échiquier" : "Flip board"} onClick={() => setFlipped(value => !value)}><FlipVertical2 size={16}/><span>{locale === "fr" ? "Retourner" : "Flip board"}</span></button><span className="axis-tag">{game.platform === "pgn" ? "PGN" : game.platform === "chesscom" ? "Chess.com" : "Lichess"}</span>{analysis && analysis.issues.length > 0 && <Link href="/training" className="axis-button">{t.ui.practiceThese}</Link>}</div></div>
     <div className="axis-review-grid">
       <section ref={boardRef} className="axis-board-column">
         <BoardFocusMode>
         <div className="axis-board-player"><span className={`axis-piece-dot ${(flipped ? game.user_color : game.user_color === "w" ? "b" : "w") === "b" ? "black" : "white"}`}/><strong>{flipped ? (game.user_color === "w" ? t.axis.white : t.axis.black) : (game.user_color === "w" ? t.axis.black : t.axis.white)}</strong><span>{flipped ? settings.chesscomUsername || settings.lichessUsername || t.ui.yourGame : game.opponent_name ?? "—"}</span><span>{(flipped ? game.user_rating : game.opponent_rating) ?? ""}</span></div>
         <div className="axis-board-with-eval">
-        <Board key={`${id}:${issue?.ply ?? "game"}:${practiceState === "idle"}`} fen={displayedFen} orientation={boardOrientation} size="lg" showOverlayControls={false} annotationEnabled coordinates={settings.showCoordinates !== false} evaluation={settings.showEvaluationBar !== false ? { whiteShare: currentEval == null ? null : winProb(currentEval), label: `${t.axis.evaluation}: ${evalText}` } : undefined} suggestedMove={showBest && bestArrow ? { from: bestArrow.slice(0, 2), to: bestArrow.slice(2, 4) } : null}
+        <Board key={`${id}:${issue?.ply ?? "game"}:${practiceState === "idle"}`} fen={displayedFen} orientation={boardOrientation} size="lg" showOverlayControls={false} annotationEnabled moveBadge={boardGrade && last?.uci ? { square: last.uci.slice(2, 4), classification: boardGrade } : undefined} coordinates={settings.showCoordinates !== false} evaluation={settings.showEvaluationBar !== false ? { whiteShare: currentEval == null ? null : winProb(currentEval), label: `${t.axis.evaluation}: ${evalText}` } : undefined} suggestedMove={showBest && bestArrow ? { from: bestArrow.slice(0, 2), to: bestArrow.slice(2, 4) } : null}
           lastMove={uci ? { from: uci.slice(0, 2), to: uci.slice(2, 4) } : null}
           interactive={explorer || Boolean(issue && !showVariation && (practiceState === "idle" || practiceState === "wrong"))}
           onTryMove={san => {
@@ -200,12 +203,13 @@ function ReviewWorkspace({ id }: { id: string }) {
         </div>
         {analysis?.complete === false && <p className="axis-partial-review" role="status">{locale === "fr" ? "Revue partielle" : "Partial review"} · {(analysis.evaluations?.length ?? 1) - 1} / {analysis.totalPlies ?? parsed.moves.length} {locale === "fr" ? "demi-coups analysés" : "plies analyzed"}</p>}
         {analysis && <div className="axis-analysis-summary">{analysis.accuracyByColor ? (["w", "b"] as const).map(color => <div key={color}><strong>{analysis.accuracyByColor?.[color] == null ? "—" : `${analysis.accuracyByColor[color]}%`}</strong><span>{color === "w" ? t.axis.white : t.axis.black} · {t.games.accuracy}</span></div>) : <div><strong>{analysis.accuracy}%</strong><span>{game.user_color === "w" ? t.axis.white : t.axis.black} · {t.games.accuracy}</span></div>}<div><strong>{analysis.blunders}</strong><span>{t.ui.classifications.blunder}</span></div></div>}
+        {analysis?.moveAssessments && <section className="axis-grade-summary" aria-label={locale === "fr" ? "Classification des deux joueurs" : "Both players’ move classifications"}><span className="edit-kicker">{locale === "fr" ? "LES DEUX JOUEURS" : "BOTH PLAYERS"}</span><div>{(Object.keys(CLASSIFICATION_META) as MoveClassification[]).map(classification => { const count = analysis.moveAssessments!.filter(move => move.classification === classification).length; return count ? <span key={classification}><MoveBadge classification={classification}/><span>{CLASSIFICATION_META[classification].name[locale]}</span><strong>{count}</strong></span> : null; })}</div><p>{analysis.moveAssessments.filter(move => move.classification === null).length} {locale === "fr" ? "coups non classés : données insuffisantes." : "moves unclassified: insufficient evidence."}</p><details><summary>{locale === "fr" ? "Interpréter les annotations" : "About these annotations"}</summary><p>{locale === "fr" ? "Les annotations et la précision AXIS utilisent des estimations de résultat issues de recherches limitées de Stockfish, pas une mesure du niveau humain. Un mat en un manqué reste une occasion manquée même si la position reste gagnante. Les coups exceptionnels exigent une seconde recherche. Théorie indique une ligne référencée, sans garantir sa qualité." : "AXIS annotations and accuracy use expected-outcome estimates from bounded Stockfish searches, not a measurement of human skill. An unplayed mate in one is a Miss even if the position remains winning. Exceptional moves require a second search. Book identifies a referenced opening line and does not guarantee its quality."}</p></details></section>}
         <div id="moments-panel" role="tabpanel" aria-labelledby="moments-tab" hidden={tab !== "moments"} className="axis-analysis-tab-content">
         {analysis && analysis.issues.length > 0 && !issue && <EmptyState title={t.ui.selectMoment} description={t.ui.selectedMoment}/>}
         <AnalysisRunner pendingCount={game.analysis_status === "done" ? 0 : 1} gameId={game.id}/>
         {!analysis && <p className="axis-muted">{t.axis.unanalysed}</p>}
         {issue && <div className="axis-issue-detail" aria-live="polite">
-          <span className={`axis-tag axis-classification ${issue.severity}`}>{t.axis.move} {Number(issue.fenBefore.split(" ")[5])} · {t.ui.classifications[issue.severity]}</span>
+          <span className={`axis-tag axis-classification ${issue.severity}`}><MoveBadge classification={issue.classification ?? issue.severity}/>{t.axis.move} {Number(issue.fenBefore.split(" ")[5])} · {CLASSIFICATION_META[issue.classification ?? issue.severity].name[locale]}</span>
           <h2>{t.axis.findMove}</h2>
           <p>{t.axis.explain[issue.motif]}</p><small>{t.axis.heuristic}</small>
           {practiceState === "wrong" && <p className="axis-feedback error">{t.axis.wrong}</p>}
@@ -220,19 +224,27 @@ function ReviewWorkspace({ id }: { id: string }) {
         </div>}
         <h2>{t.axis.issues} <span className="axis-muted">{analysis?.issues.length ?? 0}</span></h2>
         {analysis && analysis.issues.length === 0 && <p className="axis-muted">{t.axis.noIssues}</p>}
-        {analysis && <div className="axis-issue-list">{analysis.issues.map(item => <button key={item.ply} onClick={() => selectIssue(item)} className={item.ply === issue?.ply ? "active" : ""}><span>{Number(item.fenBefore.split(" ")[5])}{item.fenBefore.split(" ")[1] === "w" ? "." : "..."} {item.san}</span><span>{t.ui.classifications[item.severity]} · {t.motifs[item.motif].split(" (")[0]}</span></button>)}</div>}
+        {analysis && <div className="axis-issue-list">{analysis.issues.map(item => <button key={item.ply} onClick={() => selectIssue(item)} className={item.ply === issue?.ply ? "active" : ""}><span><MoveBadge classification={item.classification ?? item.severity}/>{Number(item.fenBefore.split(" ")[5])}{item.fenBefore.split(" ")[1] === "w" ? "." : "..."} {item.san}</span><span>{CLASSIFICATION_META[item.classification ?? item.severity].name[locale]} · {t.motifs[item.motif].split(" (")[0]}</span></button>)}</div>}
         </div>
-        <div id="moves-panel" role="tabpanel" aria-labelledby="moves-tab" hidden={tab !== "moves"} className="axis-analysis-tab-content"><h2>{t.ui.moves}</h2><div className="axis-move-labels"><span></span><span>{t.ui.moveWhite}</span><span>{t.ui.moveBlack}</span></div><div className="axis-moves">{moveRows.map(row => <Fragment key={row.number}><span>{row.number}</span>{(["w", "b"] as const).map(color => { const move = row[color]; return move ? <button key={color} onClick={() => goTo(move.index + 1)} aria-current={ply === move.index + 1 && !issue && !manual ? "step" : undefined} className={ply === move.index + 1 && !issue && !manual ? "active" : ""}>{move.san}</button> : <span key={color}>—</span>; })}</Fragment>)}</div>
+        <div id="moves-panel" role="tabpanel" aria-labelledby="moves-tab" hidden={tab !== "moves"} className="axis-analysis-tab-content"><h2>{t.ui.moves}</h2><div className="axis-move-labels"><span></span><span>{t.ui.moveWhite}</span><span>{t.ui.moveBlack}</span></div><div className="axis-moves">{moveRows.map(row => <Fragment key={row.number}><span>{row.number}</span>{(["w", "b"] as const).map(color => { const move = row[color]; return move ? <button key={color} onClick={() => goTo(move.index + 1)} aria-current={ply === move.index + 1 && !issue && !manual ? "step" : undefined} className={ply === move.index + 1 && !issue && !manual ? "active" : ""}>{move.san}{analysis?.moveAssessments?.find(assessment => assessment.ply === move.index + 1)?.classification && <MoveBadge classification={analysis.moveAssessments.find(assessment => assessment.ply === move.index + 1)!.classification!}/>}</button> : <span key={color}>—</span>; })}</Fragment>)}</div>
         </div>
       </section>
-        {analysis?.evaluations && <EvaluationGraph evaluations={analysis.evaluations} ply={ply} onSelect={p => goTo(p)} label={t.axis.evaluation}/>}
+        {analysis?.evaluations && <EvaluationGraph evaluations={analysis.evaluations} assessments={analysis.moveAssessments ?? []} locale={locale} ply={ply} onSelect={p => goTo(p)} label={t.axis.evaluation}/>}
     </div>
   </main>;
 }
 
-function EvaluationGraph({ evaluations, ply, onSelect, label }: { evaluations: number[]; ply: number; onSelect: (ply: number) => void; label: string }) {
+function EvaluationGraph({ evaluations, assessments, locale, ply, onSelect, label }: { evaluations: number[]; assessments: MoveAssessment[]; locale: "en" | "fr"; ply: number; onSelect: (ply: number) => void; label: string }) {
   const width = 600;
   const points = evaluations.map((value, index) => `${(index / Math.max(1, evaluations.length - 1)) * width},${60 - Math.max(-600, Math.min(600, value)) / 10}`).join(" ");
   const selected = Math.min(ply, evaluations.length - 1);
-  return <div className="axis-graph"><p>{label}</p><svg viewBox="0 0 600 120" role="img" aria-label={label}><line x1="0" y1="60" x2="600" y2="60" stroke="currentColor" opacity=".25"/><polyline fill="none" stroke="var(--chart-line)" strokeWidth="2.5" points={points}/><line x1={(selected / Math.max(1, evaluations.length - 1)) * width} y1="0" x2={(selected / Math.max(1, evaluations.length - 1)) * width} y2="120" stroke="currentColor" opacity=".7"/></svg><input aria-label={label} type="range" min="0" max={evaluations.length - 1} value={selected} onChange={e => onSelect(Number(e.target.value))}/></div>;
+  return <div className="axis-graph"><p>{label}</p><svg viewBox="0 0 600 120" role="group" aria-label={label}>
+    <line x1="0" y1="60" x2="600" y2="60" stroke="currentColor" opacity=".25"/><polyline fill="none" stroke="var(--chart-line)" strokeWidth="2.5" points={points}/><line x1={(selected / Math.max(1, evaluations.length - 1)) * width} y1="0" x2={(selected / Math.max(1, evaluations.length - 1)) * width} y2="120" stroke="currentColor" opacity=".7"/>
+    {assessments.filter(move => move.classification && ["brilliant", "great", "inaccuracy", "mistake", "miss", "blunder"].includes(move.classification) && move.ply < evaluations.length).map(move => {
+      const meta = CLASSIFICATION_META[move.classification!];
+      const x = Math.max(12, Math.min(width - 12, move.ply / Math.max(1, evaluations.length - 1) * width));
+      const y = Math.max(12, Math.min(108, 60 - Math.max(-600, Math.min(600, evaluations[move.ply])) / 10));
+      return <g key={move.ply} transform={`translate(${x} ${y})`} className={`axis-graph-grade axis-grade-${move.classification}`} role="button" tabIndex={0} aria-label={`${locale === "fr" ? "Demi-coup" : "Ply"} ${move.ply}: ${meta.name[locale]}`} onClick={() => onSelect(move.ply)} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(move.ply); } }}><title>{meta.name[locale]}</title><circle r="10"/><text textAnchor="middle" dominantBaseline="central">{meta.glyph}</text></g>;
+    })}
+    </svg><input aria-label={label} type="range" min="0" max={evaluations.length - 1} value={selected} onChange={e => onSelect(Number(e.target.value))}/></div>;
 }
