@@ -814,6 +814,52 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .edit-recognition-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--edit-line); border: 1px solid var(--edit-line); }
 .edit-recognition-choices button { background: var(--edit-paper); text-align: left; padding: 1.4rem; font: 1.15rem/1.2 Georgia, serif; transition: background .18s ease, color .18s ease; }
 .edit-recognition-choices button:hover, .edit-recognition-choices button:focus-visible { background: var(--edit-panel); color: var(--edit-accent); }
+.axis-board-root.has-eval { padding-left: 20px; }
+.axis-board-root.has-eval > .axis-board-frame { overflow: visible; }
+.axis-eval-bar { position: absolute; left: -20px; top: 0; bottom: 0; width: 10px; background: #252b28; border: 1px solid var(--edit-line); overflow: hidden; display: flex; align-items: end; }
+.axis-eval-bar > div { width: 100%; background: #e9e7dc; transition: height .25s ease; }
+.axis-eval-bar.is-flipped { align-items: start; }
+.axis-eval-bar.is-unavailable { opacity: .35; background: repeating-linear-gradient(45deg, var(--edit-line), var(--edit-line) 3px, transparent 3px, transparent 6px); }
+.axis-board-arrows { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 12; overflow: visible; }
+.axis-board-arrows line { stroke-width: .17; opacity: .85; stroke-linecap: round; }
+.axis-square-annotation { background: #b77b41; opacity: .46; z-index: 6; }
+.axis-annotation-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; color: var(--edit-muted); font: 9px/1.4 var(--font-geist-mono), monospace; }
+.axis-annotation-controls button { min-height: 44px; padding: .45rem .7rem; border: 1px solid var(--edit-line); }
+.axis-annotation-controls button[aria-pressed=true] { background: var(--edit-accent); color: var(--edit-paper); }
+.axis-annotation-controls span { flex: 1 1 180px; }
+.axis-promotion-dialog { color: var(--edit-ink); background: var(--edit-paper); border: 1px solid var(--edit-ink); padding: 1.5rem; max-width: min(95vw, 420px); margin: auto; }
+.axis-promotion-dialog::backdrop { background: #111b17a6; backdrop-filter: blur(4px); }
+.axis-promotion-dialog > p { font: 1.8rem Georgia, serif; margin-bottom: 1.2rem; }
+.axis-promotion-dialog > div { display: flex; gap: .5rem; margin-bottom: 1rem; }
+.axis-promotion-dialog > div button { display: grid; justify-items: center; gap: .5rem; border: 1px solid var(--edit-line); padding: .5rem; font: 10px var(--font-geist-mono), monospace; }
+.axis-promotion-dialog > div button:hover { background: var(--edit-panel); }
+.axis-board-focus { width: 100%; outline: none; }
+.axis-focus-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-bottom: .8rem; font: 9px var(--font-geist-mono), monospace; letter-spacing: .08em; color: var(--edit-muted); }
+.axis-focus-toolbar > div { display: flex; gap: .4rem; }
+.axis-focus-toolbar button { display: inline-flex; align-items: center; gap: .5rem; min-height: 40px; padding: .6rem; border: 1px solid var(--edit-line); }
+.axis-focus-toolbar button:hover { color: var(--edit-ink); background: var(--edit-panel); }
+.axis-board-focus.is-immersive { position: fixed; inset: 0; z-index: 100; background: var(--edit-paper); color: var(--edit-ink); overflow: auto; padding: 1rem max(1rem, env(safe-area-inset-left)); height: 100dvh; width: 100vw; }
+.axis-content > main:has(.is-immersive) { animation: none; transform: none; }
+.axis-board-focus:fullscreen { height: 100%; width: 100%; }
+.axis-board-focus.is-immersive .axis-focus-toolbar { max-width: 1100px; margin: 0 auto .5rem; }
+.axis-board-focus.is-immersive .axis-focus-content { width: min(100%, max(320px, calc(100dvh - 18rem))); max-width: 780px; margin: auto; }
+.axis-board-focus.is-immersive .axis-board-root { max-width: none; }
+.axis-board-focus.is-immersive.is-minimal .axis-board-player, .axis-board-focus.is-immersive.is-minimal .axis-evaluation, .axis-board-focus.is-immersive.is-minimal .axis-annotation-controls, .axis-board-focus.is-immersive.is-minimal .axis-review-tools { display: none; }
+.axis-board-focus.is-immersive.is-minimal .axis-focus-content { width: min(100%, calc(100dvh - 9rem)); }
+.axis-review-tools { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; padding: .8rem 0; border-top: 1px solid var(--edit-line); }
+.axis-review-tools label { display: inline-flex; align-items: center; gap: .4rem; min-height: 40px; font: 9px var(--font-geist-mono), monospace; color: var(--edit-muted); }
+.axis-review-tools select { border: 1px solid var(--edit-line); padding: .5rem; background: var(--edit-paper); color: var(--edit-ink); }
+.axis-review-tools input { accent-color: var(--edit-accent); width: 16px; height: 16px; }
+.axis-review-tools .axis-focus-flip { display: none; }
+.is-immersive .axis-review-tools .axis-focus-flip { display: inline-flex; }
+.axis-review-export { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; border-top: 1px solid var(--edit-line); padding: .7rem 0; color: var(--edit-muted); font: 9px var(--font-geist-mono), monospace; }
+.axis-review-export button { display: inline-flex; gap: .5rem; align-items: center; min-height: 40px; }
+.axis-review-export span { margin-left: auto; }
+.axis-manual-line { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; padding: .7rem 0; border-block: 1px solid var(--edit-accent); font: 11px var(--font-geist-mono), monospace; }
+.axis-manual-line strong { width: 100%; color: var(--edit-accent); font-size: 9px; letter-spacing: .1em; }
+.axis-manual-line button { min-height: 40px; padding: .4rem .6rem; }
+.axis-manual-line button[aria-current=step] { background: var(--edit-panel); color: var(--edit-accent); }
+.axis-manual-line .axis-return-game { margin-left: auto; text-decoration: underline; text-underline-offset: 4px; }
 @media (max-width: 780px) {
   .edit-pattern-intro, .edit-pattern-detail-head { grid-template-columns: 1fr; gap: 1.5rem; padding: 3rem 0; }
   .axis-content .edit-pattern-intro h1, .axis-content .edit-pattern-detail-head h1 { font-size: clamp(3.1rem, 12vw, 5.5rem); }

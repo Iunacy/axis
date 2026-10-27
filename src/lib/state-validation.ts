@@ -85,7 +85,8 @@ export function restorePersistedState(value: unknown, defaults: Settings) {
   const settings = { ...defaults };
   for (const key of ["chesscomUsername", "lichessUsername", "boardTheme", "voiceURI"] as const) if (typeof rawSettings[key] === "string") settings[key] = rawSettings[key];
   for (const key of ["analyzeLastN", "engineMovetimeMs"] as const) if (finite(rawSettings[key]) && rawSettings[key] > 0) settings[key] = Math.min(rawSettings[key], key === "analyzeLastN" ? 1000 : 10000);
-  for (const key of ["soundEnabled", "voiceEnabled", "voiceAutoplay"] as const) if (typeof rawSettings[key] === "boolean") settings[key] = rawSettings[key];
+  for (const key of ["soundEnabled", "voiceEnabled", "voiceAutoplay", "showCoordinates", "showEvaluationBar"] as const) if (typeof rawSettings[key] === "boolean") settings[key] = rawSettings[key];
+  if ([600, 1200, 2400].includes(Number(rawSettings.reviewPlaybackMs))) settings.reviewPlaybackMs = Number(rawSettings.reviewPlaybackMs);
   if (rawSettings.analysisMode === "fast" || rawSettings.analysisMode === "deep") settings.analysisMode = rawSettings.analysisMode;
   const analyses: Record<string, AnalysisSummary> = {};
   if (object(saved.analyses)) for (const [id, summary] of Object.entries(saved.analyses)) if (analysis(summary)) analyses[id] = summary;

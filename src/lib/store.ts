@@ -33,6 +33,9 @@ export const DEFAULT_SETTINGS: Settings = {
   soundEnabled: true,
   voiceEnabled: true,
   voiceAutoplay: true,
+  showCoordinates: true,
+  showEvaluationBar: true,
+  reviewPlaybackMs: 1200,
 };
 
 export interface StoredAiKey {

@@ -7,6 +7,7 @@ import { getBoardTheme } from "@/lib/board-themes";
 import { useI18n } from "@/lib/i18n";
 import { loadSettings } from "@/lib/storage";
 import type { BoardOverlaySpec } from "@/lib/types";
+import { boardPoint, promotionChoices } from "@/lib/board-interaction";
 
 const FILES = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
 const PIECE_NAME: Record<string, string> = {
@@ -31,6 +32,10 @@ interface BoardProps {
   showOverlayControls?: boolean;
   lastMove?: { from: string; to: string } | null;
   size?: "sm" | "md" | "lg";
+  coordinates?: boolean;
+  annotationEnabled?: boolean;
+  suggestedMove?: { from: string; to: string } | null;
+  evaluation?: { whiteShare: number | null; label: string };
 }
 
 interface SquareInfo {
@@ -50,8 +55,12 @@ export default function Board({
   showOverlayControls = true,
   lastMove = null,
   size = "md",
+  coordinates = true,
+  annotationEnabled = false,
+  suggestedMove,
+  evaluation,
 }: BoardProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const boardId = useId();
   const [theme] = useState(() => getBoardTheme(loadSettings().boardTheme));
   const [position, setPosition] = useState(fen);
@@ -63,6 +72,12 @@ export default function Board({
   const [showHanging, setShowHanging] = useState(Boolean(defaultOverlays?.hanging));
   const [last, setLast] = useState(lastMove);
   const [anim, setAnim] = useState<{ to: Square; dx: number; dy: number; seq: number } | null>(null);
+  const [promotion, setPromotion] = useState<{ from: Square; to: Square; choices: string[] } | null>(null);
+  const [annotationMode, setAnnotationMode] = useState(false);
+  const [annotationSource, setAnnotationSource] = useState<Square | null>(null);
+  const [userArrows, setUserArrows] = useState<{ from: string; to: string }[]>([]);
+  const [markedSquares, setMarkedSquares] = useState<string[]>([]);
+  const drawFrom = useRef<Square | null>(null);
 
   function dispDelta(from: string, to: string) {
     const colOf = (s: string) => {
@@ -80,6 +95,10 @@ export default function Board({
     setSelected(null);
     setBeamSource(null);
     setLast(lastMove);
+    setPromotion(null);
+    setUserArrows([]);
+    setMarkedSquares([]);
+    setAnnotationSource(null);
     if (lastMove) {
       const d = dispDelta(lastMove.from, lastMove.to);
       setAnim((a) => ({ to: lastMove.to as Square, dx: d.dx, dy: d.dy, seq: (a?.seq ?? 0) + 1 }));
@@ -123,12 +142,9 @@ export default function Board({
     return new Set(chess.moves({ square: selected, verbose: true }).map((m) => m.to));
   }, [selected, chess]);
 
-  function handleClick(sq: Square) {
-    const piece = chess.get(sq);
-
-    if (interactive && selected && legalTargets.has(sq)) {
+  function playMove(from: Square, to: Square, promote?: string) {
       const probe = new Chess(position);
-      const move = probe.move({ from: selected, to: sq, promotion: "q" });
+      const move = probe.move({ from, to, promotion: promote });
       if (move) {
         const accepted = onTryMove ? onTryMove(move.san) !== false : true;
         if (accepted) {
@@ -139,8 +155,27 @@ export default function Board({
         }
         setSelected(null);
         setBeamSource(null);
-        return;
       }
+      setPromotion(null);
+  }
+
+  function annotate(from: Square, to: Square) {
+    if (from === to) setMarkedSquares(squares => squares.includes(to) ? squares.filter(square => square !== to) : [...squares, to]);
+    else setUserArrows(arrows => arrows.some(arrow => arrow.from === from && arrow.to === to) ? arrows.filter(arrow => arrow.from !== from || arrow.to !== to) : [...arrows, { from, to }]);
+  }
+
+  function handleClick(sq: Square) {
+    if (annotationEnabled && annotationMode) {
+      if (annotationSource) { annotate(annotationSource, sq); setAnnotationSource(null); }
+      else setAnnotationSource(sq);
+      return;
+    }
+    const piece = chess.get(sq);
+    if (interactive && selected && legalTargets.has(sq)) {
+      const choices = promotionChoices(position, selected, sq);
+      if (choices.length) setPromotion({ from: selected, to: sq, choices });
+      else playMove(selected, sq);
+      return;
     }
 
     if (piece) {
@@ -162,14 +197,15 @@ export default function Board({
   const maxW = size === "sm" ? "max-w-[320px]" : size === "lg" ? "max-w-[600px]" : "max-w-[480px]";
 
   return (
-    <div className={`flex flex-col gap-3 w-full ${maxW}`}>
-      <div role="group" aria-label={t.ui.chessboard} className="axis-board-frame grid grid-cols-8 grid-rows-8 aspect-square w-full select-none">
+    <div className={`axis-board-root ${evaluation ? "has-eval" : ""} flex flex-col gap-3 w-full ${maxW}`}>
+      <div role="group" aria-label={t.ui.chessboard} onContextMenu={event => { if (annotationEnabled) event.preventDefault(); }} className="axis-board-frame relative grid grid-cols-8 grid-rows-8 aspect-square w-full select-none">
+        {evaluation && <div className={`axis-eval-bar ${orientation === "b" ? "is-flipped" : ""} ${evaluation.whiteShare === null ? "is-unavailable" : ""}`} role="img" aria-label={evaluation.label}>{evaluation.whiteShare !== null && <div style={{ height: `${Math.max(0, Math.min(100, evaluation.whiteShare * 100))}%` }}/>}</div>}
         {ranks.map((r) =>
           files.map((f) => {
             const square = `${f}${r}` as Square;
             const s = info.get(square)!;
             const dark = (FILES.indexOf(f) + r) % 2 === 1;
-            const isSel = selected === square || beamSource === square;
+            const isSel = selected === square || beamSource === square || annotationSource === square;
             const inBeam = beamTargets.has(square);
             const isLast = Boolean(last && (last.from === square || last.to === square));
             const showW = showWhite && s.whiteAttackers > 0;
@@ -185,12 +221,17 @@ export default function Board({
             return (
               <button
                 key={square}
+                type="button"
+                data-square={square}
                 onClick={() => handleClick(square)}
+                onPointerDown={event => { if (annotationEnabled && event.button === 2) { event.preventDefault(); drawFrom.current = square; } }}
+                onPointerUp={event => { if (annotationEnabled && event.button === 2 && drawFrom.current) { annotate(drawFrom.current, square); drawFrom.current = null; } }}
                 aria-label={square}
                 aria-describedby={`${boardId}-${square}`}
                 tabIndex={focusSquare === square ? 0 : -1}
                 onFocus={() => setFocusSquare(square)}
                 onKeyDown={event => {
+                  if (event.key === "Escape") { setSelected(null); setBeamSource(null); setAnnotationSource(null); return; }
                   const dx = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : 0;
                   const dy = event.key === "ArrowUp" ? -1 : event.key === "ArrowDown" ? 1 : 0;
                   if (!dx && !dy) return;
@@ -209,14 +250,15 @@ export default function Board({
                 ].join(" ")}
               >
                 <span className="sr-only" id={`${boardId}-${square}`}>{s.piece ? `${s.piece.color === "w" ? t.axis.white : t.axis.black} ${t.ui.pieces[s.piece.type as keyof typeof t.ui.pieces]}` : t.ui.emptySquare}{inCheck ? ` · ${t.ui.check}` : ""}{legalTargets.has(square) ? ` · ${t.ui.legalMove}` : ""}{isSel ? ` · ${t.ui.selectedSquare}` : ""}{isLast ? ` · ${t.ui.lastMove}` : ""}</span>
-                {f === files[0] && (
+                {markedSquares.includes(square) && <span className="axis-square-annotation absolute inset-0 pointer-events-none"/>}
+                {coordinates && f === files[0] && (
                   <span
                     className="absolute top-0.5 left-1 axis-board-coordinate pointer-events-none"
                   >
                     {r}
                   </span>
                 )}
-                {r === ranks[7] && (
+                {coordinates && r === ranks[7] && (
                   <span
                     className="absolute bottom-0 right-1 axis-board-coordinate pointer-events-none"
                   >
@@ -262,7 +304,14 @@ export default function Board({
             );
           })
         )}
+        <svg className="axis-board-arrows" viewBox="0 0 8 8" aria-hidden="true">
+          <defs><marker id={`${boardId}-user-arrow`} markerWidth="2.5" markerHeight="2.5" refX="1.5" refY="1.25" orient="auto"><path d="M0 0 L2 1.25 L0 2.5 Z" fill="var(--board-user-arrow, #bd8d47)"/></marker><marker id={`${boardId}-engine-arrow`} markerWidth="2.5" markerHeight="2.5" refX="1.5" refY="1.25" orient="auto"><path d="M0 0 L2 1.25 L0 2.5 Z" fill="var(--edit-accent, #6b863d)"/></marker></defs>
+          {userArrows.map(arrow => { const from = boardPoint(arrow.from, orientation); const to = boardPoint(arrow.to, orientation); return <line key={`${arrow.from}:${arrow.to}`} x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="var(--board-user-arrow, #bd8d47)" markerEnd={`url(#${boardId}-user-arrow)`}/>; })}
+          {suggestedMove && (() => { const from = boardPoint(suggestedMove.from, orientation); const to = boardPoint(suggestedMove.to, orientation); return <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} stroke="var(--edit-accent, #6b863d)" markerEnd={`url(#${boardId}-engine-arrow)`}/>; })()}
+        </svg>
       </div>
+      {promotion && <PromotionDialog choices={promotion.choices} color={chess.turn()} label={locale === "fr" ? "Choisir la promotion" : "Choose promotion"} names={t.ui.pieces} onChoose={piece => playMove(promotion.from, promotion.to, piece)} onCancel={() => setPromotion(null)}/>}
+      {annotationEnabled && <div className="axis-annotation-controls"><button type="button" aria-pressed={annotationMode} onClick={() => { setAnnotationMode(value => !value); setAnnotationSource(null); }}>{locale === "fr" ? "Dessiner" : "Draw"}</button><button type="button" disabled={!userArrows.length && !markedSquares.length} onClick={() => { setUserArrows([]); setMarkedSquares([]); setAnnotationSource(null); }}>{locale === "fr" ? "Effacer" : "Clear marks"}</button><span>{annotationMode ? locale === "fr" ? "Touchez deux cases ; deux fois la même pour la marquer." : "Tap two squares; tap one twice to mark it." : locale === "fr" ? "Clic droit : flèche ou case." : "Right-drag for an arrow; right-click to mark a square."}</span></div>}
 
       {showOverlayControls && (
         <div className="flex flex-wrap items-center gap-2 text-sm">
@@ -274,6 +323,12 @@ export default function Board({
       )}
     </div>
   );
+}
+
+function PromotionDialog({ choices, color, label, names, onChoose, onCancel }: { choices: string[]; color: "w" | "b"; label: string; names: Record<string, string>; onChoose: (piece: string) => void; onCancel: () => void }) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => { const dialog = ref.current; dialog?.showModal(); return () => dialog?.close(); }, []);
+  return <dialog ref={ref} className="axis-promotion-dialog" aria-label={label} onCancel={event => { event.preventDefault(); onCancel(); }}><p>{label}</p><div>{choices.map(piece => <button type="button" key={piece} aria-label={names[piece]} onClick={() => onChoose(piece)}><Image src={pieceSrc(color, piece)} alt="" width={56} height={56} unoptimized/>{names[piece]}</button>)}</div><button type="button" className="axis-button secondary" onClick={onCancel}>×</button></dialog>;
 }
 
 function PieceImg({
@@ -300,7 +355,7 @@ function PieceImg({
 
   return (
     <span ref={ref} className="absolute inset-0 flex items-center justify-center pointer-events-none z-[5]">
-      <Image src={src} alt={alt} width={64} height={64} unoptimized draggable={false} className="w-[86%] h-[86%] object-contain drop-shadow-sm" />
+      <Image src={src} alt={alt} width={64} height={64} loading="eager" unoptimized draggable={false} className="w-[86%] h-[86%] object-contain drop-shadow-sm" />
     </span>
   );
 }

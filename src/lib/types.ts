@@ -201,6 +201,9 @@ export interface Settings {
   voiceEnabled?: boolean;
   voiceURI?: string;
   voiceAutoplay?: boolean;
+  showCoordinates?: boolean;
+  showEvaluationBar?: boolean;
+  reviewPlaybackMs?: number;
 }
 
 export interface AiLessonRow {
