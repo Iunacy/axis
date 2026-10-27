@@ -101,9 +101,15 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
         <div className="axis-evaluation"><span>{t.axis.engine}</span><strong>{evalText}</strong></div>
       </section>
       <section className="axis-review-panel">
-        <div className="axis-analysis-tabs" role="tablist" aria-label={t.axis.review}>
-          <button role="tab" id="moments-tab" aria-controls="moments-panel" aria-selected={tab === "moments"} onClick={() => setTab("moments")}>{t.axis.issues}<span>{analysis?.issues.length ?? 0}</span></button>
-          <button role="tab" id="moves-tab" aria-controls="moves-panel" aria-selected={tab === "moves"} onClick={() => setTab("moves")}>{t.ui.moves}<span>{parsed.moves.length}</span></button>
+        <div className="axis-analysis-tabs" role="tablist" aria-label={t.axis.review} onKeyDown={event => {
+          if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+          event.preventDefault();
+          const nextTab = event.key === "Home" ? "moments" : event.key === "End" ? "moves" : tab === "moments" ? "moves" : "moments";
+          setTab(nextTab);
+          document.getElementById(`${nextTab}-tab`)?.focus();
+        }}>
+          <button role="tab" id="moments-tab" tabIndex={tab === "moments" ? 0 : -1} aria-controls="moments-panel" aria-selected={tab === "moments"} onClick={() => setTab("moments")}>{t.axis.issues}<span>{analysis?.issues.length ?? 0}</span></button>
+          <button role="tab" id="moves-tab" tabIndex={tab === "moves" ? 0 : -1} aria-controls="moves-panel" aria-selected={tab === "moves"} onClick={() => setTab("moves")}>{t.ui.moves}<span>{parsed.moves.length}</span></button>
         </div>
         {analysis && <div className="axis-analysis-summary"><div><strong>{analysis.accuracy}%</strong><span>{t.games.accuracy}</span></div><div><strong>{analysis.blunders}</strong><span>{t.ui.classifications.blunder}</span></div><div><strong>{analysis.mistakes}</strong><span>{t.ui.classifications.mistake}</span></div></div>}
         <div id="moments-panel" role="tabpanel" aria-labelledby="moments-tab" hidden={tab !== "moments"} className="axis-analysis-tab-content">

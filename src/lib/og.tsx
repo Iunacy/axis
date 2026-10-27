@@ -3,103 +3,25 @@ import { AXIS_MARK_PATH } from "./brand";
 
 export const ogSize = { width: 1200, height: 630 };
 export const ogContentType = "image/png";
-export const ogAlt =
-  "AXIS — Analyze. Understand. Improve.";
-
-const BG = "#0d1016";
-const ACCENT = "#c2cfdf";
-const MUTED = "#a1a1aa";
-const BORDER = "#27272a";
-
-function Pill({ children }: { children: string }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        padding: "10px 22px",
-        borderRadius: 999,
-        border: `1px solid ${BORDER}`,
-        background: "rgba(255,255,255,0.02)",
-        color: MUTED,
-        fontSize: 26,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
+export const ogAlt = "AXIS — Every move leaves a pattern.";
 
 export function renderOgImage() {
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          background: BG,
-          padding: 72,
-          position: "relative",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 92,
-              height: 92,
-              borderRadius: 22,
-              background: "#111113",
-              border: `1px solid ${BORDER}`,
-            }}
-          >
-            <svg width="56" height="56" viewBox="0 0 32 32" fill={ACCENT}><path d={AXIS_MARK_PATH} fillRule="evenodd"/></svg>
-          </div>
-          <span style={{ fontSize: 40, fontWeight: 700, color: "#fafafa" }}>
-            AXIS
-          </span>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-          <div
-            style={{
-              display: "flex",
-              fontSize: 76,
-              fontWeight: 800,
-              color: "#fafafa",
-              lineHeight: 1.05,
-              letterSpacing: -2,
-              maxWidth: 920,
-            }}
-          >
-            Lessons built from your own games.
-          </div>
-          <div style={{ display: "flex", fontSize: 32, color: MUTED, maxWidth: 880 }}>
-            Import your Chess.com & Lichess games, analyze them with Stockfish in
-            your browser, and train on the mistakes that actually cost you.
-          </div>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-          <div style={{ display: "flex", gap: 16 }}>
-            <Pill>Chess.com + Lichess</Pill>
-            <Pill>Stockfish in-browser</Pill>
-            <Pill>Learn from the masters</Pill>
-            <Pill>Private · no account</Pill>
-          </div>
-          <div style={{ display: "flex", height: 6, gap: 8 }}>
-            <div style={{ flex: 1, background: ACCENT, borderRadius: 999, display: "flex" }} />
-            <div style={{ width: 80, background: BORDER, borderRadius: 999, display: "flex" }} />
-            <div style={{ width: 40, background: BORDER, borderRadius: 999, display: "flex" }} />
-          </div>
-        </div>
+    <div style={{width:"100%",height:"100%",display:"flex",flexDirection:"column",justifyContent:"space-between",background:"#111314",color:"#e7e9e3",padding:"52px 64px",position:"relative"}}>
+      <div style={{display:"flex",gap:16,alignItems:"center"}}>
+        <svg width="38" height="38" viewBox="0 0 32 32" fill="#c7de8a"><path d={AXIS_MARK_PATH}/></svg>
+        <span style={{fontSize:30,fontWeight:600,letterSpacing:-1}}>AXIS</span>
+        <span style={{marginLeft:"auto",fontSize:20,color:"#a0a8a7"}}>Chess intelligence & personal practice</span>
       </div>
-    ),
-    { ...ogSize }
+      <div style={{display:"flex",flexDirection:"column",gap:24,position:"relative"}}>
+        <div style={{fontSize:88,lineHeight:1.02,letterSpacing:-3,fontWeight:500,maxWidth:850}}>Every move leaves a pattern.</div>
+        <div style={{fontSize:25,color:"#a0a8a7"}}>Understand your decisions. Train what matters.</div>
+      </div>
+      <div style={{display:"flex",borderTop:"1px solid #303637",paddingTop:24,justifyContent:"space-between",fontSize:19}}>
+        <span style={{color:"#a0a8a7"}}>Chess.com · Lichess · PGN · Stockfish</span>
+        <span style={{color:"#c7de8a"}}>Free. Private. No account.</span>
+      </div>
+    </div>,
+    ogSize
   );
 }

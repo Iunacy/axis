@@ -282,7 +282,7 @@ input::placeholder, textarea::placeholder { color: var(--muted-foreground); opac
   .axis-content main { width: calc(100% - 40px); }
   .axis-puzzle { grid-template-columns: minmax(0, 1fr) minmax(230px, .85fr); gap: 24px; }
 }
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   .axis-nav { position: sticky; inset: auto; top: 0; width: 100%; border-radius: 0 0 20px 20px; border-width: 0 0 1px; padding: 12px 20px; overflow: visible; }
   .axis-brand { padding: 0; max-width: max-content; }
   .axis-brand-symbol { width: 38px; height: 38px; }
@@ -694,7 +694,7 @@ a, button { touch-action: manipulation; }
   .axis-content main { width: calc(100% - 36px); padding-block: 28px 42px; }
   .axis-content { padding-top: 76px; }
   .axis-content:has(.axis-landing) { padding-top: 0; }
-  .axis-nav { inset: 0 0 auto; width: auto; min-height: 70px; padding: 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
+  .axis-nav { position: fixed; inset: 0 0 auto; width: auto; min-height: 70px; padding: 0; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
   .axis-brand { padding: 18px; gap: 9px; }
   .axis-brand-symbol { height: 30px; width: 30px; }
   .axis-wordmark { font-size: 1.3rem; }
@@ -804,3 +804,21 @@ a, button { touch-action: manipulation; }
 .axis-board-player-bottom { padding-block: 14px 0; }
 .axis-piece-dot.white { background: #f2f0e9; }
 .axis-piece-dot.black { background: #303637; }
+.axis-nav-body { justify-content: flex-start; }
+.axis-nav-bottom { margin-top: auto; }
+@media (min-width: 701px) {
+  .axis-board-column > div:has(> .axis-board-frame) { max-width: min(100%, 560px, calc(100svh - 360px)); margin-inline: auto; }
+  .axis-review .axis-page-head { padding-bottom: 22px; margin-bottom: 24px; }
+}
+@media (max-width: 700px) {
+  .axis-review .axis-page-head { gap: 12px; padding-bottom: 16px; margin-bottom: 16px; }
+  .axis-review .axis-page-head > div:first-child { width: 100%; }
+  .axis-review .axis-page-head .axis-actions { flex-wrap: nowrap; gap: 8px; }
+  .axis-review .axis-page-head .axis-button { padding-inline: 12px; font-size: .73rem; }
+  .axis-flip-button { width: 44px; padding-inline: 0 !important; flex-shrink: 0; }
+  .axis-flip-button span { display: none; }
+  .axis-hero-wordmark { font-size: 44vw; margin-top: 190px; }
+}
+@media (min-width: 701px) {
+  .axis-puzzle > div:first-child { max-width: min(100%, 560px, calc(100svh - 360px)); }
+}
