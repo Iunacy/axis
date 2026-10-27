@@ -4,6 +4,7 @@ import { siteUrl } from "@/lib/site";
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     { path: "/", priority: 1, changeFrequency: "weekly" as const },
+    { path: "/dashboard", priority: 0.7, changeFrequency: "weekly" as const },
     { path: "/games", priority: 0.7, changeFrequency: "weekly" as const },
     { path: "/training", priority: 0.7, changeFrequency: "weekly" as const },
     { path: "/licenses", priority: 0.2, changeFrequency: "yearly" as const },

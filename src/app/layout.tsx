@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Github } from "lucide-react";
 import { ThemeProvider } from "next-themes";
@@ -14,6 +14,8 @@ const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
+
+const display = Space_Grotesk({ variable: "--font-display", subsets: ["latin"], display: "swap" });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -72,7 +74,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${display.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <script
@@ -93,12 +95,13 @@ export default function RootLayout({
             }),
           }}
         />
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <I18nProvider>
             <StoreHydrator />
             <Toaster />
+            <a href="#main-content" className="axis-skip-link">Skip to content</a>
             <Nav />
-            <div className="axis-content flex-1">{children}</div>
+            <div id="main-content" className="axis-content flex-1" tabIndex={-1}>{children}</div>
             <footer className="axis-footer">
               <div className="mx-auto max-w-5xl px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
                 <span>

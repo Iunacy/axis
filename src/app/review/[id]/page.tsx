@@ -3,25 +3,28 @@
 import { Fragment, use, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Chess } from "chess.js";
-import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, FlipVertical2 } from "lucide-react";
 import Board from "@/components/Board";
 import { EmptyState } from "@/components/Workspace";
 import AnalysisRunner from "@/components/AnalysisRunner";
 import WorkspaceLoading from "@/components/WorkspaceLoading";
 import { parsePgn } from "@/lib/pgn";
 import { useI18n } from "@/lib/i18n";
-import { useAnalyses, useGames, useStoreHydrated } from "@/lib/store";
+import { useAnalyses, useGames, useSettings, useStoreHydrated } from "@/lib/store";
 import type { MoveIssue } from "@/lib/types";
 
 export default function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { t, locale } = useI18n();
   const hydrated = useStoreHydrated();
+  const settings = useSettings();
   const game = useGames().find(g => g.id === decodeURIComponent(id));
   const analysis = useAnalyses()[decodeURIComponent(id)];
   const parsed = useMemo(() => game ? parsePgn(game.pgn) : null, [game]);
   const boardRef = useRef<HTMLElement>(null);
   const [ply, setPly] = useState(0);
+  const [tab, setTab] = useState<"moments" | "moves">("moments");
+  const [flipped, setFlipped] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<MoveIssue | null>(null);
   const [practiceState, setPracticeState] = useState<"idle" | "wrong" | "correct" | "revealed">("idle");
   const [variation, setVariation] = useState(0);
@@ -79,13 +82,15 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
 
   return <main className="axis-shell axis-review">
     <Link href="/games" className="axis-link inline-flex items-center gap-2"><ArrowLeft size={16}/>{t.axis.backGames}</Link>
-    <div className="axis-page-head"><div><h1>{game.opponent_name ?? t.axis.review}</h1><p>{new Date(game.played_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")} · {game.opening_name ?? game.eco ?? game.time_class} · {t.games.results[game.result]}</p></div><div className="axis-actions"><span className="axis-tag">{game.platform === "pgn" ? "PGN" : game.platform === "chesscom" ? "Chess.com" : "Lichess"}</span>{analysis && analysis.issues.length > 0 && <Link href="/training" className="axis-button">{t.ui.practiceThese}</Link>}</div></div>
+    <div className="axis-page-head"><div><h1>{game.opponent_name ?? t.axis.review}</h1><p>{new Date(game.played_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")} · {game.opening_name ?? game.eco ?? game.time_class} · {t.games.results[game.result]}</p></div><div className="axis-actions"><button className="axis-button secondary axis-flip-button" aria-label={locale === "fr" ? "Retourner l’échiquier" : "Flip board"} onClick={() => setFlipped(value => !value)}><FlipVertical2 size={16}/><span>{locale === "fr" ? "Retourner" : "Flip board"}</span></button><span className="axis-tag">{game.platform === "pgn" ? "PGN" : game.platform === "chesscom" ? "Chess.com" : "Lichess"}</span>{analysis && analysis.issues.length > 0 && <Link href="/training" className="axis-button">{t.ui.practiceThese}</Link>}</div></div>
     <div className="axis-review-grid">
       <section ref={boardRef} className="axis-board-column">
-        <Board key={`${id}:${ply}:${showVariation ? variation : "game"}:${practiceState === "idle"}`} fen={displayedFen} orientation={game.user_color} size="lg" showOverlayControls={false}
+        <div className="axis-board-player"><span className={`axis-piece-dot ${(flipped ? game.user_color : game.user_color === "w" ? "b" : "w") === "b" ? "black" : "white"}`}/><strong>{flipped ? (game.user_color === "w" ? t.axis.white : t.axis.black) : (game.user_color === "w" ? t.axis.black : t.axis.white)}</strong><span>{flipped ? settings.chesscomUsername || settings.lichessUsername || t.ui.yourGame : game.opponent_name ?? "—"}</span><span>{(flipped ? game.user_rating : game.opponent_rating) ?? ""}</span></div>
+        <Board key={`${id}:${issue?.ply ?? "game"}:${practiceState === "idle"}`} fen={displayedFen} orientation={flipped ? (game.user_color === "w" ? "b" : "w") : game.user_color} size="lg" showOverlayControls={false}
           lastMove={uci ? { from: uci.slice(0, 2), to: uci.slice(2, 4) } : null}
           interactive={Boolean(issue && !showVariation && (practiceState === "idle" || practiceState === "wrong"))}
           onTryMove={san => { if (!issue?.bestSan) return false; const correct = san.replace(/[+#?!]/g, "") === issue.bestSan.replace(/[+#?!]/g, ""); setPracticeState(correct ? "correct" : "wrong"); return correct; }} />
+        <div className="axis-board-player axis-board-player-bottom"><span className={`axis-piece-dot ${(flipped ? game.user_color === "w" ? "b" : "w" : game.user_color) === "b" ? "black" : "white"}`}/><strong>{flipped ? (game.user_color === "w" ? t.axis.black : t.axis.white) : (game.user_color === "w" ? t.axis.white : t.axis.black)}</strong><span>{flipped ? game.opponent_name ?? "—" : settings.chesscomUsername || settings.lichessUsername || t.ui.yourGame}</span><span>{(flipped ? game.opponent_rating : game.user_rating) ?? ""}</span></div>
         <div className="axis-move-controls" aria-label={t.axis.move}>
           <button aria-label={t.axis.first} disabled={ply === 0} onClick={() => { setPly(0); setSelectedIssue(null); setShowVariation(false); }}><ChevronsLeft size={20}/></button>
           <button aria-label={t.axis.previous} disabled={ply === 0} onClick={() => { setPly(Math.max(0, ply - 1)); setSelectedIssue(null); setShowVariation(false); }}><ChevronLeft size={20}/></button>
@@ -96,6 +101,12 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
         <div className="axis-evaluation"><span>{t.axis.engine}</span><strong>{evalText}</strong></div>
       </section>
       <section className="axis-review-panel">
+        <div className="axis-analysis-tabs" role="tablist" aria-label={t.axis.review}>
+          <button role="tab" id="moments-tab" aria-controls="moments-panel" aria-selected={tab === "moments"} onClick={() => setTab("moments")}>{t.axis.issues}<span>{analysis?.issues.length ?? 0}</span></button>
+          <button role="tab" id="moves-tab" aria-controls="moves-panel" aria-selected={tab === "moves"} onClick={() => setTab("moves")}>{t.ui.moves}<span>{parsed.moves.length}</span></button>
+        </div>
+        {analysis && <div className="axis-analysis-summary"><div><strong>{analysis.accuracy}%</strong><span>{t.games.accuracy}</span></div><div><strong>{analysis.blunders}</strong><span>{t.ui.classifications.blunder}</span></div><div><strong>{analysis.mistakes}</strong><span>{t.ui.classifications.mistake}</span></div></div>}
+        <div id="moments-panel" role="tabpanel" aria-labelledby="moments-tab" hidden={tab !== "moments"} className="axis-analysis-tab-content">
         {analysis && analysis.issues.length > 0 && !issue && <EmptyState title={t.ui.selectMoment} description={t.ui.selectedMoment}/>}
         {game.analysis_status !== "done" && <AnalysisRunner pendingCount={1} gameId={game.id}/>}
         {!analysis && <p className="axis-muted">{t.axis.unanalysed}</p>}
@@ -116,8 +127,9 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
         <h2>{t.axis.issues} <span className="axis-muted">{analysis?.issues.length ?? 0}</span></h2>
         {analysis && analysis.issues.length === 0 && <p className="axis-muted">{t.axis.noIssues}</p>}
         {analysis && <div className="axis-issue-list">{analysis.issues.map(item => <button key={item.ply} onClick={() => selectIssue(item)} className={item.ply === issue?.ply ? "active" : ""}><span>{Number(item.fenBefore.split(" ")[5])}{item.fenBefore.split(" ")[1] === "w" ? "." : "..."} {item.san}</span><span>{t.ui.classifications[item.severity]} · {t.motifs[item.motif].split(" (")[0]}</span></button>)}</div>}
-        <h2>{t.ui.moves}</h2><div className="axis-move-labels"><span></span><span>{t.ui.moveWhite}</span><span>{t.ui.moveBlack}</span></div><div className="axis-moves">{moveRows.map(row => <Fragment key={row.number}><span>{row.number}</span>{(["w", "b"] as const).map(color => { const move = row[color]; return move ? <button key={color} onClick={() => { setPly(move.index + 1); setSelectedIssue(null); setShowVariation(false); }} aria-current={ply === move.index + 1 && !issue ? "step" : undefined} className={ply === move.index + 1 && !issue ? "active" : ""}>{move.san}</button> : <span key={color}>—</span>; })}</Fragment>)}</div>
-
+        </div>
+        <div id="moves-panel" role="tabpanel" aria-labelledby="moves-tab" hidden={tab !== "moves"} className="axis-analysis-tab-content"><h2>{t.ui.moves}</h2><div className="axis-move-labels"><span></span><span>{t.ui.moveWhite}</span><span>{t.ui.moveBlack}</span></div><div className="axis-moves">{moveRows.map(row => <Fragment key={row.number}><span>{row.number}</span>{(["w", "b"] as const).map(color => { const move = row[color]; return move ? <button key={color} onClick={() => { setPly(move.index + 1); setSelectedIssue(null); setShowVariation(false); }} aria-current={ply === move.index + 1 && !issue ? "step" : undefined} className={ply === move.index + 1 && !issue ? "active" : ""}>{move.san}</button> : <span key={color}>—</span>; })}</Fragment>)}</div>
+        </div>
       </section>
         {analysis?.evaluations && <EvaluationGraph evaluations={analysis.evaluations} ply={ply} onSelect={p => { setPly(p); setSelectedIssue(null); setShowVariation(false); }} label={t.axis.evaluation}/>}
     </div>
