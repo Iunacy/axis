@@ -137,7 +137,7 @@ export default function AnalysisRunner({
           <div className="axis-analysis-progress h-1 bg-accent overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={t.analysis.title}>
             <div
               className={`h-full transition-all ${runningMode === "deep" ? "bg-violet-500" : "bg-emerald-500"}`}
-              style={{ width: `${progress}%` }}
+              style={{ transform: `scaleX(${progress / 100})`, transformOrigin: "left" }}
             />
           </div>
           <div className="flex items-center justify-between text-sm text-muted-foreground">

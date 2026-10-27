@@ -800,7 +800,7 @@ a, button { touch-action: manipulation; }
 .axis-analysis-status.done::before { background: var(--success); }
 .axis-analysis-status.failed { color: var(--error); }
 .axis-analysis-status.failed::before { background: var(--error); }
-.axis-analysis-progress > div { transition: width var(--motion-panel) var(--motion-ease); }
+.axis-analysis-progress > div { transition: transform var(--motion-panel) var(--motion-ease); }
 .axis-board-player-bottom { padding-block: 14px 0; }
 .axis-piece-dot.white { background: #f2f0e9; }
 .axis-piece-dot.black { background: #303637; }
@@ -822,3 +822,5 @@ a, button { touch-action: manipulation; }
 @media (min-width: 701px) {
   .axis-puzzle > div:first-child { max-width: min(100%, 560px, calc(100svh - 360px)); }
 }
+
+.axis-analysis-tab-content:not([hidden]) { animation: axis-expand var(--motion-panel) var(--motion-ease); }
