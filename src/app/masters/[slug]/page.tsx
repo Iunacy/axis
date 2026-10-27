@@ -4,6 +4,7 @@ import { use } from "react";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import MasterGameView from "@/components/MasterGameView";
+import { Folio } from "@/components/EditorialFrame";
 import { useI18n } from "@/lib/i18n";
 import { getMasterGame } from "@/lib/masters-catalog";
 
@@ -13,7 +14,8 @@ export default function MasterGamePage({ params }: { params: Promise<{ slug: str
   const game = getMasterGame(slug);
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10 flex flex-col gap-6">
+    <main className="axis-master-study">
+      <Folio label="THE ARCHIVE / MASTER GAMES" detail={game?.title} number={String(game?.year ?? "")} />
       <Link
         href="/masters"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground w-fit"

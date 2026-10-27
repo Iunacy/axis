@@ -147,7 +147,8 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
         out.push({ fen: c.fen(), san: m.san, cpWhite: ev.cpWhite });
       }
       if (!cancelRef.current && out.length) setEngineLine(out);
-    } catch {
+    } catch (error) {
+      if (!cancelRef.current) toast.error(describeError(error, t));
     } finally {
       engine.destroy();
       setComputing(false);
@@ -170,7 +171,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
   const studyingName = game.studySide === "w" ? game.white : game.black;
 
   return (
-    <div className="axis-master-workspace">
+    <div className="axis-master-workspace edit-master-study">
       <div className="axis-master-board">
         <Board
           fen={fen}
@@ -236,7 +237,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
           {plyIdx}/{total}
         </p>
 
-        <div className="flex flex-wrap gap-1 rounded-xl border border-border bg-card p-3 max-h-44 overflow-y-auto">
+        <div className="axis-master-move-index flex flex-wrap gap-1 rounded-xl border border-border bg-card p-3 max-h-44 overflow-y-auto">
           {moves.map((m, i) => (
             <button
               key={i}
@@ -279,8 +280,8 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
         )}
       </div>
 
-      <div className="flex-1 flex flex-col gap-4 min-w-0">
-        <div>
+      <div className="axis-master-notes flex-1 flex flex-col gap-4 min-w-0">
+        <div className="axis-master-title">
           <h2 className="text-xl font-semibold text-foreground">
             {game.title}
           </h2>
@@ -295,7 +296,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
         </div>
 
         {!annotation ? (
-          <div className="rounded-xl border border-violet-500/40 bg-violet-500/5 p-5 flex flex-col gap-3">
+          <div className="axis-master-ai-panel rounded-xl border border-violet-500/40 bg-violet-500/5 p-5 flex flex-col gap-3">
             <p className="text-sm text-foreground/90">
               {t.masters.noReasoningYet}
             </p>

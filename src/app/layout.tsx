@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { I18nProvider } from "@/lib/i18n";
 import { site, siteUrl } from "@/lib/site";
 import "./globals.css";
+import "./editorial.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

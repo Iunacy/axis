@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { buildUserContent, parseModelText, sanitize, SYSTEM_PROMPT } from "./coach";
 import type { CoachingDossier } from "./dossier";
 import { AppError, aiErrorFromStatus } from "./errors";
@@ -19,44 +18,18 @@ export interface CoachRequest {
 export function useCoachAvailability(): { available: boolean; viaUserKey: boolean; ready: boolean } {
   const apiKey = useApiKey();
   const hydrated = useStoreHydrated();
-  const [serverConfigured, setServerConfigured] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    fetch("/api/coach-lesson")
-      .then((r) => r.json())
-      .then((d) => {
-        if (alive) setServerConfigured(Boolean(d.configured));
-      })
-      .catch(() => {
-        if (alive) setServerConfigured(false);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
-
   const viaUserKey = Boolean(apiKey);
   return {
-    available: viaUserKey || serverConfigured === true,
+    available: viaUserKey,
     viaUserKey,
-    ready: hydrated && serverConfigured !== null,
+    ready: hydrated,
   };
 }
 
 export async function requestAiLesson(args: CoachRequest): Promise<LessonContent & { title: string }> {
   const stored = loadAiKey();
 
-  if (!stored) {
-    const res = await fetch("/api/coach-lesson", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(args),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new AppError(data.code ?? "aiGeneric", data.error);
-    return data.lesson;
-  }
+  if (!stored) throw new AppError("aiNoKey");
 
   const provider = getProvider(stored.provider);
   const { url, headers, body } = provider.buildRequest({

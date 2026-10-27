@@ -23,16 +23,7 @@ export async function requestMasterAnnotation(args: {
 
   const stored = loadAiKey();
 
-  if (!stored) {
-    const res = await fetch("/api/master-annotation", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ game, locale }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new AppError(data.code ?? "aiGeneric", data.error);
-    return data.annotation;
-  }
+  if (!stored) throw new AppError("aiNoKey");
 
   const provider = getProvider(stored.provider);
   const { url, headers, body } = provider.buildRequest({

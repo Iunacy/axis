@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useI18n } from "@/lib/i18n";
 import { AI_PROVIDERS, DEFAULT_PROVIDER_ID, getProvider, type AiProviderId } from "@/lib/providers";
 import { useApiKey } from "@/lib/store";
@@ -18,14 +18,6 @@ export default function ApiKeyField({ onChanged }: { onChanged?: () => void }) {
   const saved = useApiKey();
   const [value, setValue] = useState("");
   const [provider, setProvider] = useState<AiProviderId>(DEFAULT_PROVIDER_ID);
-  const [serverCfg, setServerCfg] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    fetch("/api/coach-lesson")
-      .then((r) => r.json())
-      .then((d) => setServerCfg(Boolean(d.configured)))
-      .catch(() => setServerCfg(false));
-  }, []);
 
   function save() {
     if (!value.trim()) return;
@@ -39,8 +31,6 @@ export default function ApiKeyField({ onChanged }: { onChanged?: () => void }) {
     setValue("");
     onChanged?.();
   }
-
-  if (serverCfg === null) return null;
 
   if (saved) {
     return (
@@ -58,8 +48,6 @@ export default function ApiKeyField({ onChanged }: { onChanged?: () => void }) {
       </div>
     );
   }
-
-  if (serverCfg) return null;
 
   const active = getProvider(provider);
 

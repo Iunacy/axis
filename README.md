@@ -1,13 +1,13 @@
 # AXIS
 
-**Understand your decisions. Train what matters.**
+I’m building AXIS to understand how I play chess, not just what score I reached. It turns my own game history into a journal of decisions and a place to practice the moves I missed.
 
-AXIS — Adaptive eXplanation & Improvement System — turns your Chess.com, Lichess, and PGN games into local Stockfish analysis, focused mistake review, and personal training. Free, private, and available in English and French.
+![AXIS editorial landing page](public/media/axis-landing.png)
 
-![AXIS: a sculptural identity and an editorial introduction to chess intelligence.](public/media/axis-landing.png)
+Today I can import completed games from Chess.com, Lichess, or PGN; analyze them with Stockfish in my browser; revisit critical positions and variations; and train with exercises drawn from those games. My library, reviews, and progress stay on this device. Optional AI lessons use a provider key I supply in my browser.
 
-The direction is a precise, comfortable chess workspace: a clear view of the board, explanations grounded in your moves, and practice that returns to the patterns you miss. A cinematic public identity gives way to quiet analysis, with graphite and warm-paper themes throughout.
+![AXIS game study](public/media/axis-analysis.png)
 
-![AXIS analysis: a completed Stockfish review of the Immortal Game, with a selected turning point and its verified continuation.](public/media/axis-analysis.png)
+I want AXIS to grow into a more personal training system: one that connects recurring weaknesses across games, lessons, and practice until better decisions become habits.
 
-[Explore AXIS](https://axls.vercel.app) · [MIT license](LICENSE) · Built on [Chess Coach by Leonel Ngoya](https://github.com/ln-dev7/chess-coach). Stockfish.js is GPL-3.0; license and corresponding source are linked from the app’s Licenses page.
+[Open AXIS](https://axls.vercel.app/) · [MIT license](LICENSE) · Built on [Chess Coach by Leonel Ngoya](https://github.com/ln-dev7/chess-coach). Stockfish.js is GPL-3.0; its license and source are linked in AXIS’s Licenses page.
