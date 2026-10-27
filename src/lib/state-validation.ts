@@ -1,3 +1,4 @@
+import { restoreReviewLocations } from "./game-library";
 import { validateFen } from "chess.js";
 import { preparePuzzle, replayPuzzlePath } from "./puzzle-solution";
 import { isProviderId } from "./providers";
@@ -123,5 +124,5 @@ export function restorePersistedState(value: unknown, defaults: Settings) {
       : { puzzleId: remainingIds[0], startedAt: rawSession.startedAt, path: [], hintLevel: 0, status: "playing" };
     trainingSession = { id: rawSession.id, startedAt: rawSession.startedAt, remainingIds, active };
   }
-  return { settings, games, analyses, puzzles, trainingSession, lessons: list(saved.lessons, lesson), aiLessons: list(saved.aiLessons, aiLesson), masterAnnotations: list(saved.masterAnnotations, annotation), apiKey, onboardedFlag: saved.onboardedFlag === true };
+  return { settings, games, analyses, puzzles, trainingSession, reviewLocations: restoreReviewLocations(saved.reviewLocations, games), lessons: list(saved.lessons, lesson), aiLessons: list(saved.aiLessons, aiLesson), masterAnnotations: list(saved.masterAnnotations, annotation), apiKey, onboardedFlag: saved.onboardedFlag === true };
 }

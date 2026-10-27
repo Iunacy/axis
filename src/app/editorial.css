@@ -917,3 +917,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .edit-mixed-start-action { grid-column: 1 / -1; border-top: 1px solid var(--edit-line); }
   .edit-recognition-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+.axis-resume-review { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; padding-block: 1.5rem; border-bottom: 1px solid var(--edit-line); }
+.axis-resume-review a { display: inline-flex; align-items: center; gap: .75rem; }
+.axis-game-filters { flex-wrap: wrap; }
+.axis-game-filters .axis-search { min-width: min(100%, 15rem); }

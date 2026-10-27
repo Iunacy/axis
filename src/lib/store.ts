@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import type { ReviewLocation } from "./game-library";
 import { indexedStorage } from "./indexed-storage";
 import { identifyPattern, scheduleReview } from "./training";
 import { restorePersistedState } from "./state-validation";
@@ -50,6 +51,7 @@ interface PersistedState {
   analyses: Record<string, AnalysisSummary>;
   puzzles: PuzzleRow[];
   trainingSession: TrainingSession | null;
+  reviewLocations: Record<string, ReviewLocation>;
   lessons: GeneratedLesson[];
   aiLessons: AiLessonRow[];
   masterAnnotations: MasterAnnotation[];
@@ -61,6 +63,7 @@ interface StoreState extends PersistedState {
   hydrated: boolean;
 
   setSettings: (settings: Settings) => void;
+  saveReviewLocation: (id: string, ply: number) => void;
   setGames: (games: GameRow[]) => void;
   upsertGames: (incoming: GameRow[]) => number;
   setGameStatus: (id: string, status: GameRow["analysis_status"], accuracy?: number | null) => void;
@@ -92,6 +95,7 @@ const initialPersisted: PersistedState = {
   analyses: {},
   puzzles: [],
   trainingSession: null,
+  reviewLocations: {},
   lessons: [],
   aiLessons: [],
   masterAnnotations: [],
@@ -106,6 +110,10 @@ export const useStore = create<StoreState>()(
       hydrated: false,
 
       setSettings: (settings) => set({ settings }),
+      saveReviewLocation: (id, ply) => {
+        if (!Number.isInteger(ply) || ply < 0 || ply > 10000 || !get().games.some(game => game.id === id)) return;
+        set({ reviewLocations: { ...get().reviewLocations, [id]: { ply, at: new Date().toISOString() } } });
+      },
 
       setGames: (games) => set({ games }),
 
@@ -222,6 +230,7 @@ export const useStore = create<StoreState>()(
         analyses,
         puzzles,
         trainingSession,
+        reviewLocations,
         lessons,
         aiLessons,
         masterAnnotations,
@@ -233,6 +242,7 @@ export const useStore = create<StoreState>()(
         analyses,
         puzzles,
         trainingSession,
+        reviewLocations,
         lessons,
         aiLessons,
         masterAnnotations,
@@ -313,6 +323,7 @@ function readLegacy(): PersistedState | null {
     analyses: readJSON<Record<string, AnalysisSummary>>(LEGACY_KEYS.analyses, {}),
     puzzles: readJSON<PuzzleRow[]>(LEGACY_KEYS.puzzles, []),
     trainingSession: null,
+    reviewLocations: {},
     lessons: readJSON<GeneratedLesson[]>(LEGACY_KEYS.lessons, []),
     aiLessons: readJSON<AiLessonRow[]>(LEGACY_KEYS.aiLessons, []),
     masterAnnotations: [],

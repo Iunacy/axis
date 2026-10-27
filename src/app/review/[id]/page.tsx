@@ -23,6 +23,8 @@ import type { MoveIssue, PositionEvaluation, MoveAssessment, MoveClassification 
 
 export default function ReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const hydrated = useStoreHydrated();
+  if (!hydrated) return <WorkspaceLoading/>;
   return <ReviewWorkspace key={id} id={id}/>;
 }
 
@@ -31,11 +33,14 @@ function ReviewWorkspace({ id }: { id: string }) {
   const hydrated = useStoreHydrated();
   const settings = useSettings();
   const setSettings = useStore(state => state.setSettings);
-  const game = useGames().find(g => g.id === decodeURIComponent(id));
+  const games = useGames();
+  const game = games.find(g => g.id === decodeURIComponent(id));
   const analysis = useAnalyses()[decodeURIComponent(id)];
   const parsed = useMemo(() => game ? parsePgn(game.pgn) : null, [game]);
   const boardRef = useRef<HTMLElement>(null);
-  const [ply, setPly] = useState(0);
+  const [ply, setPly] = useState(() => Math.min(parsed?.moves.length ?? 0, useStore.getState().reviewLocations[decodeURIComponent(id)]?.ply ?? 0));
+  const saveReviewLocation = useStore(state => state.saveReviewLocation);
+  useEffect(() => { if (game && parsed) saveReviewLocation(game.id, ply); }, [game, parsed, ply, saveReviewLocation]);
   const [tab, setTab] = useState<"moments" | "moves">("moments");
   const [flipped, setFlipped] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<MoveIssue | null>(null);
