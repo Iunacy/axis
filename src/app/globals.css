@@ -620,9 +620,8 @@ a, button { touch-action: manipulation; }
 .axis-content .axis-hero h1 { font-family: var(--font-display), sans-serif; font-size: clamp(2.9rem, 5.3vw, 5.25rem); line-height: 1.02; font-weight: 400; letter-spacing: -.04em; }
 .axis-hero-copy p { color: var(--muted-foreground); max-width: 29ch; line-height: 1.7; font-size: .95rem; margin-top: 24px; }
 .axis-hero-cta { margin-top: 30px; min-height: 50px; padding-inline: 22px; }
-.axis-sculpture { position: absolute; width: min(64vw, 870px); right: -2%; top: -34px; z-index: 1; color: var(--signature); animation: axis-sculpture-enter 1.25s var(--motion-ease) both; pointer-events: none; }
-.axis-sculpture svg { width: 100%; height: auto; }
-.axis-sculpture-orbit { transform-origin: 50% 50%; animation: axis-orbit-settle 2s var(--motion-ease) both; }
+.axis-sculpture { position: absolute; width: min(67vw, 910px); right: -2%; top: -70px; z-index: 1; margin: 0; animation: axis-sculpture-enter 1.25s var(--motion-ease) both; pointer-events: none; filter: drop-shadow(0 32px 34px #07090955); }
+.axis-sculpture img { width: 100%; height: auto; display: block; }
 .axis-hero-wordmark { position: relative; z-index: 2; pointer-events: none; font-family: var(--font-display), sans-serif; font-size: clamp(9rem, 30.7vw, 31rem); font-weight: 600; letter-spacing: -.04em; line-height: .77; margin-top: 58px; margin-left: -.018em; animation: axis-wordmark-enter 1s .15s var(--motion-ease) both; }
 .axis-hero-caption { position: relative; z-index: 3; display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-top: 32px; padding: 24px 0; border-top: 1px solid var(--border); font-size: .73rem; color: var(--muted-foreground); }
 .axis-hero-caption a { display: inline-flex; align-items: center; gap: 18px; color: var(--foreground); }
@@ -654,7 +653,6 @@ a, button { touch-action: manipulation; }
 @keyframes axis-hero-enter { from { transform: translateY(22px); opacity: .25; } to { transform: translateY(0); opacity: 1; } }
 @keyframes axis-wordmark-enter { from { clip-path: inset(100% 0 0); transform: translateY(18px); } to { clip-path: inset(0); transform: translateY(0); } }
 @keyframes axis-sculpture-enter { from { transform: translateY(26px) rotate(-9deg); opacity: 0; } to { transform: translateY(0) rotate(0); opacity: 1; } }
-@keyframes axis-orbit-settle { from { transform: rotate(-14deg); } to { transform: rotate(0); } }
 @supports (animation-timeline: view()) {
   .axis-method-intro, .axis-workspace-story { animation: axis-section-reveal linear both; animation-timeline: view(); animation-range: entry 0% entry 30%; }
   @keyframes axis-section-reveal { from { opacity: .55; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
@@ -824,3 +822,63 @@ a, button { touch-action: manipulation; }
 }
 
 .axis-analysis-tab-content:not([hidden]) { animation: axis-expand var(--motion-panel) var(--motion-ease); }
+
+/* AXIS material pass — one visual vocabulary for brand and instrument surfaces. */
+.axis-nav { background: color-mix(in srgb, var(--glass-nav) 94%, transparent); backdrop-filter: blur(18px) saturate(.88); }
+.axis-brand-symbol { box-shadow: inset 0 1px 0 #ffffff20, 0 8px 22px #00000012; }
+.axis-brand-symbol svg { stroke-width: 1.65; }
+.axis-nav nav a { border-left: 1px solid transparent; }
+.axis-nav nav a.active { box-shadow: inset 2px 0 0 var(--signature); }
+.axis-nav nav a:hover { box-shadow: inset 2px 0 0 color-mix(in srgb, var(--signature) 58%, transparent); }
+.axis-instrument { position: relative; }
+.axis-instrument::before { content: ""; position: absolute; inset: -2rem -1.5rem auto auto; width: 300px; height: 300px; pointer-events: none; opacity: .42; background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--signature) 10%, transparent), transparent 66%); filter: blur(10px); }
+.axis-overview-header { position: relative; }
+.axis-overview-header::after { content: ""; position: absolute; right: 0; bottom: -1px; width: 13%; height: 1px; background: var(--signature); }
+.axis-rating-region { position: relative; padding: 20px 28px 18px; border: 1px solid var(--border); background: linear-gradient(125deg, var(--card), color-mix(in srgb, var(--card) 78%, var(--background))); box-shadow: var(--surface-shadow); }
+.axis-rating-region::before { content: ""; position: absolute; inset: 0 0 auto; height: 2px; background: linear-gradient(90deg, var(--signature), transparent 38%); }
+.axis-rating-chart { gap: 22px; }
+.axis-rating-heading h2 { letter-spacing: .08em; text-transform: uppercase; font-size: .66rem; }
+.axis-rating-heading strong { letter-spacing: -.04em; }
+.axis-rating-controls { display: flex; align-items: center; gap: 12px; color: var(--muted-foreground); font: .68rem var(--font-geist-mono), monospace; font-variant-numeric: tabular-nums; }
+.axis-rating-heading select { background: var(--background); border-color: var(--border); }
+.axis-chart-series .axis-choice { border-color: transparent; border-radius: 0; padding-inline: 0; margin-right: 16px; min-height: 30px; }
+.axis-chart-series .axis-choice[aria-pressed=true] { border-bottom-color: var(--signature); background: transparent; }
+.axis-rating-plot { position: relative; height: 268px; padding-top: 4px; }
+.axis-session-focus { position: relative; overflow: hidden; background: linear-gradient(145deg, var(--card), color-mix(in srgb, var(--card) 84%, var(--background))); border: 1px solid var(--border); border-left: 0; padding: 24px 0 24px 32px; box-shadow: var(--surface-shadow); }
+.axis-session-focus::after { content: ""; position: absolute; right: -80px; bottom: -110px; width: 250px; aspect-ratio: 1; border: 1px solid color-mix(in srgb, var(--signature) 18%, transparent); border-radius: 50%; box-shadow: 0 0 0 38px color-mix(in srgb, var(--signature) 5%, transparent), 0 0 0 76px color-mix(in srgb, var(--signature) 3%, transparent); pointer-events: none; }
+.axis-session-focus > * { position: relative; z-index: 1; }
+.axis-session-heading h2 { letter-spacing: .08em; text-transform: uppercase; font-size: .66rem; }
+.axis-session-focus .axis-button { min-width: 174px; }
+.axis-activity-line { position: relative; gap: 0; padding-block: 26px; }
+.axis-activity-line > div { padding-right: 22px; }
+.axis-activity-line > div + div { padding-left: 22px; border-left: 1px solid var(--border); }
+.axis-activity-line span { text-transform: uppercase; letter-spacing: .06em; font-size: .62rem; }
+.axis-recent-region { padding: 20px 0 0; }
+.axis-recent-region .axis-panel-head, .axis-insight-region .axis-panel-head { padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.axis-dashboard-secondary { padding-top: 32px; }
+.axis-dashboard-secondary > .axis-panel { padding-top: 0; }
+.axis-dashboard-secondary > .axis-panel::before { content: ""; display: block; width: 36px; height: 2px; background: var(--signature); margin-bottom: 20px; }
+.axis-insight-region { padding: 0 0 0 32px; border-left: 1px solid var(--border); }
+.axis-instrument .axis-weakness-list li { padding-block: 12px; border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent); }
+.axis-instrument .axis-weakness-list li span:last-child { font-family: var(--font-geist-mono), monospace; color: var(--foreground); }
+.axis-panel, .axis-import, .axis-settings-group { box-shadow: none; }
+.axis-table td:first-child, .axis-table th { font-family: var(--font-geist-mono), monospace; font-variant-numeric: tabular-nums; }
+.axis-review-panel { border-color: color-mix(in srgb, var(--border) 90%, var(--signature)); }
+.axis-issue-detail { background: linear-gradient(140deg, var(--glass), color-mix(in srgb, var(--glass) 90%, var(--background))); }
+.axis-training-stage, .axis-master-workspace { position: relative; }
+.axis-puzzle-detail { border-left: 1px solid var(--border); padding-left: 28px; }
+@media (max-width: 850px) and (min-width: 701px) { .axis-session-focus { border-left: 0; } .axis-insight-region { padding-left: 0; border-left: 0; } }
+@media (max-width: 700px) {
+  .axis-rating-region { padding: 20px 16px 12px; margin-inline: -2px; }
+  .axis-rating-controls > span { display: none; }
+  .axis-rating-plot { height: 220px; }
+  .axis-session-focus { border-left: 0; padding: 24px 0; box-shadow: none; }
+  .axis-activity-line { gap: 0; }
+  .axis-activity-line > div { padding: 10px 0; }
+  .axis-activity-line > div + div { padding-left: 16px; }
+  .axis-activity-line > div:nth-child(3) { border-left: 0; }
+  .axis-dashboard-secondary { padding-top: 26px; }
+  .axis-insight-region { padding-left: 0; border-left: 0; }
+  .axis-puzzle-detail { border-left: 0; border-top: 1px solid var(--border); padding: 24px 0 0; }
+  .axis-sculpture { top: 178px; right: -30%; width: 118vw; filter: drop-shadow(0 20px 26px #07090945); }
+}
