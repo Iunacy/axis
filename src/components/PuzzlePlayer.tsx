@@ -11,7 +11,7 @@ import type { PuzzleRow, TrainingAttempt } from "@/lib/types";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress }: { puzzles: PuzzleRow[]; onAdvance?: (id: string) => void; progress?: TrainingAttempt; onProgress?: (attempt: TrainingAttempt) => void }) {
+export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress, hideTheme = false, postSolveText }: { puzzles: PuzzleRow[]; onAdvance?: (id: string) => void; progress?: TrainingAttempt; onProgress?: (attempt: TrainingAttempt) => void; hideTheme?: boolean; postSolveText?: string }) {
   const { t } = useI18n();
   const [idx, setIdx] = useState(0);
 
@@ -27,6 +27,8 @@ export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress 
       onNext={() => onAdvance ? onAdvance(puzzle.id) : setIdx(idx + 1)}
       progress={progress}
       onProgress={onProgress}
+      hideTheme={hideTheme}
+      postSolveText={postSolveText}
     />
   );
 }
@@ -38,6 +40,8 @@ function SinglePuzzle({
   onNext,
   progress,
   onProgress,
+  hideTheme,
+  postSolveText,
 }: {
   puzzle: PuzzleRow;
   index: number;
@@ -45,6 +49,8 @@ function SinglePuzzle({
   onNext: () => void;
   progress?: TrainingAttempt;
   onProgress?: (attempt: TrainingAttempt) => void;
+  hideTheme: boolean;
+  postSolveText?: string;
 }) {
   const { t, locale } = useI18n();
   const prepared = useMemo(() => preparePuzzle(puzzle), [puzzle]);
@@ -193,9 +199,9 @@ function SinglePuzzle({
       <div className="axis-puzzle-detail">
         <div>
           <div className="flex flex-wrap gap-1.5 mb-2">
-            <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs text-foreground/90">
+            {!hideTheme && <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs text-foreground/90">
               {t.motifs[puzzle.theme]?.split(" (")[0] ?? puzzle.theme}
-            </span>
+            </span>}
             {puzzle.kind && (
               <span className="inline-block rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-300 px-3 py-1 text-xs">
                 {t.puzzles.kinds[puzzle.kind]}
@@ -218,7 +224,7 @@ function SinglePuzzle({
               <>
                 {" · "}
                 <a href={puzzle.source_url} target="_blank" className="underline hover:text-foreground/90">
-                  {t.puzzles.fromGame}
+                  {puzzle.source === "lichess" ? "Lichess · CC0" : t.puzzles.fromGame}
                 </a>
               </>
             )}
@@ -233,9 +239,7 @@ function SinglePuzzle({
           </p>
         )}
         {state === "solved" && (
-          <p className="rounded-lg bg-emerald-500/10 border border-emerald-600/40 px-4 py-3 text-emerald-600 dark:text-emerald-300 text-sm">
-            <Check size={16} className="inline mr-1"/> {t.puzzles.solved} — {solutionText}
-          </p>
+          <div className="axis-puzzle-result"><p className="rounded-lg bg-emerald-500/10 border border-emerald-600/40 px-4 py-3 text-emerald-600 dark:text-emerald-300 text-sm"><Check size={16} className="inline mr-1"/> {t.puzzles.solved} — {solutionText}</p>{postSolveText && <p className="axis-puzzle-hint">{postSolveText}</p>}</div>
         )}
         {state === "wrong" && (
           <p className="rounded-lg bg-red-500/10 border border-red-600/40 px-4 py-3 text-red-600 dark:text-red-300 text-sm">

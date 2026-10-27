@@ -6,6 +6,7 @@ import type { AiLessonRow, AnalysisSummary, GameRow, GeneratedLesson, MasterAnno
 const motifs = ["hanging_piece", "missed_tactic", "allowed_fork", "allowed_mate", "missed_mate", "bad_trade", "other"];
 const severities = ["blunder", "mistake", "inaccuracy"];
 const phases = ["opening", "middlegame", "endgame"];
+const patterns = ["back-rank", "smothered", "arabian", "anastasia", "boden", "swallows-tail"];
 const object = (value: unknown): value is Record<string, unknown> => Boolean(value && typeof value === "object" && !Array.isArray(value));
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
 const strings = (value: unknown): value is string[] => Array.isArray(value) && value.every(item => typeof item === "string");
@@ -35,7 +36,14 @@ function analysis(value: unknown): value is AnalysisSummary {
 function puzzle(value: unknown): value is PuzzleRow {
   return object(value) && typeof value.id === "string" && typeof value.game_id === "string" && fen(value.fen) && side(value.user_side)
     && strings(value.solution_san) && value.solution_san.length > 0 && strings(value.reply_san)
-    && motifs.includes(String(value.theme)) && severities.includes(String(value.severity)) && finite(value.attempts) && typeof value.solved === "boolean"
+    && motifs.includes(String(value.theme)) && (value.severity === undefined || severities.includes(String(value.severity))) && finite(value.attempts) && typeof value.solved === "boolean"
+    && (value.source === undefined || value.source === "game" || value.source === "lichess")
+    && (value.pattern === undefined || patterns.includes(String(value.pattern)))
+    && (value.rating === undefined || (finite(value.rating) && value.rating >= 0))
+    && (value.rating_deviation === undefined || (finite(value.rating_deviation) && value.rating_deviation >= 0))
+    && (value.themes === undefined || strings(value.themes))
+    && (value.opening_tags === undefined || strings(value.opening_tags))
+    && (value.license === undefined || value.license === "CC0-1.0")
     && (value.solution_lines_uci === undefined || (Array.isArray(value.solution_lines_uci) && value.solution_lines_uci.every(strings)))
     && (value.reviews === undefined || (Array.isArray(value.reviews) && value.reviews.every(review => object(review) && date(review.at) && typeof review.solved === "boolean"
       && (review.firstAttempt === undefined || typeof review.firstAttempt === "boolean")

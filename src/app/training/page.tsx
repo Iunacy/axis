@@ -13,7 +13,8 @@ import { duePuzzles } from "@/lib/training";
 export default function TrainingPage() {
   const { t, locale } = useI18n();
   const hydrated = useStoreHydrated();
-  const puzzles = useStore(s => s.puzzles);
+  const allPuzzles = useStore(s => s.puzzles);
+  const puzzles = useMemo(() => allPuzzles.filter(puzzle => puzzle.source !== "lichess"), [allPuzzles]);
   const session = useStore(s => s.trainingSession);
   const startSession = useStore(s => s.startTrainingSession);
   const advanceSession = useStore(s => s.advanceTrainingSession);

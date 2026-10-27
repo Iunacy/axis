@@ -756,3 +756,53 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .axis-content main.axis-master-study { width: min(100% - 2rem, 1500px); }
   .axis-master-study .edit-issue-line span:nth-child(2) { display: none; }
 }
+
+.edit-pattern-intro { display: grid; grid-template-columns: 1.2fr .55fr; gap: 8%; padding: 4.5rem 0 5rem; align-items: end; }
+.edit-pattern-intro .edit-kicker { grid-column: 1 / -1; }
+.axis-content .edit-pattern-intro h1, .axis-content .edit-pattern-detail-head h1 { font: 400 clamp(4rem, 7vw, 8rem)/.93 Georgia, serif; letter-spacing: -.085em; max-width: 900px; }
+.edit-pattern-intro h1 em, .edit-pattern-detail-head h1 em { color: var(--edit-accent); }
+.edit-pattern-intro p, .edit-pattern-detail-head p { color: var(--edit-muted); font: 1.15rem/1.55 Georgia, serif; max-width: 430px; }
+.edit-pattern-index { border-top: 2px solid var(--edit-ink); }
+.edit-pattern-row { display: grid; grid-template-columns: 5rem minmax(0, 1fr) 9rem 2rem; gap: 2%; align-items: center; padding: 1.5rem .5rem; border-bottom: 1px solid var(--edit-line); transition: background .2s ease, padding .2s ease; }
+.edit-pattern-row:hover { background: var(--edit-panel); padding-left: 1rem; }
+.edit-pattern-number, .edit-pattern-progress, .edit-pattern-arrow, .edit-source-note, .edit-pattern-back, .edit-pattern-stages span, .edit-pattern-stages small { font: 10px/1.45 var(--font-geist-mono), monospace; letter-spacing: .04em; }
+.edit-pattern-number { align-self: start; color: var(--edit-accent); }
+.axis-content .edit-pattern-row h2 { font: 400 clamp(1.9rem, 3vw, 3.2rem)/1 Georgia, serif; letter-spacing: -.06em; margin: .4rem 0 .6rem; }
+.edit-pattern-row p { color: var(--edit-muted); font: .98rem/1.4 Georgia, serif; max-width: 720px; }
+.edit-pattern-progress { display: flex; flex-direction: column; gap: .2rem; align-self: stretch; justify-content: center; }
+.edit-pattern-progress strong { font: 400 2.5rem/.9 Georgia, serif; letter-spacing: -.07em; }
+.edit-pattern-progress strong span { color: var(--edit-muted); font-size: 1rem; }
+.edit-pattern-progress small { color: var(--edit-muted); }
+.edit-pattern-arrow { font-size: 1.25rem; align-self: start; }
+.edit-source-note { color: var(--edit-muted); padding: 1.5rem 0 3rem; }
+.edit-source-note a { text-decoration: underline; text-underline-offset: 3px; }
+.edit-pattern-error { display: flex; justify-content: space-between; align-items: center; gap: 1rem; border-block: 1px solid var(--edit-accent); padding: 1rem 0; color: var(--edit-accent); font: 11px/1.4 var(--font-geist-mono), monospace; }
+.edit-pattern-back { display: inline-block; margin: 2rem 0; color: var(--edit-muted); text-transform: uppercase; }
+.edit-pattern-back:hover { color: var(--edit-accent); }
+.edit-pattern-detail-head { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(220px, .7fr); align-items: end; gap: 6%; padding: 2rem 0 3rem; }
+.edit-pattern-detail-head h1 { margin-top: 1.5rem; }
+.edit-pattern-session { border-top: 2px solid var(--edit-ink); }
+.edit-pattern-stages { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--edit-line); }
+.edit-pattern-stages > div { min-width: 0; display: grid; gap: .5rem; padding: 1rem 1.5rem; border-right: 1px solid var(--edit-line); color: var(--edit-muted); }
+.edit-pattern-stages > div:first-child { padding-left: 0; }
+.edit-pattern-stages > div:last-child { border: 0; }
+.edit-pattern-stages > div.is-current { color: var(--edit-ink); background: var(--edit-panel); }
+.edit-pattern-stages strong { font: 400 1.8rem/1 Georgia, serif; }
+.edit-pattern-prompt { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; padding: 1.8rem 0 1.2rem; }
+.edit-pattern-prompt p { color: var(--edit-muted); font: italic 1rem Georgia, serif; }
+.edit-pattern-session .axis-puzzle { border-top: 1px solid var(--edit-line); padding-top: 2rem; }
+.edit-pattern-complete { padding: 5rem 0; max-width: 620px; }
+.axis-content .edit-pattern-complete h2 { font: 400 clamp(3rem, 5vw, 5rem)/.96 Georgia, serif; letter-spacing: -.07em; margin: 1rem 0; }
+.edit-pattern-complete p { color: var(--edit-muted); font: 1.1rem/1.5 Georgia, serif; }
+@media (max-width: 780px) {
+  .edit-pattern-intro, .edit-pattern-detail-head { grid-template-columns: 1fr; gap: 1.5rem; padding: 3rem 0; }
+  .axis-content .edit-pattern-intro h1, .axis-content .edit-pattern-detail-head h1 { font-size: clamp(3.1rem, 12vw, 5.5rem); }
+  .edit-pattern-row { grid-template-columns: 2rem minmax(0, 1fr) 2rem; gap: 1rem; }
+  .edit-pattern-progress { grid-column: 2; grid-row: 2; flex-direction: row; align-items: baseline; gap: .8rem; }
+  .edit-pattern-progress strong { font-size: 1.6rem; }
+  .edit-pattern-arrow { grid-column: 3; grid-row: 1; }
+  .edit-pattern-stages > div { padding: .8rem .5rem; }
+  .edit-pattern-stages > div:first-child { padding-left: 0; }
+  .edit-pattern-stages span { font-size: 8px; }
+  .edit-pattern-prompt { flex-direction: column; }
+}

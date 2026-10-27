@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const [selection, setSelection] = useState(0);
   if (!hydrated) return <WorkspaceLoading/>;
   const stats = computeDashboardStats(games, analyses);
-  const due = duePuzzles(puzzles);
+  const due = duePuzzles(puzzles.filter(puzzle => puzzle.source !== "lichess"));
   const positions = games.flatMap(game => (analyses[game.id]?.issues ?? []).map(issue => ({ game, issue }))).slice(0, 12);
   const selected = positions[Math.min(selection, positions.length - 1)];
   const recent = games.slice(0, 5);

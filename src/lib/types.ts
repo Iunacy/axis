@@ -2,6 +2,7 @@ export type Platform = "chesscom" | "lichess" | "pgn";
 export type TimeClass = "bullet" | "blitz" | "rapid" | "daily" | "classical" | "correspondence";
 export type GameResult = "win" | "loss" | "draw";
 export type Phase = "opening" | "middlegame" | "endgame";
+export type PatternId = "back-rank" | "smothered" | "arabian" | "anastasia" | "boden" | "swallows-tail";
 
 export type Motif =
   | "hanging_piece"
@@ -68,7 +69,7 @@ export interface PuzzleRow {
   solution_san: string[];
   reply_san: string[];
   theme: Motif;
-  severity: "blunder" | "mistake" | "inaccuracy";
+  severity?: "blunder" | "mistake" | "inaccuracy";
   user_side: "w" | "b";
   source_url: string | null;
   due_at?: string;
@@ -82,6 +83,13 @@ export interface PuzzleRow {
   difficulty?: "easy" | "medium" | "hard";
   played_san?: string;
   solution_lines_uci?: string[][];
+  source?: "game" | "lichess";
+  pattern?: PatternId;
+  rating?: number;
+  rating_deviation?: number;
+  themes?: string[];
+  opening_tags?: string[];
+  license?: "CC0-1.0";
 }
 
 export interface PuzzleReview {

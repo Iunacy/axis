@@ -9,6 +9,7 @@
     "lint": "eslint",
     "postinstall": "node scripts/copy-stockfish.mjs",
     "test": "tsx --test tests/*.test.ts",
+    "puzzles:verify": "tsx scripts/verify-pattern-catalog.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

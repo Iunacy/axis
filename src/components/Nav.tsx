@@ -16,6 +16,7 @@ export default function Nav() {
     { href: "/dashboard", label: t.nav.dashboard },
     { href: "/games", label: t.nav.games },
     { href: "/training", label: t.axis.training },
+    { href: "/patterns", label: locale === "fr" ? "Motifs" : "Patterns" },
     { href: "/lessons", label: t.nav.lessons },
     { href: "/masters", label: t.nav.masters },
     { href: "/settings", label: t.nav.settings },
