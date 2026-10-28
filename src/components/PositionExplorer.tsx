@@ -11,29 +11,38 @@ export default function PositionExplorer({ fen, history, initial, onEvaluation, 
   const { locale } = useI18n();
   const [depth, setDepth] = useState(16);
   const [multiPv, setMultiPv] = useState(3);
-  const [result, setResult] = useState(initial);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const identity = JSON.stringify([fen, history]);
+  const result = initial;
+  const [request, setRequest] = useState<{ identity: string; busy: boolean; error: string | null }>({ identity, busy: false, error: null });
+  if (request.identity !== identity) setRequest({ identity, busy: false, error: null });
+  const busy = request.identity === identity && request.busy;
+  const error = request.identity === identity ? request.error : null;
+  const running = useRef(false);
   const engine = useRef<Engine | null>(null);
   const generation = useRef(0);
   useEffect(() => () => { generation.current += 1; engine.current?.destroy(); }, []);
+  useEffect(() => () => {
+    generation.current += 1;
+    if (running.current) { engine.current?.destroy(); engine.current = null; running.current = false; }
+  }, [identity]);
 
-  function cancel() { generation.current += 1; engine.current?.destroy(); engine.current = null; setBusy(false); }
+  function cancel() { generation.current += 1; engine.current?.destroy(); engine.current = null; running.current = false; setRequest({ identity, busy: false, error: null }); }
 
   async function analyze() {
+    if (running.current) return;
     const current = ++generation.current;
-    const worker = new Engine(); engine.current = worker;
-    setBusy(true); setError(null);
+    const worker = engine.current ?? new Engine(); engine.current = worker; running.current = true;
+    setRequest({ identity, busy: true, error: null });
     try {
       const value = await worker.analyze(fen, { depth, nodes: depth === 12 ? 150000 : depth === 16 ? 500000 : 1000000, multiPv }, history);
       if (current !== generation.current) return;
-      setResult(value); onEvaluation(value);
-    } catch (cause) { if (current === generation.current) setError(cause instanceof Error ? cause.message : "Stockfish is unavailable."); }
-    finally { worker.destroy(); if (current === generation.current) { engine.current = null; setBusy(false); } }
+      onEvaluation(value);
+    } catch (cause) { if (current === generation.current) { engine.current = null; setRequest({ identity, busy: false, error: cause instanceof Error ? cause.message : "Stockfish is unavailable." }); } }
+    finally { if (current === generation.current) { running.current = false; setRequest(value => value.identity === identity ? { ...value, busy: false } : value); } }
   }
 
   return <section className="axis-position-explorer" aria-label={locale === "fr" ? "Explorateur de position" : "Position explorer"}>
-    <div className="axis-explorer-heading"><span className="edit-kicker">{locale === "fr" ? "EXPLORATEUR DE POSITION" : "POSITION EXPLORER"}</span><strong>{result ? evaluationLabel(result) : "—"}</strong></div>
+    <div className="axis-explorer-heading"><h2>{locale === "fr" ? "Explorateur de position" : "Position explorer"}</h2><strong>{result ? evaluationLabel(result) : "—"}</strong></div>
     <p>{locale === "fr" ? "Explorez des variantes sans modifier la partie enregistrée. L’évaluation est toujours donnée du point de vue des Blancs." : "Explore alternatives without changing the recorded game. Evaluations always use White’s perspective."}</p>
     <div className="axis-explorer-controls"><label>{locale === "fr" ? "Profondeur visée" : "Target depth"}<select value={depth} disabled={busy} onChange={event => setDepth(Number(event.target.value))}><option value={12}>12</option><option value={16}>16</option><option value={20}>20</option></select></label><label>{locale === "fr" ? "Lignes" : "Lines"}<select value={multiPv} disabled={busy} onChange={event => setMultiPv(Number(event.target.value))}><option value={1}>1</option><option value={3}>3</option><option value={5}>5</option></select></label>{busy ? <button type="button" className="axis-button secondary" onClick={cancel}>{locale === "fr" ? "Annuler" : "Cancel"}</button> : <button type="button" className="axis-button" onClick={() => void analyze()}>{locale === "fr" ? "Analyser la position" : "Analyze position"}</button>}</div>
     {busy && <p role="status">{locale === "fr" ? "Stockfish calcule les lignes…" : "Stockfish is calculating alternatives…"}</p>}

@@ -904,6 +904,123 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .axis-graph-grade circle { fill: var(--grade-bg); stroke: var(--edit-paper); stroke-width: 1.5; }
 .axis-graph-grade text { fill: var(--grade-ink); font: 700 10px var(--font-geist-mono), monospace; letter-spacing: -.08em; }
 .axis-graph-grade:focus-visible circle, .axis-graph-grade:hover circle { stroke: var(--edit-ink); stroke-width: 2; }
+body:has(.axis-workspace) .edit-site-header { min-height: 56px; padding-block: 6px; gap: 1.5rem; }
+body:has(.axis-workspace) .edit-site-brand { font-size: 30px; }
+body:has(.axis-workspace) .edit-site-edition { display: none; }
+body:has(.axis-workspace) .edit-site-navigation { grid-column: 3; }
+body:has(.axis-workspace) .axis-footer { display: none; }
+.axis-content main.axis-workspace { width: min(100% - 3rem, 1720px); height: calc(100dvh - 56px); padding: 12px 0; display: flex; flex-direction: column; gap: 12px; animation: none; }
+.axis-workspace-heading { display: flex; align-items: center; gap: 12px; min-height: 44px; flex: 0 0 auto; }
+.axis-workspace-heading > a { display: grid; place-items: center; min-width: 44px; min-height: 44px; }
+.axis-workspace-heading > div { min-width: 0; flex: 1; }
+.axis-content .axis-workspace-heading h1 { font: 400 1.45rem/1.1 Georgia, serif; letter-spacing: -.03em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.axis-workspace-heading p { font-size: 11px; color: var(--edit-muted); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.axis-workspace-grid { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(320px, .9fr); grid-template-areas: "board panel"; grid-template-rows: minmax(0, 1fr); gap: clamp(16px, 3vw, 48px); }
+.axis-workspace .axis-board-column { min-height: 0; border: 0; display: flex; flex-direction: column; align-items: center; container-type: size; scroll-margin-top: 10px; }
+.axis-workspace .axis-board-focus:not(.is-immersive) { width: min(100%, calc(100cqh - 210px)); position: relative; }
+.axis-workspace .axis-board-focus:not(.is-immersive) .axis-focus-toolbar { position: absolute; top: -3px; right: 0; padding: 0; z-index: 2; }
+.axis-workspace .axis-board-focus:not(.is-immersive) .axis-focus-toolbar > span, .axis-workspace .axis-board-focus:not(.is-immersive) .axis-focus-toolbar button > span { display: none; }
+.axis-workspace .axis-board-focus:not(.is-immersive) .axis-focus-toolbar button { min-height: 28px; padding: 5px; border: 0; }
+.axis-workspace .axis-board-player { height: 28px; padding: 0; min-width: 0; font-size: 11px; }
+.axis-workspace .axis-board-player:first-child { padding-right: 38px; }
+.axis-workspace .axis-board-player strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.axis-workspace .axis-board-root { max-width: none; gap: 4px; }
+.axis-workspace .axis-annotation-controls { gap: 8px; flex-wrap: nowrap; min-height: 28px; font-size: 10px; }
+.axis-workspace .axis-annotation-controls button { min-height: 28px; padding: 3px 5px; border: 0; }
+.axis-workspace .axis-annotation-controls span { display: none; }
+.axis-navigation { display: flex; align-items: center; justify-content: space-between; gap: 3px; border-block: 1px solid var(--edit-line); }
+.axis-navigation button { min-width: 40px; min-height: 40px; display: grid; place-items: center; }
+.axis-navigation button:hover:not(:disabled), .axis-workspace-tools button:hover { background: var(--edit-panel); color: var(--edit-accent); }
+.axis-navigation button:disabled { opacity: .35; cursor: default; }
+.axis-navigation output { text-align: center; flex: 1; font: 11px var(--font-geist-mono), monospace; color: var(--edit-muted); white-space: nowrap; }
+.axis-workspace-tools { display: flex; align-items: center; gap: 8px; position: relative; font-size: 11px; }
+.axis-workspace-tools > button { min-height: 36px; padding: 5px; display: inline-flex; align-items: center; gap: 6px; }
+.axis-workspace-tools > output { margin-left: auto; white-space: nowrap; font: 11px var(--font-geist-mono), monospace; }
+.axis-workspace-tools > output span { color: var(--edit-muted); }
+.axis-board-settings > summary { cursor: pointer; list-style: none; min-width: 32px; min-height: 36px; display: grid; place-items: center; }
+.axis-board-settings > summary::-webkit-details-marker { display: none; }
+.axis-board-settings > div { position: absolute; z-index: 22; right: 0; bottom: 100%; padding: 12px; min-width: 230px; max-width: 100%; background: var(--edit-paper); border: 1px solid var(--edit-line); box-shadow: 0 8px 24px #0002; }
+.axis-board-settings label { display: flex; align-items: center; gap: 10px; min-height: 40px; }
+.axis-board-settings select { color: var(--edit-ink); background: var(--edit-panel); margin-left: auto; padding: 6px; }
+.axis-board-settings input { accent-color: var(--edit-accent); }
+.axis-board-settings button { display: inline-flex; gap: 6px; align-items: center; min-height: 40px; padding-right: 14px; }
+.axis-workspace .axis-graph { display: grid; gap: 0; width: min(100%, calc(100cqh - 210px)); padding: 6px 0 0; margin: 0; flex: 0 0 auto; }
+.axis-workspace .axis-graph p { display: none; }
+.axis-workspace .axis-graph svg { height: 44px; width: 100%; margin: 0; display: block; }
+.axis-workspace .axis-graph input { width: 100%; min-height: 20px; height: 20px; margin: 0; accent-color: var(--edit-accent); }
+.axis-workspace-hint { font: 10px var(--font-geist-mono), monospace; color: var(--edit-muted); padding: 16px 0; }
+.axis-workspace .axis-review-panel { display: flex; flex-direction: column; min-height: 0; gap: 0; padding-left: clamp(12px, 2vw, 28px); border-left: 1px solid var(--edit-line); border-top: 0; }
+.axis-workspace .axis-analysis-tabs { flex: 0 0 auto; gap: 24px; }
+.axis-workspace .axis-analysis-tabs button { min-height: 44px; }
+.axis-review-scroll { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--edit-line) transparent; }
+.axis-workspace .axis-analysis-tab-content:not([hidden]) { gap: 16px; padding: 16px 10px 16px 0; }
+.axis-workspace .axis-timeline-panel:not([hidden]) { height: 100%; padding: 0; }
+.axis-timeline { overflow: auto; min-height: 0; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--edit-line) transparent; }
+.axis-timeline .axis-move-labels { position: sticky; top: 0; z-index: 1; background: var(--edit-paper); padding-block: 12px; }
+.axis-timeline .axis-moves { border: 0; gap: 0; max-height: none; overflow: visible; padding: 0; background: transparent; }
+.axis-timeline .axis-moves > span { display: flex; align-items: center; padding: 8px; color: var(--edit-muted); font-size: 12px; }
+.axis-timeline .axis-moves button { min-height: 40px; padding: 6px 12px; font-size: 14px; border-bottom: 1px solid color-mix(in srgb, var(--edit-line) 50%, transparent); }
+.axis-timeline .axis-moves button.active { background: var(--edit-accent); color: var(--edit-paper); }
+.axis-workspace .axis-grade-summary { margin: 0; padding: 0 0 12px; }
+.axis-workspace .axis-grade-summary > summary { cursor: pointer; min-height: 32px; padding-block: 8px; color: var(--edit-ink); font-size: 12px; }
+.axis-workspace .axis-grade-summary details { font-size: 11px; }
+.axis-workspace .axis-grade-summary > p { font-size: 11px; }
+.axis-workspace .axis-analysis-summary { padding-bottom: 16px; }
+.axis-workspace .axis-issue-detail { margin: 0; padding-block: 16px; }
+.axis-workspace .axis-issue-detail h2 { font: 400 1.5rem Georgia, serif; margin-block: 12px; letter-spacing: -.03em; }
+.axis-workspace .axis-issue-detail p { font-size: 13px; line-height: 1.6; }
+.axis-workspace .axis-issue-detail small, .axis-practice-evidence { font-size: 11px; color: var(--edit-muted); }
+.axis-practice-teaching { padding-block: 8px; border-block: 1px solid var(--edit-line); }
+.axis-practice-teaching summary { cursor: pointer; min-height: 44px; padding-block: 12px; }
+.axis-practice-teaching h3 { margin-block: 12px; }
+.axis-practice-teaching ol { padding-left: 20px; list-style: decimal; font-size: 13px; line-height: 1.6; }
+.axis-practice-teaching li { margin-bottom: 8px; }
+.axis-workspace .axis-issue-list button { display: flex; flex-wrap: wrap; gap: 6px 10px; text-align: left; padding-block: 12px; }
+.axis-workspace .axis-issue-list button > span:last-child { width: 100%; color: var(--edit-accent); font-size: 11px; }
+.axis-workspace .axis-issue-list button > span:nth-child(2) { font-size: 11px; }
+.axis-workspace .axis-position-explorer { margin: 0; padding-bottom: 16px; border-bottom-width: 1px; }
+.axis-workspace .axis-explorer-heading { margin-bottom: 8px; }
+.axis-workspace .axis-explorer-heading > strong { font-size: 1.8rem; letter-spacing: -.03em; }
+.axis-workspace .axis-position-explorer > p { font: 13px/1.6 var(--font-geist-sans), sans-serif; }
+.axis-workspace .axis-explorer-controls { margin-block: 16px; }
+.axis-workspace .axis-explorer-controls label, .axis-workspace .axis-explorer-evidence, .axis-workspace .axis-position-explorer > small { font-size: 11px; }
+.axis-variations header { display: flex; justify-content: space-between; align-items: center; }
+.axis-variations header button { display: inline-flex; gap: 6px; align-items: center; min-height: 40px; font-size: 12px; }
+.axis-variations > div { display: flex; flex-wrap: wrap; gap: 2px; align-items: center; border-bottom: 1px solid var(--edit-line); padding-block: 8px; }
+.axis-variations > div > span { color: var(--edit-muted); padding: 6px; font-size: 11px; }
+.axis-variations > div.active { background: var(--edit-panel); }
+.axis-variations button { padding: 4px 8px; min-height: 36px; font: 12px var(--font-geist-mono), monospace; }
+.axis-variations button[aria-current=step] { background: var(--edit-accent); color: var(--edit-paper); }
+.axis-explore-intro p, .axis-line-comparison p { font-size: 13px; line-height: 1.6; color: var(--edit-muted); margin-block: 12px; }
+@media (max-width: 780px) and (orientation: portrait) {
+  .axis-content main.axis-workspace { width: calc(100% - 24px); height: auto; min-height: calc(100dvh - 56px); padding-top: 8px; }
+  body:has(.axis-workspace) .edit-site-navigation { grid-column: auto; }
+  .axis-workspace-heading { gap: 6px; }
+  .axis-content .axis-workspace-heading h1 { font-size: 1.2rem; }
+  .axis-workspace-heading p { font-size: 10px; }
+  .axis-workspace-grid { display: flex; flex-direction: column; gap: 16px; }
+  .axis-workspace .axis-board-column { container-type: normal; }
+  .axis-workspace .axis-board-focus:not(.is-immersive), .axis-workspace .axis-graph { width: 100%; }
+  .axis-workspace .axis-review-panel { border-left: 0; padding-left: 0; border-top: 1px solid var(--edit-line); min-height: 300px; }
+  .axis-workspace .axis-review-scroll { max-height: 65dvh; }
+  .axis-workspace .axis-timeline-panel:not([hidden]) { height: 60dvh; }
+  .axis-navigation button { min-width: 44px; min-height: 44px; }
+  .axis-workspace-tools > button, .axis-board-settings > summary { min-height: 44px; }
+  .axis-workspace .axis-annotation-controls button { min-height: 44px; }
+  .axis-workspace .axis-annotation-controls span { font-size: 9px; max-width: 170px; }
+  .axis-workspace .axis-graph svg { height: 44px; }
+  .axis-workspace .axis-graph input { height: 24px; }
+  .axis-workspace .axis-timeline .axis-moves button { min-height: 44px; }
+}
+@media (orientation: landscape) and (max-height: 600px) {
+  .axis-content main.axis-workspace { padding-block: 4px; gap: 4px; width: calc(100% - 24px); }
+  .axis-workspace-heading { display: none; }
+  .axis-workspace-grid { grid-template-columns: minmax(0, 1fr) minmax(260px, 1fr); gap: 16px; }
+  .axis-workspace .axis-board-focus:not(.is-immersive) { width: min(100%, calc(100cqh - 112px)); }
+  .axis-workspace .axis-annotation-controls { display: none; }
+  .axis-workspace .axis-graph, .axis-workspace-hint { display: none; }
+  .axis-workspace .axis-board-player { height: 22px; }
+}
 @media (max-width: 780px) {
   .edit-pattern-intro, .edit-pattern-detail-head { grid-template-columns: 1fr; gap: 1.5rem; padding: 3rem 0; }
   .axis-content .edit-pattern-intro h1, .axis-content .edit-pattern-detail-head h1 { font-size: clamp(3.1rem, 12vw, 5.5rem); }

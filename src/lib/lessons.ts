@@ -381,6 +381,13 @@ const TEMPLATES: LessonTemplate[] = [
 const BY_SLUG = new Map(TEMPLATES.map((t) => [t.slug, t]));
 const BY_THEME = new Map(TEMPLATES.map((t) => [t.theme, t]));
 
+export function lessonTeaching(theme: Motif, locale: Locale) {
+  const template = BY_THEME.get(theme === "missed_mate" ? "missed_tactic" : theme);
+  if (!template) return null;
+  const content = template.i18n[locale];
+  return { title: content.title, concept: content.concept, steps: content.theorySteps };
+}
+
 function toExamples(puzzles: PuzzleRow[], theme: Motif | Motif[], n: number): LessonExample[] {
   const themes = Array.isArray(theme) ? theme : [theme];
   return puzzles
