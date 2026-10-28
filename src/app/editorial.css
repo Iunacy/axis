@@ -874,14 +874,19 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .axis-engine-lines button > span { font: 10px/1.6 var(--font-geist-mono), monospace; overflow-wrap: anywhere; }
 .axis-engine-lines button > strong { font: 1.1rem Georgia, serif; }
 .axis-partial-review { padding: .8rem 0; color: var(--edit-accent); font: 10px var(--font-geist-mono), monospace; }
-.axis-move-badge { --grade-bg: #596c4d; --grade-ink: #fff; display: inline-flex; width: 22px; height: 22px; flex: 0 0 22px; align-items: center; justify-content: center; background: var(--grade-bg); color: var(--grade-ink); border-radius: 50%; font: 700 11px/1 var(--font-geist-mono), monospace; letter-spacing: -.08em; }
-.axis-grade-brilliant { --grade-bg: #256c68; --grade-ink: #fff; }
-.axis-grade-great { --grade-bg: #3d6e5d; --grade-ink: #fff; }
-.axis-grade-best, .axis-grade-excellent { --grade-bg: #596c4d; --grade-ink: #fff; }
-.axis-grade-good, .axis-grade-book { --grade-bg: #656b62; --grade-ink: #fff; }
-.axis-grade-inaccuracy { --grade-bg: #856027; --grade-ink: #fff; }
-.axis-grade-mistake, .axis-grade-miss { --grade-bg: #985431; --grade-ink: #fff; }
-.axis-grade-blunder { --grade-bg: #943f37; --grade-ink: #fff; }
+.axis-move-badge { display: inline-flex; width: 22px; height: 22px; flex: 0 0 22px; align-items: center; justify-content: center; background: var(--grade-bg); color: var(--grade-ink); border-radius: 50%; font: 700 11px/1 var(--font-geist-mono), monospace; letter-spacing: -.04em; }
+.axis-move-badge svg { width: 65%; height: 65%; }
+/* Classification colors stay constant across board themes and application themes. */
+.axis-grade-brilliant { --grade-bg: #1baca6; --grade-ink: #fff; }
+.axis-grade-great { --grade-bg: #5c8bb0; --grade-ink: #fff; }
+.axis-grade-best { --grade-bg: #9bc700; --grade-ink: #fff; }
+.axis-grade-excellent { --grade-bg: #96bc4b; --grade-ink: #fff; }
+.axis-grade-good { --grade-bg: #96af8b; --grade-ink: #fff; }
+.axis-grade-book { --grade-bg: #a88865; --grade-ink: #fff; }
+.axis-grade-inaccuracy { --grade-bg: #f7c045; --grade-ink: #fff; }
+.axis-grade-mistake { --grade-bg: #e6912c; --grade-ink: #fff; }
+.axis-grade-miss { --grade-bg: #ff7769; --grade-ink: #fff; }
+.axis-grade-blunder { --grade-bg: #ca3431; --grade-ink: #fff; }
 .axis-board-grade { position: absolute; right: 1px; top: 1px; z-index: 18; pointer-events: none; }
 .axis-board-grade .axis-move-badge { width: clamp(18px, 2vw, 28px); height: clamp(18px, 2vw, 28px); }
 .axis-moves button { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
