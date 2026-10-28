@@ -89,7 +89,18 @@ export class Engine {
       await this.send(positionCommand(fen, context));
       const command = limits.movetimeMs ? `go movetime ${limits.movetimeMs}` : `go depth ${limits.depth} nodes ${limits.nodes}`;
       const lines = await this.send(command, line => line.startsWith("bestmove "), 120000);
-      const result = parseEngineResult(fen, lines, limits.multiPv, context);
+      let result: PositionEvaluation;
+      try { result = parseEngineResult(fen, lines, limits.multiPv, context); }
+      catch (error) {
+        // A node/time cap can stop an iteration after its best move changes,
+        // before an exact score (or every MultiPV line) has been emitted.
+        // Keep the evidence checks strict and repeat once with a bounded larger
+        // budget on the same worker, rather than saving a bound as an evaluation.
+        if (!(error instanceof Error) || !error.message.includes("incomplete evaluation")) throw error;
+        await this.send(positionCommand(fen, context));
+        const retry = await this.send(`go depth ${Math.max(16, limits.depth)} nodes ${Math.min(2000000, Math.max(160000, limits.nodes * 4))}`, line => line.startsWith("bestmove "), 120000);
+        result = parseEngineResult(fen, retry, limits.multiPv, context);
+      }
       await cacheEvaluation(key, fen, result, epoch);
       return result;
     }).catch(error => { this.destroy(); throw error; });

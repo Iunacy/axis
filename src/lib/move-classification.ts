@@ -99,6 +99,7 @@ export function verificationCandidates(fens: string[], moves: { uci: string; col
     const sacrifice = move.uci === before.bestUci && sustainedSacrifice(fens[index], before.pvUci, false);
     const previous = evaluations[index - 1];
     const opportunity = move.uci === before.bestUci && previous && expectedLoss(before, previous, move.color) >= .15;
-    return { index, priority: sacrifice ? 3 : opportunity ? 2 : loss >= .05 ? 1 + loss : 0 };
+    const uncertain = Math.min(before.depth ?? 0, after.depth ?? 0) < CLASSIFICATION_POLICY.minimumDepth;
+    return { index, priority: sacrifice ? 3 : opportunity ? 2 : loss >= .05 ? 1 + loss : uncertain ? .5 : 0 };
   }).filter(row => row.priority > 0).sort((a, b) => b.priority - a.priority || a.index - b.index).slice(0, 6).map(row => row.index).sort((a, b) => a - b);
 }

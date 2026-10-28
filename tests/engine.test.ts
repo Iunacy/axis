@@ -103,3 +103,37 @@ test("engine deduplicates concurrent searches, reuses persisted results and canc
   await assert.rejects(cancelled, /cancelled/);
   await assert.rejects(replacement.analyze(start), /cancelled/);
 });
+
+test("a capped incomplete iteration is retried once on the same worker without relaxing evidence", async t => {
+  await clearEvaluationCache();
+  const original = Object.getOwnPropertyDescriptor(globalThis, "Worker");
+  let workers = 0;
+  const searches: string[] = [];
+  class FakeWorker extends EventTarget {
+    constructor() { super(); workers++; }
+    postMessage(command: string) {
+      queueMicrotask(() => {
+        const emit = (data: string) => this.dispatchEvent(new MessageEvent("message", { data }));
+        if (command === "uci") emit("uciok");
+        if (command === "isready") emit("readyok");
+        if (command.startsWith("go ")) {
+          searches.push(command);
+          if (searches.length === 1) emit("info depth 12 score cp 70 lowerbound pv d2d4 d7d5");
+          else emit(output[0]);
+          emit(output.at(-1)!);
+        }
+      });
+    }
+    terminate() {}
+  }
+  Object.defineProperty(globalThis, "Worker", { configurable: true, value: FakeWorker });
+  t.after(() => { if (original) Object.defineProperty(globalThis, "Worker", original); else Reflect.deleteProperty(globalThis, "Worker"); });
+  t.mock.method(globalThis, "fetch", async () => new Response(JSON.stringify({ js: "stockfish-18-lite-single.js" })));
+  const engine = new Engine();
+  t.after(() => engine.destroy());
+  const result = await engine.analyze(start, { depth: 12, nodes: 40000 });
+  assert.equal(workers, 1);
+  assert.deepEqual(searches, ["go depth 12 nodes 40000", "go depth 16 nodes 160000"]);
+  assert.equal(result.cpWhite, 35);
+  assert.equal(result.bestUci, "e2e4");
+});

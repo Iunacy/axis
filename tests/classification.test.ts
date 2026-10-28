@@ -88,3 +88,11 @@ test("temporary material losses, insufficient depth and contradictory position e
   assert.equal(classifyMove({ ...input, before: { ...before, cpWhite: NaN, depth: 20 } }).classification, null);
   assert.equal(classifyMove({ ...input, fenAfter: start }).classification, null);
 });
+
+test("selective verification includes uncertain positions without awarding unsupported labels", async () => {
+  const { verificationCandidates } = await import("../src/lib/move-classification");
+  const before = simulated(start, ["e2e4", "e7e5"], [100, 800, 100], 8);
+  const after = simulated(e4.fen(), ["e7e5", "g1f3"], [100, 800, 100], 8);
+  assert.deepEqual(verificationCandidates([start, e4.fen()], [{ uci: "e2e4", color: "w" }], [before, after]), [0]);
+  assert.equal(classifyMove({ fen: start, fenAfter: e4.fen(), uci: "e2e4", before, after, ply: 1 }).classification, null);
+});
