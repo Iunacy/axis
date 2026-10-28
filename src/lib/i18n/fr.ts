@@ -297,7 +297,7 @@ const fr: Dict = {
     allowed_mate: "Attaques de mat subies",
     missed_mate: "Mats ratés",
     bad_trade: "Mauvais échanges (perdants)",
-    other: "Glissements positionnels",
+    other: "Baisses d’évaluation",
   },
 };
 

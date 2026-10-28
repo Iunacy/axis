@@ -209,15 +209,15 @@ function ReviewWorkspace({ game, parsed, analysis }: { game: GameRow; parsed: Pa
         }}>
           {([{ id: "moves", name: t.ui.moves, count: parsed.moves.length }, { id: "moments", name: t.axis.issues, count: analysis?.issues.length ?? 0 }, { id: "explore", name: locale === "fr" ? "Analyse" : "Explore" }] as const).map(item => <button key={item.id} role="tab" id={`${item.id}-tab`} tabIndex={tab === item.id ? 0 : -1} aria-controls={`${item.id}-panel`} aria-selected={tab === item.id} onClick={() => setTab(item.id)}>{item.name}{"count" in item && <span>{item.count}</span>}</button>)}
         </div>
+        <AnalysisRunner key={game.id} pendingCount={game.analysis_status === "done" ? 0 : 1} gameId={game.id}/>
         <div className="axis-review-scroll">
-          {analysis?.complete === false && <p className="axis-partial-review" role="status">{locale === "fr" ? "Revue partielle" : "Partial review"} · {(analysis.evaluations?.length ?? 1) - 1} / {parsed.moves.length}</p>}
+          {analysis?.complete === false && <p className="axis-partial-review" role="status">{locale === "fr" ? "Revue partielle" : "Provisional review"} · {(analysis.evaluations?.length ?? 1) - 1} / {parsed.moves.length}</p>}
           <div id="moves-panel" role="tabpanel" aria-labelledby="moves-tab" hidden={tab !== "moves"} className="axis-analysis-tab-content axis-timeline-panel">
             <MoveTimeline game={parsed} assessments={analysis?.moveAssessments ?? NO_ASSESSMENTS} ply={practice || view.isVariation ? null : view.node.gamePly} onSelect={goTo} visible={tab === "moves"}/>
           </div>
           <div id="moments-panel" role="tabpanel" aria-labelledby="moments-tab" hidden={tab !== "moments"} className="axis-analysis-tab-content">
-            {analysis && <ReviewSummary analysis={analysis} game={game}/>}
-            <AnalysisRunner pendingCount={game.analysis_status === "done" ? 0 : 1} gameId={game.id}/>
-            {!analysis && <p className="axis-muted">{t.axis.unanalysed}</p>}
+            {analysis && <ReviewSummary analysis={analysis} game={game} onPractice={issue => startPractice(issue, Date.now())}/>}
+            {!analysis && <p className="axis-muted">{locale === "fr" ? "Les décisions importantes apparaîtront ici après l’analyse." : "Critical decisions will appear here as analysis progresses."}</p>}
             {practice && issue && <ReviewCoach issue={issue} practice={practice} lessonSlug={lesson?.slug} onReveal={() => { recordAttempt(false); dispatch({ type: "reveal" }); }} onRetry={() => dispatch({ type: "retry", now: Date.now() })} onLine={() => {
               try {
                 const chess = new Chess(issue.fenBefore);

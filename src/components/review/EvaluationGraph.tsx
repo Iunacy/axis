@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { MoveSymbol } from "@/components/MoveBadge";
 import { CLASSIFICATION_META } from "@/lib/classification-meta";
 import type { MoveAssessment } from "@/lib/types";
 
@@ -24,7 +25,7 @@ export default function EvaluationGraph({ evaluations, assessments, locale, ply,
     <line x1={x(selected)} y1="0" x2={x(selected)} y2="44" stroke="currentColor" opacity=".7"/>
     {assessments.filter(move => move.classification && ["brilliant", "great", "inaccuracy", "mistake", "miss", "blunder"].includes(move.classification) && move.ply < evaluations.length).map(move => {
       const meta = CLASSIFICATION_META[move.classification!];
-      return <g key={move.ply} transform={`translate(${x(move.ply)} ${y(evaluations[move.ply])})`} className={`axis-graph-grade axis-grade-${move.classification}`} role="button" tabIndex={0} aria-label={`${locale === "fr" ? "Demi-coup" : "Ply"} ${move.ply}: ${meta.name[locale]}`} onClick={() => onSelect(move.ply)} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(move.ply); } }}><title>{meta.name[locale]}</title><circle r="7"/><text textAnchor="middle" dominantBaseline="central" style={{ fontSize: 8 }}>{meta.glyph}</text></g>;
+      return <g key={move.ply} transform={`translate(${x(move.ply)} ${y(evaluations[move.ply])})`} className={`axis-graph-grade axis-grade-${move.classification}`} role="button" tabIndex={0} aria-label={`${locale === "fr" ? "Demi-coup" : "Ply"} ${move.ply}: ${meta.name[locale]}`} onClick={() => onSelect(move.ply)} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(move.ply); } }}><title>{meta.name[locale]}</title><circle r="7"/><MoveSymbol classification={move.classification!} x={-5} y={-5} size={10}/></g>;
     })}
     </svg><input aria-label={label} type="range" min="0" max={Math.max(0, evaluations.length - 1)} value={Math.max(0, selected)} onChange={event => onSelect(Number(event.target.value))}/></div>;
 }

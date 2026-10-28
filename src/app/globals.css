@@ -434,11 +434,11 @@ a, button { touch-action: manipulation; }
 .axis-content, .axis-footer { margin-left: 224px; }
 .axis-content main { width: min(100% - 80px, 1440px); padding-block: 38px 64px; }
 .axis-content h1, .axis-content h2, .axis-content h3 { text-wrap: balance; }
-.axis-content h1 { font-family: var(--font-display), sans-serif; font-size: clamp(1.85rem, 3vw, 2.6rem); letter-spacing: -.04em; font-weight: 500; }
+.axis-content h1 { font-family: Georgia, serif; font-size: clamp(1.85rem, 3vw, 2.6rem); letter-spacing: -.04em; font-weight: 500; }
 .axis-nav { inset: 0 auto 0 0; width: 224px; border: 0; border-right: 1px solid var(--border); border-radius: 0; }
 .axis-brand { padding: 32px 24px 48px; gap: 10px; }
 .axis-brand-symbol { background: transparent; color: var(--signature); width: 32px; height: 32px; border-radius: 0; }
-.axis-wordmark { font-family: var(--font-display), sans-serif; font-size: 1.55rem; letter-spacing: -.03em; }
+.axis-wordmark { font-family: Georgia, serif; font-size: 1.55rem; letter-spacing: -.03em; }
 .axis-wordmark > span { font-family: var(--font-geist-sans), sans-serif; font-size: .62rem; letter-spacing: .01em; font-weight: 400; }
 .axis-nav-body { padding: 0 16px 20px; }
 .axis-nav-section { font-size: .69rem; color: var(--muted-foreground); padding: 0 12px 14px; }
@@ -470,19 +470,19 @@ a, button { touch-action: manipulation; }
 .axis-instrument h1 { font-size: clamp(1.85rem, 3vw, 2.6rem); }
 .axis-player p { font-size: .78rem; margin-top: 9px; }
 .axis-intelligence-stage { gap: 40px; }
-.axis-rating-heading strong { font-family: var(--font-display), sans-serif; font-size: 3.1rem; font-weight: 400; }
+.axis-rating-heading strong { font-family: Georgia, serif; font-size: 3.1rem; font-weight: 400; }
 .axis-rating-plot { height: 250px; }
 .axis-session-focus { background: var(--card); color: var(--foreground); border-radius: 0; border-left: 1px solid var(--border); padding: 2px 0 2px 32px; }
 .axis-session-heading h2 { font-size: .82rem; }
 .axis-session-heading > span { color: var(--muted-foreground); }
-.axis-session-content h3 { font-family: var(--font-display), sans-serif; font-size: 1.35rem; font-weight: 500; }
+.axis-session-content h3 { font-family: Georgia, serif; font-size: 1.35rem; font-weight: 500; }
 .axis-session-content p { color: var(--muted-foreground); max-width: 30ch; }
 .axis-session-symbol { color: var(--signature); width: 48px; }
 .axis-session-symbol > svg { width: 42px; }
 .axis-session-focus .axis-button { background: var(--primary); color: var(--primary-foreground); width: fit-content; }
 .axis-activity-line { gap: 24px; padding-block: 24px; }
 .axis-activity-line > div { display: grid; gap: 7px; }
-.axis-activity-line strong { font-family: var(--font-display), sans-serif; font-size: 1.75rem; font-weight: 400; }
+.axis-activity-line strong { font-family: Georgia, serif; font-size: 1.75rem; font-weight: 400; }
 .axis-activity-line span { font-size: .76rem; }
 .axis-recent-region .axis-panel-head h2, .axis-insight-region h2 { font-size: 1.05rem; }
 .axis-table th { font-weight: 400; font-size: .7rem; color: var(--muted-foreground); }
@@ -492,13 +492,13 @@ a, button { touch-action: manipulation; }
 .axis-result { border-radius: 3px; }
 .axis-training-counts { gap: 48px; padding-bottom: 26px; margin-bottom: 32px; }
 .axis-training-counts > div { display: grid; gap: 8px; }
-.axis-training-counts strong { font-family: var(--font-display), sans-serif; font-size: 2rem; font-weight: 400; }
+.axis-training-counts strong { font-family: Georgia, serif; font-size: 2rem; font-weight: 400; }
 .axis-empty { position: relative; max-width: 70ch; gap: 20px; padding-block: 48px; }
 .axis-empty-icon { display: grid; place-items: center; width: 64px; height: 64px; border: 1px solid var(--border); border-radius: 50%; color: var(--signature); }
-.axis-empty h2 { font-family: var(--font-display), sans-serif; font-size: 1.65rem; font-weight: 500; }
+.axis-empty h2 { font-family: Georgia, serif; font-size: 1.65rem; font-weight: 500; }
 .axis-empty p { max-width: 55ch; }
 .axis-welcome { padding-block: 28px; gap: 60px; }
-.axis-welcome h2 { font-family: var(--font-display), sans-serif; font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 400; letter-spacing: -.04em; }
+.axis-welcome h2 { font-family: Georgia, serif; font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 400; letter-spacing: -.04em; }
 .axis-connect-form { border-radius: var(--radius); border: 0; border-top: 1px solid var(--border); padding: 28px 0; background: transparent; }
 .axis-welcome form > p { margin-bottom: 10px; }
 .axis-welcome form .axis-button { justify-content: space-between; }
@@ -529,7 +529,7 @@ a, button { touch-action: manipulation; }
 .axis-evaluation strong { font-family: var(--font-geist-mono), monospace; font-size: 1.1rem; }
 .axis-graph svg { border-radius: 0; background: var(--card); }
 .axis-catalog > li > a { padding-block: 28px; }
-.axis-catalog h2, .axis-catalog h3 { font-family: var(--font-display), sans-serif; font-weight: 500; }
+.axis-catalog h2, .axis-catalog h3 { font-family: Georgia, serif; font-weight: 500; }
 .axis-master-workspace { gap: 40px; }
 .axis-settings-group { border-radius: var(--radius); }
 .axis-footer { border-top: 1px solid var(--border); padding-block: 22px; }
@@ -540,7 +540,7 @@ a, button { touch-action: manipulation; }
 .axis-analysis-tabs button span { font-size: .68rem; color: var(--muted-foreground); }
 .axis-analysis-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding-block: 2px 20px; border-bottom: 1px solid var(--border); }
 .axis-analysis-summary > div { display: grid; gap: 7px; }
-.axis-analysis-summary strong { font: 400 1.2rem var(--font-display), sans-serif; }
+.axis-analysis-summary strong { font: 400 1.2rem Georgia, serif; }
 .axis-analysis-summary span { font-size: .68rem; color: var(--muted-foreground); }
 .axis-analysis-tab-content:not([hidden]) { display: grid; gap: 20px; }
 .axis-analysis-tab-content[hidden] { display: none; }

@@ -298,7 +298,7 @@ const en = {
     allowed_mate: "Allowed mating attacks",
     missed_mate: "Missed mates",
     bad_trade: "Bad trades (losing exchanges)",
-    other: "Positional slips",
+    other: "Evaluation drops",
   } as Record<
     "hanging_piece" | "missed_tactic" | "allowed_fork" | "allowed_mate" | "missed_mate" | "bad_trade" | "other",
     string

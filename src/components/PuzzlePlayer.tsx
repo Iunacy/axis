@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { Check, X, SlidersHorizontal } from "lucide-react";
+import Link from "next/link";
+import { useStore } from "@/lib/store";
 import Board from "./Board";
 import { useI18n } from "@/lib/i18n";
 import { playPuzzleMove, preparePuzzle, replayPuzzlePath } from "@/lib/puzzle-solution";
@@ -62,6 +64,7 @@ function SinglePuzzle({
   nextDisabled: boolean;
 }) {
   const { t, locale } = useI18n();
+  const hasGame = useStore(state => state.games.some(game => game.id === puzzle.game_id));
   const prepared = useMemo(() => preparePuzzle(puzzle), [puzzle]);
   const restored = useMemo(() => prepared && progress?.puzzleId === puzzle.id ? replayPuzzlePath(prepared, progress.path) : null, [prepared, progress, puzzle.id]);
   const [fen, setFen] = useState(restored?.fen ?? puzzle.fen);
@@ -230,6 +233,7 @@ function SinglePuzzle({
           </h2>
           <p className="text-sm text-muted-foreground mt-1">
             {t.puzzles.counter(index, total)}
+            {hasGame && (!blind || state === "solved" || state === "revealed") && <> · <Link className="underline" href={`/review/${encodeURIComponent(puzzle.game_id)}`}>{locale === "fr" ? "Revenir à la partie" : "Return to game"}</Link></>}
             {puzzle.source_url && (!blind || state === "solved" || state === "revealed") && (
               <>
                 {" · "}
