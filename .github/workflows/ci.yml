@@ -1,0 +1,42 @@
+name: validate
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run puzzles:verify
+      - run: npm run openings:verify
+      - run: npm run engine:verify
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Verify production browser workflows
+        run: |
+          npm start > /tmp/axis-server.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://localhost:3000/dashboard > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run browser:verify
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-evidence
+          path: output/playwright/

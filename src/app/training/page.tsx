@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, X } from "lucide-react";
+import ContextPanel from "@/components/ContextPanel";
 import WorkspaceLoading from "@/components/WorkspaceLoading";
 import Link from "next/link";
 import { PageHeader, EmptyState } from "@/components/Workspace";
@@ -12,6 +13,7 @@ import { duePuzzles } from "@/lib/training";
 
 export default function TrainingPage() {
   const { t, locale } = useI18n();
+  const [historyOpen, setHistoryOpen] = useState(false);
   const hydrated = useStoreHydrated();
   const allPuzzles = useStore(s => s.puzzles);
   const puzzles = useMemo(() => allPuzzles.filter(puzzle => puzzle.source !== "lichess"), [allPuzzles]);
@@ -35,6 +37,6 @@ export default function TrainingPage() {
     <PageHeader title={t.axis.training} description={t.ui.trainingHelp} actions={<Link className="axis-button secondary" href="/games">{t.axis.backGames}</Link>}/>
     <div className="axis-training-counts"><div><strong>{due.length}</strong><span>{t.axis.queue}</span></div><div><strong>{reviews}</strong><span>{t.axis.reviewed}</span></div><div><strong>{solved}</strong><span>{t.axis.solved}</span></div><div><strong>{independentRate === null ? "—" : `${independentRate}%`}</strong><span>{locale === "fr" ? "Première tentative sans indice" : "First try, no hints"}</span></div></div>
     {due.length > 0 ? <section className="axis-training-stage"><PuzzlePlayer puzzles={due} onAdvance={advanceSession} progress={session?.active} onProgress={updateAttempt}/></section> : <EmptyState title={puzzles.length ? t.ui.trainingClearTitle : t.ui.reviewFirst} description={puzzles.length ? t.ui.trainingClear : t.ui.trainingEmpty}><Link href="/games" className="axis-button">{t.ui.reviewGame}</Link></EmptyState>}
-    {puzzles.length > 0 && <section className="axis-history"><h2>{t.axis.history}</h2><div className="axis-review-dots mt-5" aria-label={t.ui.recentReviews}>{puzzles.flatMap(p => p.reviews ?? []).sort((a,b) => a.at.localeCompare(b.at)).slice(-10).map((review,index) => <span key={`${review.at}:${index}`} className={review.solved ? "solved" : "failed"} title={`${new Date(review.at).toLocaleDateString(locale)} · ${review.solved ? t.axis.solved : t.puzzles.wrong}`} aria-label={review.solved ? t.axis.solved : t.puzzles.wrong}>{review.solved ? <Check size={12}/> : <X size={12}/>}</span>)}</div><p className="axis-muted">{puzzles.length} {t.nav.puzzles} · {reviews} {t.axis.reviewed}{nextDue && ` · ${t.axis.nextDue}: ${new Date(nextDue).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")}`}</p><div className="axis-history-list">{puzzles.slice(0, 20).map(p => <div key={p.id}><span>{t.motifs[p.theme].split(" (")[0]}</span><span>{p.reviews?.length ?? 0} {t.axis.reviewed}</span><span>{p.due_at ? new Date(p.due_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB") : t.axis.queue}</span></div>)}</div></section>}
+    {puzzles.length > 0 && <><button className="axis-link" onClick={() => setHistoryOpen(true)}>{t.axis.history}</button><ContextPanel title={t.axis.history} open={historyOpen} onClose={() => setHistoryOpen(false)} drawer><section className="axis-history"><h2>{t.axis.history}</h2><div className="axis-review-dots mt-5" aria-label={t.ui.recentReviews}>{puzzles.flatMap(p => p.reviews ?? []).sort((a,b) => a.at.localeCompare(b.at)).slice(-10).map((review,index) => <span key={`${review.at}:${index}`} className={review.solved ? "solved" : "failed"} title={`${new Date(review.at).toLocaleDateString(locale)} · ${review.solved ? t.axis.solved : t.puzzles.wrong}`} aria-label={review.solved ? t.axis.solved : t.puzzles.wrong}>{review.solved ? <Check size={12}/> : <X size={12}/>}</span>)}</div><p className="axis-muted">{puzzles.length} {t.nav.puzzles} · {reviews} {t.axis.reviewed}{nextDue && ` · ${t.axis.nextDue}: ${new Date(nextDue).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB")}`}</p><div className="axis-history-list">{puzzles.slice(0, 20).map(p => <div key={p.id}><span>{t.motifs[p.theme].split(" (")[0]}</span><span>{p.reviews?.length ?? 0} {t.axis.reviewed}</span><span>{p.due_at ? new Date(p.due_at).toLocaleDateString(locale === "fr" ? "fr-FR" : "en-GB") : t.axis.queue}</span></div>)}</div></section></ContextPanel></>}
   </main>;
 }
