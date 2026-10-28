@@ -1,4 +1,4 @@
-import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const pkgRoot = join(process.cwd(), "node_modules", "stockfish");
@@ -31,5 +31,9 @@ for (const f of files) {
   }
 }
 cpSync(join(pkgRoot, "Copying.txt"), join(dest, "COPYING.txt"));
-writeFileSync(join(dest, "manifest.json"), JSON.stringify({ js: entry }));
+const deep = files.find(f => /-single\.js$/.test(f) && !f.includes("lite"));
+if (!deep) throw new Error("Stockfish deep worker not found.");
+for (const file of files.filter(f => f.startsWith(deep.replace(/\.js$/, "")))) cpSync(join(src, file), join(dest, file));
+const version = JSON.parse(readFileSync(join(pkgRoot, "package.json"), "utf8")).version;
+writeFileSync(join(dest, "manifest.json"), JSON.stringify({ version, js: entry, deep }));
 console.log(`[copy-stockfish] copied ${copied} file(s), entry: ${entry}`);

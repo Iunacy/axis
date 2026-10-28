@@ -1,3 +1,4 @@
+import { ENGINE_ID } from "./engine-protocol";
 import { Chess, type Square } from "chess.js";
 import type { AnalysisSummary, Motif, MoveIssue, Phase, PositionEvaluation, MoveAssessment } from "./types";
 import { classifyMove, expectedLoss } from "./move-classification";
@@ -274,6 +275,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     positionEvals: g.evals.slice(),
     accuracyByColor: { w: accuracyByColor.w.count ? Math.round(accuracyByColor.w.sum / accuracyByColor.w.count * 10) / 10 : null, b: accuracyByColor.b.count ? Math.round(accuracyByColor.b.sum / accuracyByColor.b.count * 10) / 10 : null },
     analysisVersion: 3,
+    engineId: g.evals.every(evaluation => evaluation.engineId === ENGINE_ID) ? ENGINE_ID : undefined,
     moveAssessments: assessments,
     opening: identifyOpening(g.fens[0], g.moves.map(move => move.uci)),
   };

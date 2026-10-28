@@ -1,10 +1,12 @@
 "use client";
 
 import { cachedEvaluation, cacheEvaluation, evaluationCacheEpoch } from "./evaluation-cache";
-import { evaluationKey, parseEngineResult, positionCommand, searchLimits, type PositionHistory, type SearchOptions } from "./engine-protocol";
+import { engineIdentity, type EngineProfile, evaluationKey, parseEngineResult, positionCommand, searchLimits, type PositionHistory, type SearchOptions } from "./engine-protocol";
 import type { PositionEvaluation } from "./types";
 
 export class Engine {
+  constructor(private profile: EngineProfile = "default") {}
+
   private worker: Worker | null = null;
   private ready = false;
   private destroyed = false;
@@ -29,9 +31,11 @@ export class Engine {
     const response = await fetch("/stockfish/manifest.json", { signal: AbortSignal.any([AbortSignal.timeout(15000), this.lifecycle.signal]) });
     if (!response.ok) throw new Error("Stockfish is unavailable. Reconnect and try again.");
     const manifest = await response.json();
-    if (typeof manifest.js !== "string" || !/^stockfish-[\w.-]+\.js$/.test(manifest.js)) throw new Error("Stockfish assets could not be verified.");
+    const entry = this.profile === "deep" ? manifest.deep : manifest.js;
+    if (manifest.version !== "19.0.1") throw new Error("Stockfish assets are outdated. Reload the app and retry.");
+    if (typeof entry !== "string" || !/^stockfish-[\w.-]+\.js$/.test(entry)) throw new Error("Stockfish assets could not be verified.");
     if (this.destroyed) throw new Error("Analysis cancelled.");
-    this.worker = new Worker(`/stockfish/${manifest.js}`);
+    this.worker = new Worker(`/stockfish/${entry}`);
     await this.send("uci", line => line === "uciok");
     await this.send("setoption name Threads value 1");
     await this.send(`setoption name Hash value ${this.hashMb}`);
@@ -73,7 +77,7 @@ export class Engine {
     const limits = searchLimits(options);
     const context = history ? structuredClone(history) : undefined;
     let key: string;
-    try { key = evaluationKey(fen, limits, context, this.hashMb); } catch (error) { return Promise.reject(error); }
+    try { key = evaluationKey(fen, limits, context, this.hashMb, engineIdentity(this.profile)); } catch (error) { return Promise.reject(error); }
     const existing = this.pending.get(key);
     if (existing) return existing;
     const epoch = evaluationCacheEpoch();
@@ -101,6 +105,7 @@ export class Engine {
         const retry = await this.send(`go depth ${Math.max(16, limits.depth)} nodes ${Math.min(2000000, Math.max(160000, limits.nodes * 4))}`, line => line.startsWith("bestmove "), 120000);
         result = parseEngineResult(fen, retry, limits.multiPv, context);
       }
+      result.engineId = engineIdentity(this.profile);
       await cacheEvaluation(key, fen, result, epoch);
       return result;
     }).catch(error => { this.destroy(); throw error; });

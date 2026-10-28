@@ -69,7 +69,7 @@ export default function AnalysisRunner({
     try {
       const settings = loadSettings();
       const search = { depth: 12, nodes: 40000, multiPv: 1 };
-      const engineLabel = "Stockfish 18 · initial depth ≤12 · 40000 nodes · selective critical searches · 1 thread";
+      const engineLabel = "Stockfish 19 Lite · initial depth ≤12 · 40000 nodes · selective critical searches · 1 thread";
       const games = loadGames()
         .filter((g) => (!gameId || g.id === gameId) && (!activeReviews.has(g.id) && (["pending", "failed", "skipped", "analyzing"].includes(g.analysis_status) || Boolean(gameId))))
         .slice(0, settings.analyzeLastN);

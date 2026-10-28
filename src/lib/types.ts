@@ -72,6 +72,7 @@ export interface AnalysisSummary {
   issues: MoveIssue[];
   byPhase: Record<Phase, { blunders: number; mistakes: number; moves: number }>;
   engineDepthOrTime: string;
+  engineId?: string;
   evaluations?: number[];
   positionEvals?: PositionEvaluation[];
   accuracyByColor?: { w: number | null; b: number | null };
@@ -101,6 +102,7 @@ export interface PositionEvaluation {
   wdlWhite?: [number, number, number];
   lines?: EngineLine[];
   cacheHit?: boolean;
+  engineId?: string;
 }
 
 export interface PuzzleRow {

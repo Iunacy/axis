@@ -4,7 +4,11 @@ import type { EngineLine, PositionEvaluation } from "./types";
 export interface PositionHistory { initialFen: string; moves: string[] }
 export interface SearchOptions { depth?: number; nodes?: number; multiPv?: number; movetimeMs?: number }
 export interface SearchLimits { depth: number; nodes: number; multiPv: number; movetimeMs: number }
-export const ENGINE_ID = "stockfish.js-18.0.7-lite-single/v2";
+export const ENGINE_ID = "stockfish.js-19.0.1-lite-single/v3";
+
+export const DEEP_ENGINE_ID = "stockfish.js-19.0.1-single/v3";
+export type EngineProfile = "default" | "deep";
+export const engineIdentity = (profile: EngineProfile) => profile === "deep" ? DEEP_ENGINE_ID : ENGINE_ID;
 
 export function searchLimits(options: SearchOptions = {}): SearchLimits {
   const clamp = (value: number | undefined, fallback: number, min: number, max: number) => Math.max(min, Math.min(max, Math.round(Number.isFinite(value) ? value! : fallback)));
@@ -19,9 +23,9 @@ export function positionCommand(fen: string, history?: PositionHistory): string 
   return `position fen ${history?.initialFen ?? fen}${history?.moves.length ? ` moves ${history.moves.join(" ")}` : ""}`;
 }
 
-export function evaluationKey(fen: string, limits: SearchLimits, history?: PositionHistory, hashMb = 32): string {
+export function evaluationKey(fen: string, limits: SearchLimits, history?: PositionHistory, hashMb = 32, engineId = ENGINE_ID): string {
   positionCommand(fen, history);
-  return JSON.stringify([ENGINE_ID, fen, history?.initialFen ?? fen, history?.moves ?? [], limits, hashMb, 1]);
+  return JSON.stringify([engineId, fen, history?.initialFen ?? fen, history?.moves ?? [], limits, hashMb, 1]);
 }
 
 function legalPv(fen: string, moves: string[]): boolean {

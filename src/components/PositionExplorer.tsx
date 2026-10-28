@@ -9,6 +9,7 @@ import type { PositionEvaluation } from "@/lib/types";
 
 export default function PositionExplorer({ fen, history, initial, onEvaluation, onOpenLine }: { fen: string; history: PositionHistory; initial?: PositionEvaluation; onEvaluation: (result: PositionEvaluation) => void; onOpenLine: (moves: string[]) => void }) {
   const { locale } = useI18n();
+  const [deep, setDeep] = useState(false);
   const [depth, setDepth] = useState(16);
   const [multiPv, setMultiPv] = useState(3);
   const identity = JSON.stringify([fen, history]);
@@ -31,7 +32,8 @@ export default function PositionExplorer({ fen, history, initial, onEvaluation, 
   async function analyze() {
     if (running.current) return;
     const current = ++generation.current;
-    const worker = engine.current ?? new Engine(); engine.current = worker; running.current = true;
+    engine.current?.destroy();
+    const worker = new Engine(deep ? "deep" : "default"); engine.current = worker; running.current = true;
     setRequest({ identity, busy: true, error: null });
     try {
       const value = await worker.analyze(fen, { depth, nodes: depth === 12 ? 150000 : depth === 16 ? 500000 : 1000000, multiPv }, history);
@@ -44,9 +46,10 @@ export default function PositionExplorer({ fen, history, initial, onEvaluation, 
   return <section className="axis-position-explorer" aria-label={locale === "fr" ? "Explorateur de position" : "Position explorer"}>
     <div className="axis-explorer-heading"><h2>{locale === "fr" ? "Explorateur de position" : "Position explorer"}</h2><strong>{result ? evaluationLabel(result) : "—"}</strong></div>
     <p>{locale === "fr" ? "Explorez des variantes sans modifier la partie enregistrée. L’évaluation est toujours donnée du point de vue des Blancs." : "Explore alternatives without changing the recorded game. Evaluations always use White’s perspective."}</p>
+    <label><input type="checkbox" checked={deep} disabled={busy} onChange={event => setDeep(event.target.checked)}/> {locale === "fr" ? "Analyse approfondie · téléchargement de 95 Mio · davantage de mémoire" : "Deep analysis · 95 MiB download · higher memory use"}</label>
     <div className="axis-explorer-controls"><label>{locale === "fr" ? "Profondeur visée" : "Target depth"}<select value={depth} disabled={busy} onChange={event => setDepth(Number(event.target.value))}><option value={12}>12</option><option value={16}>16</option><option value={20}>20</option></select></label><label>{locale === "fr" ? "Lignes" : "Lines"}<select value={multiPv} disabled={busy} onChange={event => setMultiPv(Number(event.target.value))}><option value={1}>1</option><option value={3}>3</option><option value={5}>5</option></select></label>{busy ? <button type="button" className="axis-button secondary" onClick={cancel}>{locale === "fr" ? "Annuler" : "Cancel"}</button> : <button type="button" className="axis-button" onClick={() => void analyze()}>{locale === "fr" ? "Analyser la position" : "Analyze position"}</button>}</div>
     {busy && <p role="status">{locale === "fr" ? "Stockfish calcule les lignes…" : "Stockfish is calculating alternatives…"}</p>}
     {error && <p role="alert" className="axis-feedback error">{error}</p>}
-    {result && <><p className="axis-explorer-evidence">Stockfish 18{result.cacheHit ? locale === "fr" ? " · résultat conservé" : " · saved evaluation" : ""} · {locale === "fr" ? "profondeur atteinte" : "depth reached"} {result.depth ?? "—"} · {result.nodes?.toLocaleString(locale) ?? "—"} {locale === "fr" ? "nœuds" : "nodes"}</p><div className="axis-engine-lines">{(result.lines ?? []).map((line, index) => <button type="button" key={`${index}:${line.pvUci[0]}`} onClick={() => onOpenLine(line.pvUci)}><span>0{index + 1}</span><strong>{evaluationLabel({ ...line, bestUci: line.pvUci[0] })}</strong><span>{legalVariation(fen, line.pvUci).join(" ")}</span><span aria-hidden="true">↗</span></button>)}</div><small>{locale === "fr" ? "Recherche limitée en nœuds pour préserver les ressources. La profondeur visée n’est pas garantie ; ces lignes ne constituent pas une preuve exhaustive." : "Search is capped to protect device resources. Target depth may not be reached; these lines are not an exhaustive proof."}</small></>}
+    {result && <><p className="axis-explorer-evidence">{result.engineId?.includes("19.0.1-single") ? "Stockfish 19 · Deep" : result.engineId?.includes("19.0.1") ? "Stockfish 19 · Lite" : "Saved engine evaluation"}{result.cacheHit ? locale === "fr" ? " · résultat conservé" : " · saved evaluation" : ""} · {locale === "fr" ? "profondeur atteinte" : "depth reached"} {result.depth ?? "—"} · {result.nodes?.toLocaleString(locale) ?? "—"} {locale === "fr" ? "nœuds" : "nodes"}</p><div className="axis-engine-lines">{(result.lines ?? []).map((line, index) => <button type="button" key={`${index}:${line.pvUci[0]}`} onClick={() => onOpenLine(line.pvUci)}><span>0{index + 1}</span><strong>{evaluationLabel({ ...line, bestUci: line.pvUci[0] })}</strong><span>{legalVariation(fen, line.pvUci).join(" ")}</span><span aria-hidden="true">↗</span></button>)}</div><small>{locale === "fr" ? "Recherche limitée en nœuds pour préserver les ressources. La profondeur visée n’est pas garantie ; ces lignes ne constituent pas une preuve exhaustive." : "Search is capped to protect device resources. Target depth may not be reached; these lines are not an exhaustive proof."}</small></>}
   </section>;
 }
