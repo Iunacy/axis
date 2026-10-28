@@ -1,8 +1,10 @@
 import type { AnalysisSummary, GameRow } from "./types";
+import { parsePgn } from "./pgn";
+import { createReviewPosition, restoreReviewBranches, serializeReviewBranches, type SavedReviewBranch } from "./review-position";
 
 export type LibrarySort = "newest" | "oldest" | "accuracy";
 export interface LibraryFilters { query: string; result: string; platform: string; status: string; sort: LibrarySort }
-export interface ReviewLocation { ply: number; at: string }
+export interface ReviewLocation { ply: number; at: string; variations?: SavedReviewBranch[] }
 
 export function gameAccuracy(game: GameRow, analyses: Record<string, AnalysisSummary>): number | null {
   return analyses[game.id]?.complete === false ? null : analyses[game.id]?.accuracy ?? game.accuracy_user;
@@ -30,5 +32,13 @@ export function filterGames(games: GameRow[], analyses: Record<string, AnalysisS
 export function restoreReviewLocations(value: unknown, games: GameRow[]): Record<string, ReviewLocation> {
   const ids = new Set(games.map(game => game.id));
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
-  return Object.fromEntries(Object.entries(value).filter(([id, row]) => ids.has(id) && row && typeof row === "object" && Number.isInteger(row.ply) && row.ply >= 0 && row.ply <= 10000 && typeof row.at === "string" && Number.isFinite(Date.parse(row.at))));
+  return Object.fromEntries(Object.entries(value).filter(([id, row]) => ids.has(id) && row && typeof row === "object" && Number.isInteger(row.ply) && row.ply >= 0 && row.ply <= 10000 && typeof row.at === "string" && Number.isFinite(Date.parse(row.at))).map(([id, row]) => {
+    const location: ReviewLocation = { ply: row.ply, at: row.at };
+    if (Array.isArray(row.variations)) {
+      const game = games.find(game => game.id === id);
+      const parsed = game && parsePgn(game.pgn);
+      if (parsed) location.variations = serializeReviewBranches(restoreReviewBranches(createReviewPosition(parsed), row.variations));
+    }
+    return [id, location];
+  }));
 }

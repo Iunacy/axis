@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import type { ReviewLocation } from "./game-library";
+import type { SavedReviewBranch } from "./review-position";
 import { indexedStorage } from "./indexed-storage";
 import { identifyPattern, scheduleReview } from "./training";
 import { restorePersistedState } from "./state-validation";
@@ -63,7 +64,7 @@ interface StoreState extends PersistedState {
   hydrated: boolean;
 
   setSettings: (settings: Settings) => void;
-  saveReviewLocation: (id: string, ply: number) => void;
+  saveReviewLocation: (id: string, ply: number, variations?: SavedReviewBranch[]) => void;
   setGames: (games: GameRow[]) => void;
   upsertGames: (incoming: GameRow[]) => number;
   setGameStatus: (id: string, status: GameRow["analysis_status"], accuracy?: number | null) => void;
@@ -110,9 +111,9 @@ export const useStore = create<StoreState>()(
       hydrated: false,
 
       setSettings: (settings) => set({ settings }),
-      saveReviewLocation: (id, ply) => {
+      saveReviewLocation: (id, ply, variations) => {
         if (!Number.isInteger(ply) || ply < 0 || ply > 10000 || !get().games.some(game => game.id === id)) return;
-        set({ reviewLocations: { ...get().reviewLocations, [id]: { ply, at: new Date().toISOString() } } });
+        set({ reviewLocations: { ...get().reviewLocations, [id]: { ...get().reviewLocations[id], ply, at: new Date().toISOString(), ...(variations ? { variations } : {}) } } });
       },
 
       setGames: (games) => set({ games }),
