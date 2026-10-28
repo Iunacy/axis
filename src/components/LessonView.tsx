@@ -46,7 +46,7 @@ export function AiLessonView({ lesson }: { lesson: AiLessonRow }) {
   );
 }
 
-function LessonContentView({
+export function LessonContentView({
   title,
   content,
   badge,
@@ -59,7 +59,7 @@ function LessonContentView({
   badge?: string;
   note?: string;
   initialCompleted: boolean;
-  onComplete: () => void;
+  onComplete?: () => void;
 }) {
   const { t } = useI18n();
   const sounds = useLessonSounds();
@@ -68,7 +68,7 @@ function LessonContentView({
   function markDone() {
     setCompleted(true);
     sounds.complete();
-    onComplete();
+    onComplete?.();
   }
 
   return (
@@ -122,13 +122,13 @@ function LessonContentView({
           </a>
         </p>
         <p className="text-sm text-muted-foreground italic">{t.lessons.askMore}</p>
-        <button
+        {onComplete && <button
           onClick={markDone}
           disabled={completed}
           className="axis-button w-fit"
         >
           {completed ? `✓ ${t.lessons.completed}` : t.lessons.markDone}
-        </button>
+        </button>}
       </footer>
     </article>
   );
