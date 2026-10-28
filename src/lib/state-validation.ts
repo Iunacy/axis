@@ -1,3 +1,4 @@
+import { isSkillId } from "./curriculum";
 import { restoreReviewLocations } from "./game-library";
 import { validateFen } from "chess.js";
 import { preparePuzzle, replayPuzzlePath } from "./puzzle-solution";
@@ -123,7 +124,7 @@ export function restorePersistedState(value: unknown, defaults: Settings) {
     const active: TrainingAttempt = candidate && candidate.puzzleId === remainingIds[0] && date(candidate.startedAt) && finite(candidate.hintLevel) && candidate.hintLevel >= 0 && candidate.hintLevel <= 2 && compatible
       ? { puzzleId: remainingIds[0], startedAt: candidate.startedAt, path, hintLevel: candidate.hintLevel, status }
       : { puzzleId: remainingIds[0], startedAt: rawSession.startedAt, path: [], hintLevel: 0, status: "playing" };
-    trainingSession = { id: rawSession.id, startedAt: rawSession.startedAt, remainingIds, active };
+    trainingSession = { ...(isSkillId(rawSession.skillId) ? { skillId: rawSession.skillId } : {}), id: rawSession.id, startedAt: rawSession.startedAt, remainingIds, active };
   }
-  return { settings, games, analyses, puzzles, trainingSession, reviewLocations: restoreReviewLocations(saved.reviewLocations, games), lessons: list(saved.lessons, lesson), aiLessons: list(saved.aiLessons, aiLesson), masterAnnotations: list(saved.masterAnnotations, annotation), apiKey, onboardedFlag: saved.onboardedFlag === true };
+  return { settings, games, analyses, puzzles, trainingSession, curriculumPreference: isSkillId(saved.curriculumPreference) ? saved.curriculumPreference : null, reviewLocations: restoreReviewLocations(saved.reviewLocations, games), lessons: list(saved.lessons, lesson), aiLessons: list(saved.aiLessons, aiLesson), masterAnnotations: list(saved.masterAnnotations, annotation), apiKey, onboardedFlag: saved.onboardedFlag === true };
 }

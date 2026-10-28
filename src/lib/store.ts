@@ -1,5 +1,6 @@
 "use client";
 
+import type { SkillId } from "./curriculum";
 import { create } from "zustand";
 import type { ReviewLocation } from "./game-library";
 import type { SavedReviewBranch } from "./review-position";
@@ -52,6 +53,7 @@ interface PersistedState {
   analyses: Record<string, AnalysisSummary>;
   puzzles: PuzzleRow[];
   trainingSession: TrainingSession | null;
+  curriculumPreference: SkillId | null;
   reviewLocations: Record<string, ReviewLocation>;
   lessons: GeneratedLesson[];
   aiLessons: AiLessonRow[];
@@ -72,7 +74,9 @@ interface StoreState extends PersistedState {
   upsertPuzzles: (incoming: PuzzleRow[]) => void;
   recordReview: (id: string, solved: boolean, evidence?: Partial<Omit<PuzzleReview, "at" | "solved">>) => void;
   recordPatternRecognition: (id: string, chosenPattern: PatternId) => void;
-  startTrainingSession: (ids: string[]) => void;
+  prepareCurriculumSession: (exercises: PuzzleRow[], skill: SkillId, resetBefore?: string) => void;
+  setCurriculumPreference: (skill: SkillId | null) => void;
+  startTrainingSession: (ids: string[], skill?: SkillId) => void;
   advanceTrainingSession: (id: string) => void;
   updateTrainingAttempt: (attempt: TrainingAttempt) => void;
   updatePuzzle: (id: string, patch: Partial<Pick<PuzzleRow, "attempts" | "solved">>) => void;
@@ -96,6 +100,7 @@ const initialPersisted: PersistedState = {
   analyses: {},
   puzzles: [],
   trainingSession: null,
+  curriculumPreference: null,
   reviewLocations: {},
   lessons: [],
   aiLessons: [],
@@ -153,13 +158,22 @@ export const useStore = create<StoreState>()(
       recordReview: (id, solved, evidence) => set({ puzzles: get().puzzles.map(p => p.id === id ? scheduleReview(p, solved, new Date(), evidence) : p) }),
       recordPatternRecognition: (id, chosenPattern) => set({ puzzles: get().puzzles.map(p => p.id === id ? identifyPattern(p, chosenPattern) : p) }),
 
-      startTrainingSession: (ids) => {
+      prepareCurriculumSession: (incoming, skill, resetBefore) => {
+        if (get().trainingSession || !incoming.length) return;
+        const selected = new Set(incoming.map(puzzle => puzzle.id));
+        const existing = new Map(get().puzzles.map(puzzle => [puzzle.id, puzzle]));
+        const puzzles = [...incoming.filter(puzzle => !existing.has(puzzle.id)), ...get().puzzles].map(puzzle => selected.has(puzzle.id) && resetBefore && (!puzzle.last_reviewed_at || Date.parse(puzzle.last_reviewed_at) < Date.parse(resetBefore)) ? { ...puzzle, streak: 0, due_at: undefined } : puzzle);
+        set({ puzzles });
+        get().startTrainingSession(incoming.map(puzzle => puzzle.id), skill);
+      },
+      setCurriculumPreference: (skill) => set({ curriculumPreference: skill }),
+      startTrainingSession: (ids, skillId) => {
         if (get().trainingSession || !ids.length) return;
         const available = new Set(get().puzzles.map(p => p.id));
         const remainingIds = [...new Set(ids)].filter(id => available.has(id));
         if (remainingIds.length) {
           const now = new Date().toISOString();
-          set({ trainingSession: { id: crypto.randomUUID(), startedAt: now, remainingIds, active: { puzzleId: remainingIds[0], startedAt: now, path: [], hintLevel: 0, status: "playing" } } });
+          set({ trainingSession: { id: crypto.randomUUID(), skillId, startedAt: now, remainingIds, active: { puzzleId: remainingIds[0], startedAt: now, path: [], hintLevel: 0, status: "playing" } } });
         }
       },
 
@@ -231,6 +245,7 @@ export const useStore = create<StoreState>()(
         analyses,
         puzzles,
         trainingSession,
+        curriculumPreference,
         reviewLocations,
         lessons,
         aiLessons,
@@ -243,6 +258,7 @@ export const useStore = create<StoreState>()(
         analyses,
         puzzles,
         trainingSession,
+        curriculumPreference,
         reviewLocations,
         lessons,
         aiLessons,
@@ -324,6 +340,7 @@ function readLegacy(): PersistedState | null {
     analyses: readJSON<Record<string, AnalysisSummary>>(LEGACY_KEYS.analyses, {}),
     puzzles: readJSON<PuzzleRow[]>(LEGACY_KEYS.puzzles, []),
     trainingSession: null,
+    curriculumPreference: null,
     reviewLocations: {},
     lessons: readJSON<GeneratedLesson[]>(LEGACY_KEYS.lessons, []),
     aiLessons: readJSON<AiLessonRow[]>(LEGACY_KEYS.aiLessons, []),

@@ -149,6 +149,7 @@ export interface PuzzleReview {
 }
 
 export interface TrainingSession {
+  skillId?: string;
   id: string;
   startedAt: string;
   remainingIds: string[];
