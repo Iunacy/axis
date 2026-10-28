@@ -1124,3 +1124,36 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 @media (prefers-reduced-motion: reduce) {
   .axis-app-frame *, .axis-context-panel { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+.axis-curriculum-focus { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; border-block: 1px solid var(--edit-line); padding-block: 12px; }
+.axis-curriculum-focus p { max-width: 65ch; margin-top: 6px; color: var(--edit-muted); font-size: .9rem; line-height: 1.5; }
+.axis-curriculum-focus details { max-width: 45ch; }
+.axis-curriculum-focus summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; white-space: nowrap; color: var(--edit-accent); }
+.axis-curriculum-item { border-top: 1px solid var(--edit-line); padding-block: 12px; }
+.axis-curriculum-item > summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: baseline; min-height: 44px; }
+.axis-curriculum-item > summary strong { font-size: 1.25rem; font-weight: 400; }
+.axis-curriculum-item > summary span { font-size: .8rem; color: var(--edit-muted); }
+.axis-curriculum-item h3 { margin-top: 24px; font-size: 1.1rem; }
+.axis-curriculum-item ul { padding-left: 16px; list-style: disc; margin-block: 16px; }
+.axis-curriculum-item li { padding-block: 6px; }
+.axis-curriculum-plan > p, .axis-curriculum-item p { font-size: .9rem; line-height: 1.6; }
+.axis-training .axis-training-counts { padding-block: 12px; margin-block: 12px; }
+@media (max-width: 780px) { .axis-curriculum-focus { flex-wrap: wrap; gap: 0; } }
+@media (min-width: 781px) and (min-height: 621px) {
+  .axis-app-frame .axis-content main.axis-training { height: 100%; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+  .axis-training > .edit-route-heading { flex: 0 0 auto; padding-bottom: 8px; }
+  .axis-training > .edit-route-heading .edit-kicker { display: none; }
+  .axis-app-frame .axis-content .axis-training > .edit-route-heading h1 { font-size: 2rem; margin: 0 0 6px; }
+  .axis-training .axis-curriculum-focus > div { display: flex; align-items: baseline; gap: 20px; min-width: 0; }
+  .axis-training .axis-curriculum-focus h2 { flex-shrink: 0; }
+  .axis-training .axis-training-counts > div { display: flex; align-items: baseline; }
+  .axis-training .axis-training-counts strong { font-size: 1.4rem; }
+  .axis-training .axis-training-counts { flex: 0 0 auto; margin: 0; padding-block: 8px; }
+  .axis-training .axis-curriculum-focus { flex: 0 0 auto; padding-block: 8px; }
+  .axis-training-stage { flex: 1; min-height: 260px; container-type: size; }
+  .axis-training-stage .axis-puzzle { height: 100%; min-height: 0; grid-template-columns: minmax(0, 1fr) minmax(280px, .9fr); }
+  .axis-training-stage .axis-puzzle > .axis-board-root { max-width: min(100%, calc(100cqh - 48px)); justify-self: start; }
+  .axis-training .axis-puzzle-detail { overflow: auto; min-height: 0; max-height: 100%; padding-right: 8px; gap: 14px; }
+  .axis-training .axis-puzzle-detail > div:first-child > h2 { margin-top: 0; }
+  .axis-content .axis-training .axis-puzzle-detail h2 { font-size: clamp(1.5rem, 2.4vw, 2.2rem); }
+}

@@ -42,22 +42,22 @@ const TEMPLATES: LessonTemplate[] = [
         concept:
           "A board isn't 32 pieces — it's a web of beams of control. A bishop is a laser on its diagonals; a rook, a cross-beam down its file and rank. A square is safe or hanging depending on whose beams hit it, and how many.",
         mission: (s) =>
-          `You blunder about ${s.blundersPerGame} times per game (last ${s.totalAnalyzed} analyzed). Most blunders are not calculation failures — they are vision failures: a beam you didn't see. This lesson trains your eye.`,
+          `You blunder about ${s.blundersPerGame} times per game (last ${s.totalAnalyzed} analyzed). These exercises train a visual safety check; the game evidence does not establish why a mistake happened.`,
         drill:
           "Flip on the overlays and find the move you should have played. Watch which beams you missed in the real game.",
         answerExplain:
           "The right move works because of the beams: count attackers vs defenders on the target square and the geometry does the rest. In the real game, one of those beams went unseen.",
         theorySteps: [
           "Strong players don't look at pieces — they look at what pieces CONTROL. A position is a force field, and every move redraws it. Before solving, trace the beams that hit the key squares.",
-          "Why count attackers vs defenders? Because tactics are arithmetic in costume: when the count on a square turns against you, the geometry eventually collects the debt.",
+          "Count attackers and defenders to find candidate exchanges, then calculate legal captures in order. Counts alone do not prove a piece is lost.",
         ],
         quiz: [
           {
             q: "A knight on e5 is attacked twice and defended once. What is its status?",
-            choices: ["It is effectively hanging", "It is adequately defended", "It depends on king safety"],
-            answerIdx: 0,
+            choices: ["It is effectively hanging", "It is adequately defended", "Calculate the legal captures and replies"],
+            answerIdx: 2,
             explain:
-              "More attackers than defenders means the piece can be won by a capture sequence (2v1 on a knight usually loses it).",
+              "Attack counts flag a position to investigate. Pins, checks, intermediate moves and capture order can change the result.",
           },
           {
             q: "What should a beam sweep check first, before every move you play?",
@@ -73,22 +73,22 @@ const TEMPLATES: LessonTemplate[] = [
         concept:
           "Un échiquier, ce n'est pas 32 pièces — c'est un réseau de rayons de contrôle. Un fou est un laser sur ses diagonales ; une tour, un faisceau sur sa colonne et sa rangée. Une case est sûre ou en prise selon les rayons qui la touchent, et leur nombre.",
         mission: (s) =>
-          `Tu gaffes environ ${s.blundersPerGame} fois par partie (sur tes ${s.totalAnalyzed} dernières parties analysées). La plupart des gaffes ne sont pas des erreurs de calcul — ce sont des erreurs de vision : un rayon que tu n'as pas vu. Cette leçon entraîne ton œil.`,
+          `Tu gaffes environ ${s.blundersPerGame} fois par partie (sur tes ${s.totalAnalyzed} dernières parties analysées). Ces exercices entraînent une vérification visuelle. Les parties ne suffisent pas à établir la cause d’une erreur.`,
         drill:
           "Active les calques et trouve le coup que tu aurais dû jouer. Regarde quels rayons tu as ratés dans la vraie partie.",
         answerExplain:
           "Le bon coup fonctionne grâce aux rayons : compte les attaquants et les défenseurs de la case visée, la géométrie fait le reste. Dans la vraie partie, un de ces rayons est passé inaperçu.",
         theorySteps: [
           "Les joueurs forts ne regardent pas les pièces — ils regardent ce que les pièces CONTRÔLENT. Une position est un champ de forces, et chaque coup le redessine. Avant de résoudre, trace les rayons qui touchent les cases clés.",
-          "Pourquoi compter attaquants et défenseurs ? Parce que la tactique est de l'arithmétique déguisée : quand le compte d'une case tourne contre toi, la géométrie finit toujours par réclamer son dû.",
+          "Comptez les attaquants et les défenseurs pour repérer les échanges possibles, puis calculez les prises légales dans l’ordre. Le compte seul ne prouve pas qu’une pièce est perdue.",
         ],
         quiz: [
           {
             q: "Un cavalier en e5 est attaqué deux fois et défendu une fois. Quel est son statut ?",
-            choices: ["Il est en prise, de fait", "Il est suffisamment défendu", "Ça dépend de la sécurité du roi"],
-            answerIdx: 0,
+            choices: ["Il est en prise, de fait", "Il est suffisamment défendu", "Il faut calculer les prises et réponses légales"],
+            answerIdx: 2,
             explain:
-              "Plus d'attaquants que de défenseurs : la pièce peut être gagnée par une séquence de prises (2 contre 1 sur un cavalier, il tombe en général).",
+              "Le nombre d’attaquants signale un point à examiner. Clouages, échecs, coups intermédiaires et ordre des prises peuvent changer le résultat.",
           },
           {
             q: "Que doit vérifier en premier un balayage des rayons, avant chaque coup ?",
@@ -113,13 +113,13 @@ const TEMPLATES: LessonTemplate[] = [
         concept:
           "Every move, two questions: 'What did my opponent's last move stop defending?' and 'What does my planned move stop defending?' Undefended pieces are gravity — tactics fall toward them.",
         mission: (s) =>
-          `This pattern cost you material ${s.motifCount} times in your last ${s.totalAnalyzed} analyzed games. Fixing it is the fastest rating gain available to you.`,
+          `This pattern cost you material ${s.motifCount} times in your last ${s.totalAnalyzed} analyzed games. Practice the positions and check whether the pattern recurs in later games.`,
         drill: "Find the punishing capture or the saving move in these positions from your games.",
         answerExplain:
           "This move wins (or saves) material because the target piece had more attackers than defenders. Before every move, scan for pieces left without enough protection.",
         theorySteps: [
           "Every move abandons something: a square, a diagonal, a defender. Blunders rarely come from bad plans — they come from never auditing what the plan gives up. Audit first, plan second.",
-          "A piece is not 'defended' because it feels defended. Defense is a number — attackers minus defenders, in capture order. Train yourself to SEE that number instead of guessing it.",
+          "Inspect defenders, their legal mobility, checks and intermediate moves. Use attack counts as a starting point for calculation.",
         ],
         quiz: [
           {
@@ -136,13 +136,13 @@ const TEMPLATES: LessonTemplate[] = [
         concept:
           "À chaque coup, deux questions : « Qu'est-ce que le dernier coup adverse a cessé de défendre ? » et « Qu'est-ce que mon coup prévu cesse de défendre ? » Les pièces sans défense sont des aimants — les tactiques convergent vers elles.",
         mission: (s) =>
-          `Ce schéma t'a coûté du matériel ${s.motifCount} fois sur tes ${s.totalAnalyzed} dernières parties analysées. Le corriger est ton gain de classement le plus rapide.`,
+          `Ce schéma t'a coûté du matériel ${s.motifCount} fois sur tes ${s.totalAnalyzed} dernières parties analysées. Travaille ces positions et vérifie si le schéma revient dans les parties suivantes.`,
         drill: "Trouve la prise punitive ou le coup sauveur dans ces positions tirées de tes parties.",
         answerExplain:
           "Ce coup gagne (ou sauve) du matériel parce que la pièce visée avait plus d'attaquants que de défenseurs. Avant chaque coup, balaie les pièces insuffisamment protégées.",
         theorySteps: [
           "Chaque coup abandonne quelque chose : une case, une diagonale, un défenseur. Les gaffes viennent rarement d'un mauvais plan — elles viennent de ne jamais auditer ce que le plan abandonne. Auditer d'abord, planifier ensuite.",
-          "Une pièce n'est pas « défendue » parce qu'elle en a l'air. La défense est un nombre — attaquants moins défenseurs, dans l'ordre des prises. Entraîne-toi à VOIR ce nombre au lieu de le deviner.",
+          "Examinez les défenseurs, leur mobilité légale, les échecs et les coups intermédiaires. Le compte des attaques est un point de départ pour le calcul.",
         ],
         quiz: [
           {
@@ -174,7 +174,7 @@ const TEMPLATES: LessonTemplate[] = [
           "The move is forcing: it limits the opponent's replies (check, capture or direct threat) so the advantage cannot slip away. Forcing moves first — always.",
         theorySteps: [
           "Why 'checks, captures, threats'? Because forcing moves shrink the tree: a check leaves only a handful of legal replies, so you can calculate ALL of them. Certainty first — master the lines you can fully control.",
-          "An advantage is perishable. +2 on the eval bar is not a trophy, it's a deadline: every quiet move hands the defender a tempo to coordinate. Conversion is urgency applied with precision.",
+          "A favorable evaluation still needs careful play. Quiet improvements can be stronger than forcing moves; compare the opponent’s best reply before choosing.",
         ],
         quiz: [
           {
@@ -197,7 +197,7 @@ const TEMPLATES: LessonTemplate[] = [
           "Le coup est forcé : il limite les réponses adverses (échec, prise ou menace directe), donc l'avantage ne peut plus s'échapper. Les coups forcés d'abord — toujours.",
         theorySteps: [
           "Pourquoi « échecs, prises, menaces » ? Parce que les coups forcés réduisent l'arbre : un échec ne laisse qu'une poignée de réponses légales, donc tu peux TOUTES les calculer. La certitude d'abord — maîtrise les lignes que tu contrôles entièrement.",
-          "Un avantage est périssable. +2 à l'évaluation n'est pas un trophée, c'est une échéance : chaque coup tranquille offre au défenseur un tempo pour se coordonner. Convertir, c'est de l'urgence appliquée avec précision.",
+          "Une évaluation favorable demande encore du soin. Un coup calme peut être meilleur qu’un coup forcé : comparez la meilleure réponse adverse avant de choisir.",
         ],
         quiz: [
           {
@@ -471,7 +471,7 @@ export function renderLesson(lesson: GeneratedLesson, locale: Locale): (LessonCo
         playedSan: ex.played,
         answerSan: ex.solution_san.slice(0, 1),
         answerLine: toLine(ex),
-        explain: loc.answerExplain,
+        explain: locale === "fr" ? `Suite enregistrée : ${toLine(ex).join(" ")}. Comparez les réponses légales ; une recherche limitée ne prouve pas une solution unique.` : `Recorded line: ${toLine(ex).join(" ")}. Compare legal replies; a bounded search does not prove a unique solution.`,
         overlays: template.overlays,
         sourceUrl: ex.source_url,
       })),

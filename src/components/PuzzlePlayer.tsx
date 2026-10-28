@@ -13,7 +13,7 @@ import type { PuzzleRow, TrainingAttempt } from "@/lib/types";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress, hideTheme = false, postSolveText, blind = false, recognitionPrompt = false, nextDisabled = false }: { puzzles: PuzzleRow[]; onAdvance?: (id: string) => void; progress?: TrainingAttempt; onProgress?: (attempt: TrainingAttempt) => void; hideTheme?: boolean; postSolveText?: string; blind?: boolean; recognitionPrompt?: boolean; nextDisabled?: boolean }) {
+export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress, hideTheme = false, postSolveText, blind = false, recognitionPrompt = false, nextDisabled = false, requireAttempt = false }: { puzzles: PuzzleRow[]; onAdvance?: (id: string) => void; progress?: TrainingAttempt; onProgress?: (attempt: TrainingAttempt) => void; hideTheme?: boolean; postSolveText?: string; blind?: boolean; recognitionPrompt?: boolean; nextDisabled?: boolean; requireAttempt?: boolean }) {
   const { t } = useI18n();
   const [idx, setIdx] = useState(0);
 
@@ -34,6 +34,7 @@ export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress,
       blind={blind}
       recognitionPrompt={recognitionPrompt}
       nextDisabled={nextDisabled}
+      requireAttempt={requireAttempt}
     />
   );
 }
@@ -50,6 +51,7 @@ function SinglePuzzle({
   blind,
   recognitionPrompt,
   nextDisabled,
+  requireAttempt,
 }: {
   puzzle: PuzzleRow;
   index: number;
@@ -62,6 +64,7 @@ function SinglePuzzle({
   blind: boolean;
   recognitionPrompt: boolean;
   nextDisabled: boolean;
+  requireAttempt: boolean;
 }) {
   const { t, locale } = useI18n();
   const hasGame = useStore(state => state.games.some(game => game.id === puzzle.game_id));
@@ -277,7 +280,8 @@ function SinglePuzzle({
           )}
           {state !== "solved" && state !== "revealed" && (
             <button
-              disabled={waiting}
+              disabled={waiting || requireAttempt && state === "playing" && hintLevel < 2 && path.length === 0}
+              title={requireAttempt && state === "playing" && hintLevel < 2 && path.length === 0 ? locale === "fr" ? "Essayez un coup ou utilisez les deux indices." : "Try a move or use both hints first." : undefined}
               onClick={showSolution}
               className="axis-button secondary"
             >

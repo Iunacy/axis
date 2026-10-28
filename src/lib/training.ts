@@ -2,15 +2,17 @@ import type { PatternId, PuzzleReview, PuzzleRow } from "./types";
 
 const DAYS = [1, 3, 7, 14, 30];
 export function scheduleReview(puzzle: PuzzleRow, solved: boolean, now = new Date(), evidence: Partial<Omit<PuzzleReview, "at" | "solved">> = {}): PuzzleRow {
-  const streak = solved ? (puzzle.streak ?? 0) + 1 : 0;
-  const days = solved ? DAYS[Math.min(streak - 1, DAYS.length - 1)] : 1;
+  const unassisted = solved && !evidence.hintsUsed && !evidence.wrongMoves && !evidence.solutionRevealed;
+  const early = Boolean(puzzle.due_at && Date.parse(puzzle.due_at) > now.getTime());
+  const streak = unassisted ? (puzzle.streak ?? 0) + (early ? 0 : 1) : 0;
+  const days = unassisted ? DAYS[Math.max(0, Math.min(streak - 1, DAYS.length - 1))] : 1;
   return {
     ...puzzle,
     attempts: puzzle.attempts + 1,
     solved,
     streak,
     last_reviewed_at: now.toISOString(),
-    due_at: new Date(now.getTime() + days * 86400000).toISOString(),
+    due_at: unassisted && early ? puzzle.due_at : new Date(now.getTime() + days * 86400000).toISOString(),
     reviews: [...(puzzle.reviews ?? []), { at: now.toISOString(), solved, ...evidence }].slice(-100),
   };
 }

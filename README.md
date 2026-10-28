@@ -2,16 +2,20 @@
 
 I’m building AXIS, a chess learning application that turns game review into focused practice.
 
-[Open AXIS](https://axls.vercel.app/) · [V3 release notes](https://github.com/Iunacy/axis/releases/tag/v3.0.0)
+[Open AXIS](https://axls.vercel.app/) · [V4 release notes](https://github.com/Iunacy/axis/releases/tag/v4.0.0)
 
-In V3, I can choose a game from the dashboard, open an automatic Stockfish 19 Lite review, explore legal variations, and practice decisions from my games. The desktop workspace keeps navigation and the board in view, with contextual panels for game selection and performance history. Optional deep position analysis loads the full engine only when I request it (about 95 MiB), with bounded search effort and cancellation.
+In V4, I can build a learning plan from completed Stockfish 19 reviews. AXIS separates isolated mistakes from recurring needs, selects focused concepts and exercises from my games, and lets me choose another skill. Piece safety, tactical vision, forks, king safety, material calculation, opening decisions, endgame decisions, and conversion have explicit evidence rules. Optional related mating examples come from verified Lichess puzzles.
 
-I can import completed Chess.com, Lichess, and PGN games. Reviews save progressively and resume after interruptions; engine caches distinguish the engine and search configuration. Lessons, verified mating patterns, and master games support further study. Games, settings, variations, and training history stay on this device.
+I can practice legal engine lines with progressive hints, resume a saved session, and track attempts, assistance, elapsed time, first-attempt success, and delayed retention. Reviews use a transparent spaced schedule. New game mistakes can reopen a skill without deleting my history. Reading a lesson or memorizing one position does not establish mastery.
 
-![AXIS V3 dashboard](public/media/axis-dashboard.webp)
+I can import completed Chess.com, Lichess, and PGN games, review them automatically in a compact desktop workspace, and explore persistent legal variations. Ordinary analysis uses Stockfish 19 Lite; optional bounded deep analysis loads the full engine on request (about 95 MiB). Games and training stay on this device.
 
-![AXIS V3 game review](public/media/axis-analysis.webp)
+![AXIS V4 dashboard](public/media/axis-dashboard.webp)
 
-My next milestone is an evidence-based adaptive curriculum: recurring weaknesses, targeted interactive exercises, retention, and honest progress comparisons. V3’s recommendations summarize observed mistakes; they do not measure mastery. Finite engine searches and AXIS’s classification heuristics can miss chess ideas.
+![Interactive training from a reviewed game](public/media/axis-training.webp)
+
+![The evidence behind a learning plan](public/media/axis-curriculum.webp)
+
+I keep the limits visible: engine searches and skill labels are heuristics; small histories remain inconclusive. Game comparisons require enough matching platform/time-control data and do not prove training caused improvement. Positional categories such as pawn structure are not yet assessed. My next milestone is to evaluate this curriculum against larger histories and broaden its evidence coverage.
 
 [MIT license](LICENSE) · Built on [Chess Coach by Leonel Ngoya](https://github.com/ln-dev7/chess-coach). Stockfish.js is GPL-3.0; its license and corresponding source are linked in AXIS’s Licenses page.
