@@ -2,7 +2,7 @@ import "fake-indexeddb/auto";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Chess } from "chess.js";
-import { evaluationKey, parseEngineResult, positionCommand, searchLimits, validCachedEvaluation } from "../src/lib/engine-protocol";
+import { DEEP_ENGINE_ID, ENGINE_ID, evaluationKey, parseEngineResult, positionCommand, searchLimits, validCachedEvaluation } from "../src/lib/engine-protocol";
 import { Engine } from "../src/lib/engine";
 import { cacheEvaluation, cachedEvaluation, clearEvaluationCache, evaluationCacheEpoch } from "../src/lib/evaluation-cache";
 
@@ -84,7 +84,7 @@ test("engine deduplicates concurrent searches, reuses persisted results and canc
   }
   Object.defineProperty(globalThis, "Worker", { configurable: true, writable: true, value: FakeWorker });
   t.after(() => { if (original) Object.defineProperty(globalThis, "Worker", original); else Reflect.deleteProperty(globalThis, "Worker"); });
-  t.mock.method(globalThis, "fetch", async () => new Response(JSON.stringify({ js: "stockfish-18-lite-single.js" })));
+  t.mock.method(globalThis, "fetch", async () => new Response(JSON.stringify({ version: "19.0.1", js: "stockfish-19-lite-single.js", deep: "stockfish-19-single.js" })));
   const engine = new Engine();
   const first = engine.analyze(start);
   assert.equal(first, engine.analyze(start));
@@ -128,7 +128,7 @@ test("a capped incomplete iteration is retried once on the same worker without r
   }
   Object.defineProperty(globalThis, "Worker", { configurable: true, value: FakeWorker });
   t.after(() => { if (original) Object.defineProperty(globalThis, "Worker", original); else Reflect.deleteProperty(globalThis, "Worker"); });
-  t.mock.method(globalThis, "fetch", async () => new Response(JSON.stringify({ js: "stockfish-18-lite-single.js" })));
+  t.mock.method(globalThis, "fetch", async () => new Response(JSON.stringify({ version: "19.0.1", js: "stockfish-19-lite-single.js", deep: "stockfish-19-single.js" })));
   const engine = new Engine();
   t.after(() => engine.destroy());
   const result = await engine.analyze(start, { depth: 12, nodes: 40000 });
@@ -136,4 +136,19 @@ test("a capped incomplete iteration is retried once on the same worker without r
   assert.deepEqual(searches, ["go depth 12 nodes 40000", "go depth 16 nodes 160000"]);
   assert.equal(result.cpWhite, 35);
   assert.equal(result.bestUci, "e2e4");
+});
+
+
+test("default and full engines cannot share cache identities", () => {
+  assert.notEqual(evaluationKey(start, searchLimits(), undefined, 32, ENGINE_ID), evaluationKey(start, searchLimits(), undefined, 32, DEEP_ENGINE_ID));
+});
+
+test("worker initialization rejects an obsolete manifest before starting a search", async t => {
+  t.mock.method(globalThis, "fetch", async () => new Response(JSON.stringify({ version: "18.0.7", js: "stockfish-18-lite-single.js" })));
+  const original = Object.getOwnPropertyDescriptor(globalThis, "Worker");
+  Object.defineProperty(globalThis, "Worker", { configurable: true, value: class {} });
+  t.after(() => { if (original) Object.defineProperty(globalThis, "Worker", original); else Reflect.deleteProperty(globalThis, "Worker"); });
+  const engine = new Engine();
+  await assert.rejects(engine.init(), /outdated/);
+  engine.destroy();
 });

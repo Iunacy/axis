@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { Github } from "lucide-react";
 import { ThemeProvider } from "next-themes";
 import Nav from "@/components/Nav";
+import AppFrame from "@/components/AppFrame";
 import StoreHydrator from "@/components/StoreHydrator";
 import { Toaster } from "@/components/ui/sonner";
 import { I18nProvider } from "@/lib/i18n";
@@ -100,6 +101,7 @@ export default function RootLayout({
             <StoreHydrator />
             <Toaster />
             <a href="#main-content" className="axis-skip-link">Skip to content</a>
+            <AppFrame>
             <Nav />
             <div id="main-content" className="axis-content flex-1" tabIndex={-1}>{children}</div>
             <footer className="axis-footer">
@@ -130,6 +132,7 @@ export default function RootLayout({
                 </div>
               </div>
             </footer>
+            </AppFrame>
           </I18nProvider>
         </ThemeProvider>
         {process.env.VERCEL === "1" && <Analytics />}

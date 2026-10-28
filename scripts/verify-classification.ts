@@ -7,7 +7,7 @@ import { parseEngineResult } from "../src/lib/engine-protocol";
 import { classifyMove } from "../src/lib/move-classification";
 
 async function main() {
-  const engineProcess = spawn(process.execPath, [resolve("node_modules/stockfish/bin/stockfish-18-lite-single.js")], { stdio: ["pipe", "pipe", "pipe"] });
+  const engineProcess = spawn(process.execPath, [resolve("node_modules/stockfish/bin/stockfish-19-lite-single.js")], { stdio: ["pipe", "pipe", "pipe"] });
   let buffer = "";
   let pending: { lines: string[]; until: (line: string) => boolean; resolve: (lines: string[]) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> } | null = null;
   engineProcess.stdout.on("data", chunk => {

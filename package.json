@@ -1,6 +1,6 @@
 {
   "name": "axis",
-  "version": "0.1.0",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -13,7 +13,8 @@
     "openings:import": "tsx scripts/import-openings.ts",
     "openings:verify": "tsx scripts/import-openings.ts --check",
     "engine:verify": "tsx scripts/verify-classification.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "browser:verify": "node scripts/verify-browser.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1",
@@ -31,7 +32,7 @@
     "react-dom": "19.2.4",
     "recharts": "^3",
     "sonner": "^2.0.7",
-    "stockfish": "18.0.7",
+    "stockfish": "19.0.1",
     "tailwind-merge": "^3",
     "zustand": "^5.0.14"
   },
@@ -43,6 +44,7 @@
     "eslint": "^9",
     "eslint-config-next": "^16.4.3",
     "fake-indexeddb": "^6.2.6",
+    "playwright": "1.61.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
