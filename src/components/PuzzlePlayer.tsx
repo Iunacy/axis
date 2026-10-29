@@ -22,7 +22,7 @@ export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress,
   const puzzle = puzzles[idx % puzzles.length];
 
   return (
-    <SinglePuzzle
+    <BoardFocusMode layout="task"><SinglePuzzle
       key={`${puzzle.id}-${idx}`}
       context={context}
       puzzle={puzzle}
@@ -37,7 +37,7 @@ export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress,
       recognitionPrompt={recognitionPrompt}
       nextDisabled={nextDisabled}
       requireAttempt={requireAttempt}
-    />
+    /></BoardFocusMode>
   );
 }
 
@@ -205,7 +205,6 @@ function SinglePuzzle({
   if (!prepared) return <div className="axis-puzzle-detail"><p role="alert">{locale === "fr" ? "Cette position ne peut pas être vérifiée." : "This position could not be verified."}</p><button type="button" className="axis-button secondary" onClick={onNext}>{t.puzzles.next}</button></div>;
 
   return (
-    <BoardFocusMode layout="task">
     <div className="axis-puzzle">
       <Board
         key={boardKey}
@@ -304,6 +303,5 @@ function SinglePuzzle({
         </div>
       </div>
     </div>
-    </BoardFocusMode>
   );
 }

@@ -106,13 +106,20 @@ try {
   await page.getByText(/sample is still limited/).waitFor(); await fit();
   await page.locator("main").evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished)));
   await page.screenshot({ path: "output/playwright/v4-dashboard.png" });
+  await page.goto(origin + "/training");
+  await page.locator(".axis-puzzle-result").waitFor();
+  await page.getByRole("button", { name: "Fullscreen board", exact: true }).click();
+  await page.getByRole("button", { name: "Next puzzle", exact: true }).click();
+  await page.getByRole("dialog", { name: "Fullscreen chessboard", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Hint 1/2", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Exit fullscreen", exact: true }).click();
   await page.goto(origin + "/lessons");
   await page.getByRole("button", { name: "Generate lessons from my weaknesses", exact: true }).click();
   await page.locator(".axis-lesson-link").first().click();
   await page.locator(".axis-focus-lesson").first().waitFor();
   await checkBoardFocus(page, "lesson");
   assert.deepEqual(errors, []);
-  console.log("PASS: empty/sparse curriculum, real engine evidence, preserved override/session, interactive solution, recorded evidence, reload, review scheduling, honest transfer/mastery, desktop/mobile layout");
+  console.log("PASS: empty/sparse curriculum, real engine evidence, preserved override/session, interactive solution, recorded evidence, reload, review scheduling, honest transfer/mastery, desktop/mobile layout, persistent fullscreen navigation, fallback and lesson boards");
 } catch (error) {
   await page.screenshot({ path: "output/playwright/v4-failure.png" }).catch(() => {});
   throw error;
