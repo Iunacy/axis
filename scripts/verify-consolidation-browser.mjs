@@ -27,7 +27,7 @@ try {
   assert.ok(await page.getByRole("button",{name:"Import games",exact:true}).isDisabled());
   await input.fill("invalid chess PGN");await page.getByRole("button",{name:"Import games",exact:true}).click();await page.locator(".axis-feedback[role=alert]").waitFor();
   await input.fill(readFileSync(new URL("../tests/fixtures/boden-continuation.pgn",import.meta.url),"utf8"));
-  await page.getByRole("button",{name:"Import games",exact:true}).click();await page.getByRole("link",{name:"Boden study",exact:true}).click();
+  await page.getByRole("button",{name:"Import games",exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.axis-import')?.open);await page.getByRole("link",{name:"Boden study",exact:true}).click();
   await complete();const review=page.url();
   await page.getByText("30 / 30 moves rated",{exact:true}).waitFor();
   assert.equal(await page.locator(".axis-moves button .axis-move-badge").count(),30);
@@ -94,7 +94,7 @@ try {
   assert.ok(await zp.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));await zoom.close();
   // Unsupported Worker capability reports a recoverable error rather than a blank board.
   const unsupported=await browser.newContext();await unsupported.addInitScript(()=>Object.defineProperty(window,"Worker",{value:undefined}));const up=await unsupported.newPage();
-  await up.goto(origin+"/games");await up.getByRole("textbox",{name:"Paste PGN here"}).fill(readFileSync(new URL("../tests/fixtures/boden-continuation.pgn",import.meta.url),"utf8"));await up.getByRole("button",{name:"Import games",exact:true}).click();await up.getByRole("link",{name:"Boden study",exact:true}).click();
+  await up.goto(origin+"/games");await up.getByRole("textbox",{name:"Paste PGN here"}).fill(readFileSync(new URL("../tests/fixtures/boden-continuation.pgn",import.meta.url),"utf8"));await up.getByRole("button",{name:"Import games",exact:true}).click();await up.waitForFunction(()=>!document.querySelector('.axis-import')?.open);await up.getByRole("link",{name:"Boden study",exact:true}).click();
   await up.getByText("Analysis failed",{exact:true}).waitFor();await up.getByText(/This browser cannot run Stockfish/).first().waitFor();await unsupported.close();
   // Stress fixture: explicitly simulated library rows, with analysis left pending.
   saved=await readState();const original=saved.state.games[0];saved.state.games.push(...Array.from({length:999},(_,index)=>({...original,id:`simulated-library-${index}`,external_id:`simulated-${index}`,opponent_name:`Simulated opponent ${index}`,analysis_status:"pending",accuracy_user:null})));
