@@ -15,7 +15,7 @@ const games = [
 ];
 const parsed = parsePgn(base.pgn)!;
 const summary = summarizeGame({ ...parsed, userColor: "w", evals: [], engineLabel: "empty fixture" }).summary;
-const analyses = { a: { ...summary, complete: false, opening: { eco: "C50", name: "Italian Game" } }, b: { ...summary, accuracy: 70, complete: true } };
+const analyses = { a: { ...summary, complete: false, opening: { eco: "C50", name: "Italian Game" } }, b: { ...summary, accuracy: 70, accuracySamples: {w:2,b:2}, complete: true } };
 const filters: LibraryFilters = { query: "", result: "all", platform: "all", status: "all", sort: "newest" };
 
 test("library search combines source, outcome, review state and engine-derived openings", () => {

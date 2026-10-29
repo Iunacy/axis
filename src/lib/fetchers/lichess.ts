@@ -1,4 +1,4 @@
-import { AppError } from "../errors";
+import { importRequest, type ImportOptions } from "./request";
 import { lichessSpeedToTimeClass, resultForUser } from "../pgn";
 import type { GameRow, Platform } from "../types";
 
@@ -18,28 +18,43 @@ interface LichessGame {
   pgn: string;
 }
 
-export async function fetchLichessGames(username: string, maxGames = 300): Promise<GameRow[]> {
-  const url = `https://lichess.org/api/games/user/${encodeURIComponent(
-    username
-  )}?max=${maxGames}&pgnInJson=true&opening=true&perfType=ultraBullet,bullet,blitz,rapid,classical,correspondence`;
-  const res = await fetch(url, { headers: { Accept: "application/x-ndjson" }, signal: AbortSignal.timeout(30000) });
-  if (res.status === 404) throw new AppError("syncUserNotFound");
-  if (res.status === 429) throw new AppError("syncRateLimit");
-  if (!res.ok) throw new AppError("network");
-  const text = await res.text();
+export interface LichessPage { games: GameRow[]; nextUntil: number; latest: number; complete: boolean }
+export async function* lichessPages(username: string, options: ImportOptions & { since?: number; until?: number } = {}): AsyncGenerator<LichessPage> {
+  let until = options.until ?? Date.now();
+  const since = options.since ?? 0;
+  const pageSize = 100;
+  const seen = new Set<string>();
+  while (until >= since) {
+    const params = new URLSearchParams({ max: String(pageSize), until: String(until), since: String(since), pgnInJson: "true", opening: "true", finished: "true", ongoing: "false", perfType: "ultraBullet,bullet,blitz,rapid,classical,correspondence" });
+    const response = await importRequest(`https://lichess.org/api/games/user/${encodeURIComponent(username.trim())}?${params}`, options, { Accept: "application/x-ndjson" });
+    const rows: LichessGame[] = [];
+    // Each response is capped to 100 games rather than an entire account history.
+    for (const line of (await response.text()).split("\n")) {
+      if (!line.trim()) continue;
+      const row = JSON.parse(line) as LichessGame;
+      if (typeof row.id !== "string" || !Number.isFinite(row.createdAt)) throw new Error("Lichess returned an invalid game page.");
+      rows.push(row);
+    }
+    const oldest = rows.reduce((time, row) => Math.min(time, row.createdAt), until);
+    const games = parseLichessGames(rows, username).filter(game => !seen.has(game.id));
+    for (const game of games) seen.add(game.id);
+    const complete = rows.length < pageSize;
+    yield { games, nextUntil: oldest, latest: rows.reduce((time, row) => Math.max(time, row.createdAt), 0), complete };
+    if (complete) return;
+    // Overlap the boundary millisecond so simultaneous games are not silently lost.
+    if (oldest >= until) throw new Error("Lichess pagination did not advance. Imported pages are saved; retry later.");
+    until = oldest;
+  }
+}
+
+function parseLichessGames(rows: LichessGame[], username: string): GameRow[] {
   const lower = username.toLowerCase();
   const out: GameRow[] = [];
 
-  for (const line of text.split("\n")) {
-    if (!line.trim()) continue;
-    let g: LichessGame;
-    try {
-      g = JSON.parse(line);
-    } catch {
-      continue;
-    }
+  for (const g of rows) {
     if (g.variant !== "standard" || !g.pgn || ["created", "started"].includes(g.status)) continue;
     const whiteName = g.players.white.user?.name?.toLowerCase() ?? "";
+    if (![whiteName, g.players.black.user?.name?.toLowerCase()].includes(lower)) continue;
     const userIsWhite = whiteName === lower;
     const userColor: "w" | "b" = userIsWhite ? "w" : "b";
     const me = userIsWhite ? g.players.white : g.players.black;
@@ -68,4 +83,13 @@ export async function fetchLichessGames(username: string, maxGames = 300): Promi
     });
   }
   return out;
+}
+
+export async function fetchLichessGames(username: string, maxGames = Infinity): Promise<GameRow[]> {
+  const games: GameRow[] = [];
+  for await (const page of lichessPages(username)) {
+    games.push(...page.games);
+    if (games.length >= maxGames) break;
+  }
+  return games.slice(0, maxGames);
 }

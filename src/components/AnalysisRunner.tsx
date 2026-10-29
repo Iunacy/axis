@@ -14,10 +14,8 @@ import {
   loadSettings,
   saveAnalysis,
   setGameStatus,
-  upsertPuzzles,
 } from "@/lib/storage";
 import { needsAutomaticReview, resumableEvaluations } from "@/lib/review-analysis";
-import type { PuzzleRow } from "@/lib/types";
 
 const activeReviews = new Set<string>();
 
@@ -145,7 +143,7 @@ export default function AnalysisRunner({
         }
         if (stopRef.current) { setGameStatus(game.id, "pending"); break; }
 
-        const { summary, puzzles } = summarizeGame({
+        const { summary } = summarizeGame({
           fens: parsed.fens,
           moves: parsed.moves,
           userColor: game.user_color,
@@ -155,16 +153,7 @@ export default function AnalysisRunner({
         });
 
         saveAnalysis(game.id, { ...summary, complete: true, totalPlies: parsed.moves.length });
-        const rows: PuzzleRow[] = puzzles.map((p, k) => ({
-          ...p,
-          id: `${game.id}#${k}:${p.fen.split(" ")[0]}`,
-          game_id: game.id,
-          source_url: game.url,
-          attempts: 0,
-          solved: false,
-          created_at: new Date().toISOString(),
-        }));
-        upsertPuzzles(rows);
+        // Personal engine lines remain review evidence, not verified puzzles.
         setGameStatus(game.id, "done", summary.accuracy);
         setProgress(Math.round((gi + 1) / games.length * 100));
         onProgress?.();

@@ -2,7 +2,7 @@ export type Platform = "chesscom" | "lichess" | "pgn";
 export type TimeClass = "bullet" | "blitz" | "rapid" | "daily" | "classical" | "correspondence";
 export type GameResult = "win" | "loss" | "draw";
 export type Phase = "opening" | "middlegame" | "endgame";
-export type PatternId = "back-rank" | "smothered" | "arabian" | "anastasia" | "boden" | "swallows-tail";
+export type PatternId = "back-rank" | "smothered" | "arabian" | "anastasia" | "boden" | "swallows-tail" | "dovetail" | "epaulette" | "hook" | "vukovic";
 export type MoveClassification = "brilliant" | "great" | "best" | "excellent" | "good" | "book" | "inaccuracy" | "mistake" | "miss" | "blunder";
 
 export interface MoveAssessment {
@@ -75,6 +75,8 @@ export interface AnalysisSummary {
   engineId?: string;
   evaluations?: number[];
   positionEvals?: PositionEvaluation[];
+  accuracySampleCount?: number;
+  accuracySamples?: { w: number; b: number };
   accuracyByColor?: { w: number | null; b: number | null };
   complete?: boolean;
   totalPlies?: number;

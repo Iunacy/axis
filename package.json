@@ -14,7 +14,7 @@
     "openings:verify": "tsx scripts/import-openings.ts --check",
     "engine:verify": "tsx scripts/verify-classification.ts",
     "typecheck": "tsc --noEmit",
-    "browser:verify": "node scripts/verify-browser.mjs && node scripts/verify-curriculum-browser.mjs && node scripts/verify-consolidation-browser.mjs && node scripts/verify-workspaces.mjs",
+    "browser:verify": "node scripts/verify-landing.mjs && node scripts/verify-import-browser.mjs && node scripts/verify-browser.mjs && node scripts/verify-curriculum-browser.mjs && node scripts/verify-consolidation-browser.mjs && node scripts/verify-workspaces.mjs",
     "curriculum:verify": "node scripts/verify-curriculum-browser.mjs",
     "consolidation:verify": "node scripts/verify-consolidation-browser.mjs"
   },

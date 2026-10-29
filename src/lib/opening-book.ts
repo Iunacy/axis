@@ -1,18 +1,34 @@
 import { Chess } from "chess.js";
+import { OPENING_SUPPLEMENTS } from "./opening-supplement";
 import reference from "./data/openings.json";
 import { openingPositionKey } from "./opening-import";
 
 export const OPENING_REFERENCE = reference.source;
-export const OPENING_BOOK_VERSION = 2;
+export const OPENING_BOOK_VERSION = 3;
 export type OpeningIdentity = { eco: string; name: string };
 const positions = new Map((reference.positions as [string, string[], number[]][]).map(([key, moves, openings]) => [key, { moves, openings }]));
 
+const supplemental = new Map<string, { moves: Set<string>; references: Set<number> }>();
+OPENING_SUPPLEMENTS.forEach((source, index) => {
+  for (const pgn of source.lines) {
+    const game = new Chess(); game.loadPgn(pgn, { strict: true });
+    const chess = new Chess();
+    for (const move of game.history({verbose:true})) {
+      const key = openingPositionKey(chess.fen());
+      const node = supplemental.get(key) ?? {moves: new Set<string>(), references: new Set<number>()};
+      node.moves.add(move.lan); node.references.add(index); supplemental.set(key,node);
+      chess.move(move.san);
+    }
+  }
+});
+
 /** Source-supported outgoing edges and named positions; no engine/popularity inference. */
-export function lookupOpeningPosition(fen: string): { continuations: string[]; openings: OpeningIdentity[]; source: typeof OPENING_REFERENCE } {
-  let node;
-  try { node = positions.get(openingPositionKey(fen)); } catch {}
+export function lookupOpeningPosition(fen: string): { continuations: string[]; openings: OpeningIdentity[]; source: typeof OPENING_REFERENCE; references: { label: string; url: string }[] } {
+  let node, extra;
+  try { const key = openingPositionKey(fen); node = positions.get(key); extra = supplemental.get(key); } catch {}
   return {
-    continuations: node?.moves.slice() ?? [],
+    continuations: [...new Set([...(node?.moves ?? []), ...(extra?.moves ?? [])])].sort(),
+    references: [...(node ? [{label: "Lichess chess-openings · CC0", url: OPENING_REFERENCE.repository}] : []), ...[...(extra?.references ?? [])].map(index => ({label:OPENING_SUPPLEMENTS[index].label,url:OPENING_SUPPLEMENTS[index].url}))],
     openings: node?.openings.map(index => ({ eco: reference.rows[index][0] as string, name: reference.rows[index][1] as string })) ?? [],
     source: OPENING_REFERENCE,
   };

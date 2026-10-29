@@ -785,10 +785,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .edit-pattern-detail-head h1 { margin-top: 1.5rem; }
 .edit-pattern-session { border-top: 2px solid var(--edit-ink); }
 .edit-pattern-stages { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--edit-line); }
-.edit-pattern-stages > div { min-width: 0; display: grid; gap: .5rem; padding: 1rem 1.5rem; border-right: 1px solid var(--edit-line); color: var(--edit-muted); }
-.edit-pattern-stages > div:first-child { padding-left: 0; }
-.edit-pattern-stages > div:last-child { border: 0; }
-.edit-pattern-stages > div.is-current { color: var(--edit-ink); background: var(--edit-panel); }
+.edit-pattern-stages > :is(div, button) { min-width: 0; display: grid; gap: .5rem; padding: 1rem 1.5rem; border-right: 1px solid var(--edit-line); color: var(--edit-muted); }
+.edit-pattern-stages > :is(div, button):first-child { padding-left: 0; }
+.edit-pattern-stages > :is(div, button):last-child { border: 0; }
+.edit-pattern-stages > :is(div, button).is-current { color: var(--edit-ink); background: var(--edit-panel); }
 .edit-pattern-stages strong { font: 400 1.8rem/1 Georgia, serif; }
 .edit-pattern-prompt { display: flex; justify-content: space-between; gap: 1rem; align-items: baseline; padding: 1.8rem 0 1.2rem; }
 .edit-pattern-prompt p { color: var(--edit-muted); font: italic 1rem Georgia, serif; }
@@ -1025,8 +1025,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .edit-pattern-progress { grid-column: 2; grid-row: 2; flex-direction: row; align-items: baseline; gap: .8rem; }
   .edit-pattern-progress strong { font-size: 1.6rem; }
   .edit-pattern-arrow { grid-column: 3; grid-row: 1; }
-  .edit-pattern-stages > div { padding: .8rem .5rem; }
-  .edit-pattern-stages > div:first-child { padding-left: 0; }
+  .edit-pattern-stages > :is(div, button) { padding: .8rem .5rem; }
+  .edit-pattern-stages > :is(div, button):first-child { padding-left: 0; }
   .edit-pattern-stages span { font-size: 8px; }
   .edit-pattern-prompt { flex-direction: column; }
   .edit-pattern-review-link { grid-template-columns: 1fr; gap: .6rem; }
@@ -1198,7 +1198,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .edit-source-note { margin: 0; padding-block: 4px; }
   .edit-pattern-detail > .edit-pattern-back { margin: 0; }
   .edit-pattern-session, .edit-mixed-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
-  .edit-pattern-stages > div { padding-block: 8px; }
+  .edit-pattern-stages > :is(div, button) { padding-block: 8px; }
   .edit-pattern-prompt { margin: 0; padding: 0; }
   :is(.edit-pattern-session, .edit-mixed-stage) > .axis-focus-task { flex: 1; min-height: 0; container-type: size; }
   .edit-pattern-session .axis-puzzle { border: 0; padding: 0; }
@@ -1264,3 +1264,64 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .axis-app-frame .axis-content main.axis-lesson-reader { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 12px; }
   .axis-lesson-reader > .axis-reading { flex: 1; min-height: 0; overflow: auto; padding-right: 16px; }
 }
+
+/* The cover is one editorial spread. Supplementary method content lives in a
+   keyboard-accessible reader; narrow/zoomed viewports keep normal page flow. */
+.edit-cover { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 7%; }
+.edit-cover-study { display: flex; flex-direction: column; align-items: center; gap: 24px; min-width: 0; }
+.edit-cover-study .edit-cover-plate { width: min(100%, 390px); }
+.edit-cover-study .axis-board-root { max-width: none; }
+.edit-cover-study .edit-chapter-strip { width: 100%; }
+.edit-cover-study .edit-chapter-strip button { min-height: 72px; padding: 12px; gap: 4px; }
+.edit-cover-study .edit-chapter-strip strong { font-size: 18px; line-height: 1.1; margin: 0; }
+.edit-cover-study .edit-chapter-strip small { display: none; }
+.edit-cover-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.edit-cover-copy > .edit-text-link { margin-top: 16px; min-height: 44px; align-items: center; }
+.axis-context-body .edit-method { display: block; padding: 0; border-top: 0; }
+.axis-context-body .edit-method h2 { font-size: 2.5rem; margin: 12px 0 24px; }
+.axis-sync-control { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.axis-sync-control > span { font-size: .85rem; color: var(--edit-muted); }
+@media (min-width: 1280px) and (min-height: 720px) {
+  .axis-landing-frame { min-height: 100dvh; }
+  .axis-landing-frame > .edit-site-header { min-height: 64px; padding-block: 8px; }
+  .axis-landing-frame > .axis-content { display: flex; }
+  .axis-landing-frame .axis-content main.edit-public-page {
+    min-height: 0; padding: 0; display: grid; grid-template-rows: auto 1fr auto;
+  }
+  .axis-landing-frame .edit-cover { min-height: 0; padding-block: 20px; }
+  .axis-landing-frame .edit-cover-copy { padding-bottom: 0; }
+  .axis-landing-frame .edit-cover h1 { font-size: clamp(4.3rem, min(7.6vw, 12vh), 8rem); margin-block: 20px; }
+  .axis-landing-frame .edit-cover-study .edit-cover-plate { width: min(390px, 42dvh); }
+  .axis-landing-frame .edit-cover-study { gap: 20px; }
+  .axis-landing-frame .edit-public-note { padding-block: 10px 16px; align-items: center; }
+  .axis-landing-frame > .axis-footer { padding-block: 10px; }
+}
+@media (max-width: 1000px) {
+  .edit-cover { grid-template-columns: minmax(0, 1fr); }
+  .edit-cover-study { width: min(100%, 530px); margin-inline: auto; }
+}
+.edit-pattern-stages { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 600px) { .edit-pattern-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.axis-pattern-guide { border-block: 1px solid var(--edit-line); flex: 0 0 auto; }
+.axis-pattern-guide summary { cursor: pointer; padding-block: 12px; color: var(--edit-accent); }
+.axis-pattern-guide > div { max-height: 28dvh; overflow: auto; padding: 12px; }
+.axis-pattern-guide p { line-height: 1.6; max-width: 75ch; margin-block: 8px 20px; }
+.axis-academy-index { padding-top: 24px; }
+.axis-academy-index li { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 20px; border-top: 1px solid var(--edit-line); padding-block: 24px; }
+.axis-academy-index h2 { font: 400 1.8rem/1.2 Georgia, serif; margin-block: 8px; }
+.axis-academy-index a { text-decoration: underline; text-underline-offset: 5px; }
+.axis-academy-index li > div > p:last-child { max-width: 70ch; line-height: 1.6; color: var(--edit-muted); }
+.axis-academy-number { font: 12px var(--font-geist-mono), monospace; padding-top: 4px; }
+.axis-academy-next { padding-block: 32px; }
+.axis-practice-start { border-block: 1px solid var(--edit-line); padding-block: 32px; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
+.axis-practice-start h2 { font: 400 clamp(2rem, 4vw, 3.5rem)/1.1 Georgia, serif; }
+.axis-practice-start p { max-width: 65ch; line-height: 1.6; color: var(--edit-muted); }
+.axis-recommendation { border-top: 1px solid var(--edit-line); padding-block: 20px; }
+.axis-recommendation h2 { font-size: 1.6rem; }
+.axis-recommendation li { margin-block: 12px; }
+@media (min-width: 781px) and (min-height: 621px) {
+  .axis-app-frame .axis-content main.axis-academy { height: 100%; display: flex; flex-direction: column; gap: 16px; }
+  .axis-academy-index { flex: 1; min-height: 0; overflow: auto; padding-top: 0; }
+}
+.edit-pattern-stages > button { min-height: 44px; text-align: left; cursor: pointer; }
+.edit-pattern-stages > button:hover { background: var(--edit-panel); }

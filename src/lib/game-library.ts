@@ -7,7 +7,7 @@ export interface LibraryFilters { query: string; result: string; platform: strin
 export interface ReviewLocation { ply: number; at: string; variations?: SavedReviewBranch[] }
 
 export function gameAccuracy(game: GameRow, analyses: Record<string, AnalysisSummary>): number | null {
-  return analyses[game.id]?.complete === false ? null : analyses[game.id]?.accuracy ?? game.accuracy_user;
+  return analyses[game.id]?.complete === false || analyses[game.id]?.accuracySamples?.[game.user_color] === 0 ? null : analyses[game.id]?.accuracy ?? game.accuracy_user;
 }
 
 export function filterGames(games: GameRow[], analyses: Record<string, AnalysisSummary>, filters: LibraryFilters): GameRow[] {

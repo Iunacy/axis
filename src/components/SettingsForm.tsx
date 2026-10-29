@@ -21,6 +21,7 @@ import { BOARD_THEMES } from "@/lib/board-themes";
 import { useI18n, type Locale } from "@/lib/i18n";
 import { isSpeechSupported, speak, useVoices } from "@/lib/speech";
 import { useStoreHydrated } from "@/lib/store";
+import { flushStoredState } from "@/lib/indexed-storage";
 import { clearAllData, loadSettings, saveSettings } from "@/lib/storage";
 
 export default function SettingsForm() {
@@ -35,16 +36,19 @@ function SettingsFormInner() {
   const voices = useVoices(locale);
   const speechSupported = isSpeechSupported();
   const [form, setForm] = useState(() => loadSettings());
-  const [state, setState] = useState<"idle" | "saved" | "cleared">("idle");
+  const [state, setState] = useState<"idle" | "saving" | "saved" | "cleared">("idle");
 
-  function save(e: React.FormEvent) {
+  const [saveError, setSaveError] = useState("");
+
+  async function save(e: React.FormEvent) {
     e.preventDefault();
+    setState("saving"); setSaveError("");
     saveSettings({
       ...form,
       analyzeLastN: Math.max(10, Math.min(500, Number(form.analyzeLastN) || 50)),
       engineMovetimeMs: Math.max(40, Math.min(2000, Number(form.engineMovetimeMs) || 90)),
     });
-    setState("saved");
+    try { await flushStoredState(); setState("saved"); } catch { setState("idle"); setSaveError(locale === "fr" ? "Enregistrement impossible. Libérez de l’espace et réessayez." : "Could not save settings. Free device storage and retry."); }
   }
 
   function clearData() {
@@ -57,7 +61,7 @@ function SettingsFormInner() {
 
   return (
     <form onSubmit={save} className="axis-settings-form" onChange={() => setState("idle")}>
-      <fieldset className="axis-panel"><h2>{t.ui.accounts}</h2><p className="axis-muted text-sm leading-6">{t.ui.accountHelp}</p><label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+      <fieldset className="axis-panel"><h2>{t.ui.accounts}</h2><p className="axis-muted text-sm leading-6">{t.ui.accountHelp}</p><p className="axis-muted text-sm leading-6">{locale === "fr" ? "À la prochaine importation réussie, changer de joueur remplacera les parties de l’ancien compte sur cette plateforme et ses données d’entraînement. Les fichiers PGN et l’autre plateforme sont conservés." : "On the next successful import, changing a player replaces that platform’s previous account games and their training data. PGN files and the other platform are kept."}</p><label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.chesscom}
         <input
           className={input}
@@ -236,10 +240,12 @@ function SettingsFormInner() {
       <div className="axis-settings-actions">
         <button
           type="submit"
+          disabled={state === "saving"}
           className="axis-button"
         >
-          {t.settings.save}
+          {state === "saving" ? locale === "fr" ? "Enregistrement…" : "Saving…" : t.settings.save}
         </button>
+        {saveError && <p role="alert">{saveError}</p>}
         {state === "saved" && <span className="text-sm text-emerald-600 dark:text-emerald-400">{t.settings.saved}</span>}
         {state === "cleared" && <span className="text-sm text-amber-600 dark:text-amber-400">{t.settings.cleared}</span>}
       </div>

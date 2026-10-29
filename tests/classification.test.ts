@@ -117,3 +117,28 @@ test("exact terminal positions require no depth or repeated coverage search", as
   const terminal = parseEngineResult(chess.fen(), []);
   assert.deepEqual(ratingCoverageCandidates([chess.fen()],[terminal]), []);
 });
+
+test("documented book provenance survives shallow or unavailable engine evidence without inflating accuracy", async () => {
+  const { summarizeGame } = await import('../src/lib/analysis');
+  const { parsePgn } = await import('../src/lib/pgn');
+  const parsed=parsePgn('1. e4 e5 1/2-1/2')!;
+  const before=simulated(start,['e2e4','e7e5'],[100,800,100],8);
+  const after=simulated(e4.fen(),['e7e5','g1f3'],[100,800,100],8);
+  assert.equal(classifyMove({fen:start,fenAfter:e4.fen(),uci:'e2e4',before:{...before,cpWhite:NaN},after,ply:1,book:true}).classification,'book');
+  const summary=summarizeGame({fens:parsed.fens.slice(0,2),moves:parsed.moves.slice(0,1),userColor:'w',evals:[before,after],engineLabel:'shallow regression'}).summary;
+  assert.equal(summary.moveAssessments?.[0].classification,'book');
+  assert.equal(summary.accuracyByColor?.w,null);
+  assert.equal(summary.accuracySamples?.w,0);
+  // A caller cannot invent provenance by passing book=true for an off-book move.
+  const off=new Chess('7k/8/8/8/8/8/P7/7K w - - 0 1');const offFen=off.fen();off.move('a3');
+  assert.notEqual(classifyMove({fen:offFen,fenAfter:off.fen(),uci:'a2a3',before,after,ply:1,book:true}).classification,'book');
+});
+
+test("documented opening mistakes retain provenance but still create review issues",async()=>{
+ const {summarizeGame}=await import('../src/lib/analysis');
+ const before=simulated(start,['d2d4','d7d5'],[300,600,100]);
+ const after=simulated(e4.fen(),['e7e5','g1f3'],[0,400,600]);
+ const summary=summarizeGame({fens:[start,e4.fen()],moves:[{san:'e4',uci:'e2e4',color:'w'}],userColor:'w',evals:[before,after],engineLabel:'synthetic provenance regression'}).summary;
+ assert.equal(summary.moveAssessments?.[0].classification,'book');
+ assert.equal(summary.issues.length,1);assert.equal(summary.issues[0].severity,'blunder');assert.ok(summary.accuracy<100);
+});

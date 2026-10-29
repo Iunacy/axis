@@ -26,7 +26,8 @@ export default function LessonsPage() {
 
   return (
     <main className="axis-route axis-lessons">
-      <PageHeader title={t.lessons.title} description={t.lessons.classicSub} actions={<GenerateLessonsButton/>}/>
+      <Link className="axis-link" href="/academy">← Chess Academy · {locale === "fr" ? "Leçons autonomes" : "Standalone lessons"}</Link>
+      <PageHeader title={locale === "fr" ? "Notes de revue personnelles" : "Personal review notes"} description={t.lessons.classicSub} actions={<GenerateLessonsButton/>}/>
 
 
       <details className="axis-learning-guide"><summary>{locale === "fr" ? "Choisir son activité" : "Choose your practice"}</summary><dl>

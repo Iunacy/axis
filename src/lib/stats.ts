@@ -23,8 +23,9 @@ export function computeDashboardStats(games: GameRow[], analyses: Record<string,
   const analyzedCount = summaries.length;
   const pendingCount = all.filter((g) => ["pending", "failed"].includes(g.analysis_status)).length;
 
-  const avgAccuracy = analyzedCount
-    ? Math.round((summaries.reduce((s, a) => s + (a.accuracy || 0), 0) / analyzedCount) * 10) / 10
+  const scored = summaries.filter(summary => summary.accuracySampleCount !== 0);
+  const avgAccuracy = scored.length
+    ? Math.round((scored.reduce((s, a) => s + a.accuracy, 0) / scored.length) * 10) / 10
     : null;
   const blundersPerGame = analyzedCount
     ? Math.round((summaries.reduce((s, a) => s + a.blunders, 0) / analyzedCount) * 100) / 100
@@ -109,10 +110,11 @@ export function buildWeaknessProfile(games: GameRow[], summaries: AnalysisSummar
     .slice(0, 3);
 
   const analyzed = summaries.length;
+  const scored = summaries.filter(summary => summary.accuracySampleCount !== 0);
   return {
     totalAnalyzed: analyzed,
-    avgAccuracy: analyzed
-      ? Math.round((summaries.reduce((s, a) => s + (a.accuracy || 0), 0) / analyzed) * 10) / 10
+    avgAccuracy: scored.length
+      ? Math.round((scored.reduce((s, a) => s + a.accuracy, 0) / scored.length) * 10) / 10
       : null,
     blundersPerGame: analyzed
       ? Math.round((summaries.reduce((s, a) => s + a.blunders, 0) / analyzed) * 100) / 100

@@ -60,7 +60,7 @@ test("spaced retrieval schedules 1, 3, 7, 14, 30 days and resets after failure",
 
 test("the root best move is not penalized when a bounded child search loses the mate horizon", () => {
   const parsed = parsePgn('[SetUp "1"]\n[FEN "7k/P7/8/8/8/8/8/7K w - - 0 1"]\n\n1. a8=Q+ *')!;
-  const { summary } = summarizeGame({ ...parsed, userColor: "w", engineLabel: "bounded fixture", evals: [{ cpWhite: 9986, bestUci: "a7a8q", pvUci: ["a7a8q"], mate: { winner: "w", moves: 14 } }, { cpWhite: 650, bestUci: "h8h7", pvUci: ["h8h7"] }] });
+  const { summary } = summarizeGame({ ...parsed, userColor: "w", engineLabel: "bounded fixture", evals: [{ cpWhite: 9986, bestUci: "a7a8q", pvUci: ["a7a8q"], depth:16,nodes:50000,lines:[{cpWhite:9986,pvUci:["a7a8q"],depth:16,nodes:50000,mate:{winner:"w",moves:14}}], mate: { winner: "w", moves: 14 } }, { cpWhite: 650, bestUci: "h8h7", pvUci: ["h8h7"], depth:16,nodes:50000,lines:[{cpWhite:650,pvUci:["h8h7"],depth:16,nodes:50000}] }] });
   assert.equal(summary.accuracy, 100);
   assert.equal(summary.acpl, 0);
   assert.equal(summary.issues.length, 0);

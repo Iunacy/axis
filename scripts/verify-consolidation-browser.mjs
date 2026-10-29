@@ -1,3 +1,4 @@
+import { readEnvelope, writeEnvelope } from "./browser-state.mjs";
 import { chromium } from "playwright";
 import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
 import assert from "node:assert/strict";
@@ -7,14 +8,8 @@ const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_C
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [], matrix = [];
 page.on("pageerror", error => errors.push(error.message));
-const readState = () => page.evaluate(async () => {
-  const db = await new Promise((resolve,reject) => { const q=indexedDB.open("axis",1); q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error); });
-  try { return JSON.parse(await new Promise((resolve,reject)=>{ const q=db.transaction("state").objectStore("state").get("cc:store");q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error); })); } finally { db.close(); }
-});
-const writeState = saved => page.evaluate(async saved => {
-  const db=await new Promise((resolve,reject)=>{ const q=indexedDB.open("axis",1);q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error); });
-  try { await new Promise((resolve,reject)=>{const tx=db.transaction("state","readwrite");tx.objectStore("state").put(JSON.stringify(saved),"cc:store");tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);}); } finally { db.close(); }
-}, saved);
+const readState = () => readEnvelope(page);
+const writeState = saved => writeEnvelope(page,saved);
 const clearEngineCache = () => page.evaluate(async () => {
   const db = await new Promise((resolve,reject) => { const q=indexedDB.open("axis-engine",1);q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error); });
   try { await new Promise((resolve,reject) => { const tx=db.transaction("evaluations","readwrite");tx.objectStore("evaluations").clear();tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error); }); } finally { db.close(); }

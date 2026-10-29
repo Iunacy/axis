@@ -41,5 +41,6 @@ test("partial reviews survive reload without becoming completed game statistics"
   assert.equal(restored.analyses[game.id].complete, false);
   assert.equal(computeDashboardStats(restored.games, restored.analyses).analyzedCount, 0);
   assert.equal(summary.accuracyByColor?.b, null);
-  assert.ok(summary.accuracyByColor?.w !== null);
+  assert.equal(summary.accuracyByColor?.w, null);
+  assert.deepEqual(summary.accuracySamples, {w:0,b:0});
 });

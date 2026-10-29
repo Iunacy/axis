@@ -34,3 +34,32 @@ test("Chess.com failures report missing usernames and rate limits", async () => 
     await assert.rejects(fetchChesscomGames("offline"), TypeError);
   } finally { globalThis.fetch = original; }
 });
+
+test("Lichess historical imports cross 200 games in bounded overlapping pages", async () => {
+  const { fetchLichessGames } = await import('../src/lib/fetchers/lichess');
+  const original = globalThis.fetch;
+  const dataset = Array.from({length:251},(_,i)=>({ id:String(i),variant:'standard',createdAt:Date.now()-i*1000,speed:'rapid',status:'mate',rated:true,winner:'white',players:{white:{user:{name:'player'}},black:{user:{name:'opponent'}}},pgn:'[White "player"]\n[Black "opponent"]\n1. e4 e5 1-0' }));
+  const urls: URL[]=[];
+  globalThis.fetch = (async input => {
+    const url=new URL(String(input));urls.push(url);
+    const until=Number(url.searchParams.get('until'));
+    return new Response(dataset.filter(game=>game.createdAt<=until).slice(0,100).map(game=>JSON.stringify(game)).join('\n'));
+  }) as typeof fetch;
+  try {
+    const games=await fetchLichessGames('player');
+    assert.equal(games.length,251);assert.equal(new Set(games.map(game=>game.id)).size,251);
+    assert.equal(urls.length,3);assert.ok(urls.every(url=>url.searchParams.get('max')==='100'));
+  } finally {globalThis.fetch=original;}
+});
+
+test("cancelled imports stop before another page and long rate limits preserve retry boundaries", async () => {
+  const { importRequest } = await import('../src/lib/fetchers/request');
+  const original=globalThis.fetch;let calls=0;
+  globalThis.fetch=(async()=>{calls++;return new Response('',{status:429,headers:{'Retry-After':'120'}});}) as typeof fetch;
+  try {
+    await assert.rejects(importRequest('https://lichess.org'),{code:'syncRateLimit'});
+    assert.equal(calls,1);
+    const controller=new AbortController();controller.abort();
+    await assert.rejects(importRequest('https://lichess.org',{signal:controller.signal}));assert.equal(calls,1);
+  }finally{globalThis.fetch=original;}
+});

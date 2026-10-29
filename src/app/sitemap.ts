@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/games", priority: 0.7, changeFrequency: "weekly" as const },
     { path: "/training", priority: 0.7, changeFrequency: "weekly" as const },
     { path: "/licenses", priority: 0.2, changeFrequency: "yearly" as const },
+    { path: "/academy", priority: 0.9, changeFrequency: "monthly" as const },
     { path: "/lessons", priority: 0.9, changeFrequency: "weekly" as const },
     { path: "/masters", priority: 0.8, changeFrequency: "monthly" as const },
     { path: "/settings", priority: 0.3, changeFrequency: "monthly" as const },

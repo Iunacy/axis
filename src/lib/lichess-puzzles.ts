@@ -1,9 +1,11 @@
+import snapshot from "./data/puzzles.json";
 import { Chess } from "chess.js";
+import { matchesMateGeometry } from "./pattern-geometry";
 import { PATTERNS, type PatternDefinition } from "./pattern-catalog";
 import type { PuzzleRow } from "./types";
 
 const UCI = /^[a-h][1-8][a-h][1-8][qrbn]?$/;
-const ID = /^[A-Za-z0-9]{5}$/;
+const ID = /^[A-Za-z0-9]{5,8}$/;
 
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -39,7 +41,7 @@ export function parseLichessPuzzle(value: unknown, pattern: PatternDefinition, s
       if (index % 2 === 0) solution_san.push(played.san);
       else reply_san.push(played.san);
     }
-    if (!chess.isCheckmate()) return null;
+    if (!matchesMateGeometry(chess, pattern.id)) return null;
     return {
       id: `lichess:${puzzle.id}`, game_id: `lichess:${game.id}`, fen, solution_san, reply_san,
       solution_lines_uci: [canonical], theme: "other", user_side,
@@ -48,7 +50,7 @@ export function parseLichessPuzzle(value: unknown, pattern: PatternDefinition, s
       rating_deviation: typeof puzzle.ratingDeviation === "number" && Number.isFinite(puzzle.ratingDeviation) ? puzzle.ratingDeviation : undefined,
       themes: puzzle.themes as string[],
       opening_tags: Array.isArray(puzzle.openingTags) && puzzle.openingTags.every(tag => typeof tag === "string") ? puzzle.openingTags as string[] : undefined,
-      license: "CC0-1.0", difficulty: stage === 0 ? "easy" : stage === 1 ? "medium" : "hard",
+      license: "CC0-1.0", difficulty: puzzle.rating < 1200 ? "easy" : puzzle.rating < 1700 ? "medium" : "hard",
       kind: "tactic", attempts: 0, solved: false, created_at: now.toISOString(),
     };
   } catch {
@@ -60,12 +62,10 @@ export async function fetchCuratedPatterns(patterns: readonly PatternDefinition[
   const requested = patterns.flatMap(pattern => pattern.ids);
   if (!requested.length) return [];
   if (new Set(requested).size !== requested.length) throw new Error("The curated puzzle list contains duplicate IDs.");
-  const response = await fetch(`https://lichess.org/api/puzzle/many?ids=${requested.join(",")}`, {
-    headers: { Accept: "application/json" }, signal: AbortSignal.timeout(20000),
-  });
-  if (!response.ok) throw new Error(`Lichess puzzle request failed (${response.status}).`);
-  const payload: unknown = await response.json();
-  if (!record(payload) || !Array.isArray(payload.puzzles)) throw new Error("Lichess returned an unreadable puzzle set.");
+  // The reviewed CC0 snapshot makes learning available offline and avoids a
+  // network-dependent source silently changing an established exercise.
+  const payload: unknown = snapshot;
+  if (!record(payload) || !Array.isArray(payload.puzzles)) throw new Error("The bundled puzzle source is unreadable.");
   const rows = new Map<string, unknown>();
   for (const row of payload.puzzles) if (record(row) && record(row.puzzle) && typeof row.puzzle.id === "string") rows.set(row.puzzle.id, row);
   const imported: PuzzleRow[] = [];

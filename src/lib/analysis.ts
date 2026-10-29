@@ -1,7 +1,7 @@
 import { ENGINE_ID } from "./engine-protocol";
 import { Chess, type Square } from "chess.js";
 import type { AnalysisSummary, Motif, MoveIssue, Phase, PositionEvaluation, MoveAssessment } from "./types";
-import { classifyMove, expectedLoss } from "./move-classification";
+import { classifyMove } from "./move-classification";
 import { identifyOpening, isBookContinuation, OPENING_BOOK_VERSION } from "./opening-book";
 
 export type PositionEval = PositionEvaluation;
@@ -143,7 +143,6 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
   let cpLossSum = 0;
   let cpSamples = 0;
   let accSum = 0;
-  let userMoves = 0;
   const accuracyByColor = { w: { sum: 0, count: 0 }, b: { sum: 0, count: 0 } };
 
   const sign = g.userColor === "w" ? 1 : -1;
@@ -154,28 +153,32 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     const evAfter = g.evals[i + 1];
     if (!evBefore || !evAfter) continue;
     const isEngineBest = move.uci === evBefore.bestUci;
-    const moverDrop = isEngineBest ? 0 : expectedLoss(evBefore, evAfter, move.color);
-    accuracyByColor[move.color].sum += moveAccuracy(moverDrop * 100);
-    accuracyByColor[move.color].count += 1;
     const assessment = classifyMove({ fen: g.fens[i], fenAfter: g.fens[i + 1], uci: move.uci, before: evBefore, after: evAfter, ply: i + 1, book: isBookContinuation(g.fens[i], move.uci), confirmation: g.confirmations?.[i] });
+    const moverDrop = assessment.expectedLoss;
+    if (moverDrop !== null) {
+      accuracyByColor[move.color].sum += moveAccuracy(moverDrop * 100);
+      accuracyByColor[move.color].count += 1;
+    }
     assessments.push(assessment);
     if (move.color !== g.userColor) continue;
 
-    userMoves++;
     const phase = phaseOf(g.fens[i], i);
     byPhase[phase].moves++;
 
     const cpBeforeUser = sign * evBefore.cpWhite;
     const cpAfterUser = sign * evAfter.cpWhite;
-    const winDrop = assessment.expectedLoss ?? moverDrop;
+    const winDrop = moverDrop ?? 0;
 
     const cpLoss = isEngineBest ? 0 : Math.max(0, cpBeforeUser - cpAfterUser);
-    if (!evBefore.mate && !evAfter.mate) { cpLossSum += Math.min(cpLoss, 1000); cpSamples++; }
-    accSum += moveAccuracy(moverDrop * 100);
+    if (moverDrop !== null && !evBefore.mate && !evAfter.mate) { cpLossSum += Math.min(cpLoss, 1000); cpSamples++; }
+    if (moverDrop !== null) accSum += moveAccuracy(moverDrop * 100);
 
     let severity: MoveIssue["severity"] | null = null;
     if (assessment.classification === "blunder" || assessment.classification === "mistake" || assessment.classification === "inaccuracy") severity = assessment.classification;
     else if (assessment.classification === "miss") severity = winDrop >= .2 ? "blunder" : winDrop >= .1 ? "mistake" : "inaccuracy";
+    // Provenance is orthogonal to playing strength: a documented gambit or
+    // historical trap can still lose expected outcome and deserve review.
+    if (!severity && assessment.classification === "book" && winDrop >= .05) severity = winDrop >= .20 ? "blunder" : winDrop >= .10 ? "mistake" : "inaccuracy";
     if (!severity) continue;
 
     if (severity === "blunder") byPhase[phase].blunders++;
@@ -209,7 +212,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
       bestUci: bestMoveUci,
       bestSan: bestMoveUci ? uciToSan(g.fens[i], bestMoveUci) : null,
       continuation: legalVariation(g.fens[i], evBefore.pvUci),
-      classification: assessment.classification ?? undefined,
+      classification: assessment.classification === "book" ? severity : assessment.classification ?? undefined,
     });
 
     if ((severity === "blunder" || severity === "mistake" || assessment.classification === "miss") && evBefore.pvUci.length > 0) {
@@ -264,7 +267,9 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
   const summary: AnalysisSummary = {
     acpl: cpSamples ? Math.round(cpLossSum / cpSamples) : 0,
     acplSamples: cpSamples,
-    accuracy: userMoves ? Math.round((accSum / userMoves) * 10) / 10 : 0,
+    accuracy: accuracyByColor[g.userColor].count ? Math.round((accSum / accuracyByColor[g.userColor].count) * 10) / 10 : 0,
+    accuracySampleCount: accuracyByColor[g.userColor].count,
+    accuracySamples: { w: accuracyByColor.w.count, b: accuracyByColor.b.count },
     blunders: issues.filter((x) => x.severity === "blunder").length,
     mistakes: issues.filter((x) => x.severity === "mistake").length,
     inaccuracies: issues.filter((x) => x.severity === "inaccuracy").length,
