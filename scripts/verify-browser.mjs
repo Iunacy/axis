@@ -42,8 +42,21 @@ import assert from 'node:assert/strict';
  await page.screenshot({path:'output/playwright/v3-review.png'});
  assert.equal(requests.some(url=>url.endsWith('/stockfish-19-single.wasm')),false);
  await page.getByRole('button',{name:'Explore position',exact:true}).click();
+ // A slow optional engine must stay cancellable during startup, with honest
+ // loading feedback rather than claiming that position calculation has begun.
+ const startupRequested=page.waitForRequest('**/stockfish/stockfish-19-single.js',{timeout:30000});
+ const holdDeep=route=>route.fulfill({contentType:'application/javascript',headers:{'cache-control':'no-store'},body:'self.onmessage = () => {};'});
+ await page.route('**/stockfish/stockfish-19-single.js',holdDeep);
  await page.getByRole('checkbox',{name:/Deep analysis/}).check();await page.getByRole('button',{name:'Analyze position',exact:true}).click();
- await page.getByText(/Stockfish 19 · Deep/).waitFor({timeout:90000});console.log("deep engine passed");assert.ok(requests.some(url=>url.endsWith('/stockfish-19-single.wasm')));
+ await startupRequested;await page.getByRole('status').filter({hasText:'Loading and starting Stockfish'}).waitFor();
+ await page.getByRole('button',{name:'Cancel',exact:true}).click();assert.ok(await page.getByRole('button',{name:'Analyze position',exact:true}).isEnabled());
+ assert.equal(await page.locator('.axis-position-explorer [role="alert"]').count(),0);
+ await page.unroute('**/stockfish/stockfish-19-single.js',holdDeep);
+ await page.getByRole('button',{name:'Analyze position',exact:true}).click();
+ await Promise.race([
+   page.getByText(/Stockfish 19 · Deep/).waitFor({timeout:360000}),
+   page.locator('.axis-position-explorer [role="alert"]').waitFor({timeout:360000}).then(async()=>{throw new Error(await page.locator('.axis-position-explorer [role="alert"]').innerText());}),
+ ]);console.log("deep engine passed");assert.ok(requests.some(url=>url.endsWith('/stockfish-19-single.wasm')));
  await page.reload();await page.getByText('Cached review · verification complete',{exact:true}).waitFor({timeout:15000});
  await page.goto(origin+'/dashboard');await page.getByRole('heading',{name:'Your next move.'}).waitFor();await fit();assert.ok((await page.locator('.axis-dashboard-board').boundingBox()).width > 150);await page.screenshot({path:'output/playwright/v3-dashboard.png'});
  const specimens = [

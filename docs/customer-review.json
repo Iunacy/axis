@@ -104,6 +104,16 @@
         13
       ],
       "pullRequest": "https://github.com/Iunacy/axis/pull/5"
+    },
+    {
+      "id": "cold-deep-startup",
+      "priority": "P1",
+      "problem": "The live optional 95 MiB engine failed under a 45-second initialization deadline. A direct cold transfer took 44.5 seconds before compilation; the generic calculation-timeout message suggested an ineffective smaller search.",
+      "change": "Give startup separate bounded Lite/Deep deadlines, announce loading versus calculation, retain cancellation, and give download-specific recovery. Verify delayed startup, timeout and cancellation with virtual-clock tests and browser controls.",
+      "customers": [
+        20
+      ],
+      "validation": "Production check found after the initial twenty-scenario pass; repeat live engine and customer checks after deployment."
     }
   ],
   "journeys": [
