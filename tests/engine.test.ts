@@ -152,3 +152,60 @@ test("worker initialization rejects an obsolete manifest before starting a searc
   await assert.rejects(engine.init(), /outdated/);
   engine.destroy();
 });
+
+test("a cold Deep engine can finish startup after the old 45-second search deadline", async t => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const original = Object.getOwnPropertyDescriptor(globalThis, "Worker");
+  let releaseStartup = () => {};
+  let notifyStarted = () => {};
+  const started = new Promise<void>(resolve => { notifyStarted = resolve; });
+  class SlowWorker extends EventTarget {
+    postMessage(command: string) {
+      const emit = (data: string) => this.dispatchEvent(new MessageEvent("message", { data }));
+      if (command === "uci") { releaseStartup = () => emit("uciok"); notifyStarted(); }
+      if (command === "isready") queueMicrotask(() => emit("readyok"));
+    }
+    terminate() {}
+  }
+  Object.defineProperty(globalThis, "Worker", { configurable: true, value: SlowWorker });
+  t.after(() => { if (original) Object.defineProperty(globalThis, "Worker", original); else Reflect.deleteProperty(globalThis, "Worker"); });
+  t.mock.method(globalThis, "fetch", async () => new Response(JSON.stringify({ version: "19.0.1", js: "stockfish-19-lite-single.js", deep: "stockfish-19-single.js" })));
+  const statuses: string[] = [];
+  const engine = new Engine("deep", status => statuses.push(status));
+  t.after(() => engine.destroy());
+  let failure: unknown;
+  const pending = engine.init().catch(error => { failure = error; });
+  await started;
+  t.mock.timers.tick(45001);
+  await Promise.resolve();
+  assert.equal(failure, undefined, "a slow engine download must not be reported as a slow search");
+  assert.deepEqual(statuses, ["initializing"]);
+  releaseStartup(); await pending;
+  assert.equal(failure, undefined);
+  assert.deepEqual(statuses, ["initializing", "ready"]);
+});
+
+test("Deep startup has a bounded download-specific timeout and can be cancelled", async t => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const original = Object.getOwnPropertyDescriptor(globalThis, "Worker");
+  let notifyStarted = () => {};
+  let terminated = 0;
+  class SilentWorker extends EventTarget {
+    postMessage(command: string) { if (command === "uci") notifyStarted(); }
+    terminate() { terminated++; }
+  }
+  Object.defineProperty(globalThis, "Worker", { configurable: true, value: SilentWorker });
+  t.after(() => { if (original) Object.defineProperty(globalThis, "Worker", original); else Reflect.deleteProperty(globalThis, "Worker"); });
+  t.mock.method(globalThis, "fetch", async () => new Response(JSON.stringify({ version: "19.0.1", js: "stockfish-19-lite-single.js", deep: "stockfish-19-single.js" })));
+  for (const action of ["timeout", "cancel"] as const) {
+    const started = new Promise<void>(resolve => { notifyStarted = resolve; });
+    const engine = new Engine("deep");
+    const pending = assert.rejects(engine.init(), action === "timeout" ? /download or start.*turn off Deep analysis/ : /cancelled/);
+    await started;
+    if (action === "timeout") t.mock.timers.tick(240001);
+    else engine.destroy();
+    await pending;
+    engine.destroy();
+  }
+  assert.ok(terminated >= 2, "cancelled and failed workers can be released");
+});

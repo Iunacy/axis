@@ -5,7 +5,7 @@ import { engineIdentity, type EngineProfile, evaluationKey, parseEngineResult, p
 import type { PositionEvaluation } from "./types";
 
 export class Engine {
-  constructor(private profile: EngineProfile = "default") {}
+  constructor(private profile: EngineProfile = "default", private onStatus?: (status: "initializing" | "ready") => void) {}
 
   private worker: Worker | null = null;
   private ready = false;
@@ -28,6 +28,7 @@ export class Engine {
 
   private async initialize() {
     if (typeof Worker === "undefined" || typeof WebAssembly === "undefined") throw new Error("This browser cannot run Stockfish. Try a current browser with WebAssembly support.");
+    this.onStatus?.("initializing");
     const response = await fetch("/stockfish/manifest.json", { signal: AbortSignal.any([AbortSignal.timeout(15000), this.lifecycle.signal]) });
     if (!response.ok) throw new Error("Stockfish is unavailable. Reconnect and try again.");
     const manifest = await response.json();
@@ -36,15 +37,21 @@ export class Engine {
     if (typeof entry !== "string" || !/^stockfish-[\w.-]+\.js$/.test(entry)) throw new Error("Stockfish assets could not be verified.");
     if (this.destroyed) throw new Error("Analysis cancelled.");
     this.worker = new Worker(`/stockfish/${entry}`);
-    await this.send("uci", line => line === "uciok");
+    // The worker downloads and compiles its WASM before answering UCI. A cold
+    // 95 MiB Deep download must not consume the position-search deadline.
+    await this.send("uci", line => line === "uciok", this.profile === "deep" ? 240000 : 60000,
+      this.profile === "deep"
+        ? "Deep engine took too long to download or start. Check your connection and retry, or turn off Deep analysis."
+        : "Stockfish took too long to download or start. Check your connection and retry.");
     await this.send("setoption name Threads value 1");
     await this.send(`setoption name Hash value ${this.hashMb}`);
     await this.send("setoption name UCI_ShowWDL value true");
     await this.send("isready", line => line === "readyok");
     this.ready = true;
+    this.onStatus?.("ready");
   }
 
-  private send(cmd: string, until?: (line: string) => boolean, timeoutMs = 45000): Promise<string[]> {
+  private send(cmd: string, until?: (line: string) => boolean, timeoutMs = 45000, timeoutMessage = "Stockfish timed out. Retry this position with a smaller search budget."): Promise<string[]> {
     return new Promise((resolve, reject) => {
       const worker = this.worker;
       if (!worker || this.destroyed) { reject(new Error("Analysis cancelled.")); return; }
@@ -53,7 +60,7 @@ export class Engine {
       const cleanup = () => { clearTimeout(timer); worker.removeEventListener("message", onMessage); worker.removeEventListener("error", onError); this.pendingReject = null; };
       const fail = (error: Error) => { cleanup(); reject(error); };
       const onError = () => fail(new Error("Stockfish stopped. Close other tabs and retry analysis."));
-      const timer = setTimeout(() => fail(new Error("Stockfish timed out. Retry this position with a smaller search budget.")), timeoutMs);
+      const timer = setTimeout(() => fail(new Error(timeoutMessage)), timeoutMs);
       const onMessage = (event: MessageEvent) => {
         if (typeof event.data !== "string") return;
         for (const line of event.data.split(/\r?\n/)) {

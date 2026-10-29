@@ -167,5 +167,13 @@
     "npm run browser:verify"
   ],
   "browserCoverage": "Both themes, English/French landing, 1280x720 through 1920x1080 desktop, mobile/zoom-equivalent layouts, 502-game imports, account replacement/failure/reload, 20-row lists, real engine reviews, recovery, full-engine isolation, fullscreen/fallback controls, Academy interaction/quiz/progress, curated sessions, recommendations, and a 1000-game rendered fixture.",
-  "releaseGate": "Merge only after these checks pass on the PR. Verify the deployed commit metadata and smoke-test the production URL. Do not describe unvalidated capacity or pedagogical effectiveness as production-ready."
+  "releaseGate": "Merge only after these checks pass on the PR. Verify the deployed commit metadata and smoke-test the production URL. Do not describe unvalidated capacity or pedagogical effectiveness as production-ready.",
+  "engineStartup": {
+    "method": "Initialization is separate from position search. Worker UCI readiness includes downloading and compiling the engine.",
+    "liteTimeoutMs": 60000,
+    "deepTimeoutMs": 240000,
+    "searchTimeoutMs": 120000,
+    "feedback": "Loading/starting is distinguished from calculation; either can be cancelled. Startup failure gives connection/retry/Lite recovery instead of recommending a smaller search.",
+    "regressions": "Simulated startup beyond 45 seconds, bounded startup failure, cancellation, browser loading feedback and cancellation before the optional engine is ready."
+  }
 }
