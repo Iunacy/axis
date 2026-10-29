@@ -128,14 +128,14 @@ export default function MastersPage() {
     <main className="axis-route axis-masters">
       <PageHeader title={t.masters.title} description={t.masters.sub}/>
 
-      <label className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+      <label className="axis-search block max-w-md">
+        <Search size={16} aria-hidden="true"/>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label={t.masters.search}
           placeholder={t.masters.search}
-          className="axis-field pl-9"
+          className="axis-field"
         />
       </label>
 

@@ -79,6 +79,7 @@ export interface AnalysisSummary {
   complete?: boolean;
   totalPlies?: number;
   analysisVersion?: number;
+  ratingCoverageVersion?: number;
   moveAssessments?: MoveAssessment[];
   opening?: { eco: string; name: string };
 }

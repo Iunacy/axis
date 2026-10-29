@@ -33,6 +33,7 @@ import assert from 'node:assert/strict';
  const specimens = [
   ['Castle study', 'r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1', '1. O-O O-O-O 1/2-1/2'],
   ['Promotion study', '7k/P7/8/8/8/8/8/7K w - - 0 1', '1. a8=N Kg7 1/2-1/2'],
+  ['En passant study', '4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 2', '2. exd6 Kd7 1/2-1/2'],
   ['Pawn ending', '8/8/4k3/8/4P3/4K3/8/8 w - - 0 1', '1. Kd4 Kd6 1/2-1/2'],
  ];
  for (const [name,fen,moves] of specimens) {
@@ -43,7 +44,7 @@ import assert from 'node:assert/strict';
   await page.getByText('Cached review · verification complete',{exact:true}).waitFor({timeout:90000});
   await page.getByRole('button',{name:'End',exact:true}).click();
  }
- console.log('PASS: browser reviews castling, underpromotion and pawn ending');
+ console.log('PASS: browser reviews castling, en passant, underpromotion and pawn ending');
  await page.goto(origin+'/games');await page.locator('.axis-import summary').click();
  await page.getByRole('textbox',{name:'Paste PGN here'}).fill('[Event "Recovery study"]\n[White "Study"]\n[Black "Recovery study"]\n[Result "1/2-1/2"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Nb8 1/2-1/2');
  await page.getByRole('button',{name:'Import games',exact:true}).click();await page.getByRole('link',{name:'Recovery study',exact:true}).click();

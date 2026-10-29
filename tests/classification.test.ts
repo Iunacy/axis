@@ -96,3 +96,24 @@ test("selective verification includes uncertain positions without awarding unsup
   assert.deepEqual(verificationCandidates([start, e4.fen()], [{ uci: "e2e4", color: "w" }], [before, after]), [0]);
   assert.equal(classifyMove({ fen: start, fenAfter: e4.fen(), uci: "e2e4", before, after, ply: 1 }).classification, null);
 });
+
+test("rating coverage fills every shallow position instead of only six decisions", async () => {
+  const { ratingCoverageCandidates } = await import("../src/lib/move-classification");
+  const chess = new Chess();
+  const fens = [chess.fen()];
+  for (const san of ["e4", "e5", "Nf3", "Nc6", "Bc4", "Bc5", "d3", "Nf6", "Nc3", "d6"]) { chess.move(san); fens.push(chess.fen()); }
+  const evaluations = fens.map(fen => ({ ...simulated(fen, [new Chess(fen).moves({verbose:true})[0]].map(move => `${move.from}${move.to}${move.promotion ?? ""}`), [100,800,100], 9) }));
+  assert.deepEqual(ratingCoverageCandidates(fens, evaluations), fens.map((_,index) => index));
+  evaluations[3].depth = 12;
+  assert.equal(ratingCoverageCandidates(fens,evaluations).includes(3), false);
+  // Coverage planning never weakens the actual classification threshold.
+  const shallow = classifyMove({fen:start,fenAfter:e4.fen(),uci:"e2e4",before:evaluations[0],after:evaluations[1],ply:1});
+  assert.equal(shallow.classification,null);
+});
+
+test("exact terminal positions require no depth or repeated coverage search", async () => {
+  const { ratingCoverageCandidates } = await import("../src/lib/move-classification");
+  const chess = new Chess(); for (const move of ["f3","e5","g4","Qh4#"]) chess.move(move);
+  const terminal = parseEngineResult(chess.fen(), []);
+  assert.deepEqual(ratingCoverageCandidates([chess.fen()],[terminal]), []);
+});

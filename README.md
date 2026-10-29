@@ -2,13 +2,13 @@
 
 I’m building AXIS, a chess learning application that turns game review into focused practice.
 
-[Open AXIS](https://axls.vercel.app/) · [V4 release notes](https://github.com/Iunacy/axis/releases/tag/v4.0.0)
+[Open AXIS](https://axls.vercel.app/) · [V4.0.1 release notes](https://github.com/Iunacy/axis/releases/tag/v4.0.1)
 
 In V4, I can build a learning plan from completed Stockfish 19 reviews. AXIS separates isolated mistakes from recurring needs, selects focused concepts and exercises from my games, and lets me choose another skill. Piece safety, tactical vision, forks, king safety, material calculation, opening decisions, endgame decisions, and conversion have explicit evidence rules. Optional related mating examples come from verified Lichess puzzles.
 
 I can practice legal engine lines with progressive hints, resume a saved session, and track attempts, assistance, elapsed time, first-attempt success, and delayed retention. Reviews use a transparent spaced schedule. New game mistakes can reopen a skill without deleting my history. Reading a lesson or memorizing one position does not establish mastery.
 
-I can import completed Chess.com, Lichess, and PGN games, review them automatically in a compact desktop workspace, and explore persistent legal variations. Ordinary analysis uses Stockfish 19 Lite; optional bounded deep analysis loads the full engine on request (about 95 MiB). Games and training stay on this device.
+I can import completed Chess.com, Lichess, and PGN games, review them automatically in a compact desktop workspace, and explore persistent legal variations. Ordinary analysis uses Stockfish 19 Lite; optional bounded deep analysis loads the full engine on request (about 95 MiB). Move ratings receive bounded follow-up searches; pending or insufficient evidence stays explicit. Damaged cached reviews repair themselves when opened. Games and training stay on this device.
 
 ![AXIS V4 dashboard](public/media/axis-dashboard.webp)
 

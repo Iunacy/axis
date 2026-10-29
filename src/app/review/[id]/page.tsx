@@ -19,6 +19,7 @@ import ReviewSummary from "@/components/review/ReviewSummary";
 import EvaluationGraph from "@/components/review/EvaluationGraph";
 import { parsePgn, type ParsedGame } from "@/lib/pgn";
 import { createReviewPosition, restoreReviewBranches, serializeReviewBranches, reviewPositionReducer, reviewShortcut, reviewView } from "@/lib/review-position";
+import { needsAutomaticReview } from "@/lib/review-analysis";
 import { reviewAttemptEvidence, reviewExercise } from "@/lib/review-training";
 import { useI18n } from "@/lib/i18n";
 import { useAnalyses, useGames, useSettings, useStore, useStoreHydrated } from "@/lib/store";
@@ -43,6 +44,7 @@ export default function ReviewPage({ params }: { params: Promise<{ id: string }>
 }
 
 function ReviewWorkspace({ game, parsed, analysis }: { game: GameRow; parsed: ParsedGame; analysis?: AnalysisSummary }) {
+  const reviewComplete = useMemo(() => game.analysis_status === "done" && !needsAutomaticReview(game, analysis), [game, analysis]);
   const { t, locale } = useI18n();
   const settings = useSettings();
   const setSettings = useStore(state => state.setSettings);
@@ -209,11 +211,11 @@ function ReviewWorkspace({ game, parsed, analysis }: { game: GameRow; parsed: Pa
         }}>
           {([{ id: "moves", name: t.ui.moves, count: parsed.moves.length }, { id: "moments", name: t.axis.issues, count: analysis?.issues.length ?? 0 }, { id: "explore", name: locale === "fr" ? "Analyse" : "Explore" }] as const).map(item => <button key={item.id} role="tab" id={`${item.id}-tab`} tabIndex={tab === item.id ? 0 : -1} aria-controls={`${item.id}-panel`} aria-selected={tab === item.id} onClick={() => setTab(item.id)}>{item.name}{"count" in item && <span>{item.count}</span>}</button>)}
         </div>
-        <AnalysisRunner key={game.id} pendingCount={game.analysis_status === "done" ? 0 : 1} gameId={game.id}/>
+        <AnalysisRunner key={game.id} pendingCount={reviewComplete ? 0 : 1} gameId={game.id}/>
         <div className="axis-review-scroll">
           {analysis?.complete === false && <p className="axis-partial-review" role="status">{locale === "fr" ? "Revue partielle" : "Provisional review"} · {(analysis.evaluations?.length ?? 1) - 1} / {parsed.moves.length}</p>}
           <div id="moves-panel" role="tabpanel" aria-labelledby="moves-tab" hidden={tab !== "moves"} className="axis-analysis-tab-content axis-timeline-panel">
-            <MoveTimeline game={parsed} assessments={analysis?.moveAssessments ?? NO_ASSESSMENTS} ply={practice || view.isVariation ? null : view.node.gamePly} onSelect={goTo} visible={tab === "moves"}/>
+            <MoveTimeline game={parsed} assessments={analysis?.moveAssessments ?? NO_ASSESSMENTS} ply={practice || view.isVariation ? null : view.node.gamePly} onSelect={goTo} visible={tab === "moves"} complete={reviewComplete}/>
           </div>
           <div id="moments-panel" role="tabpanel" aria-labelledby="moments-tab" hidden={tab !== "moments"} className="axis-analysis-tab-content">
             {analysis && <ReviewSummary analysis={analysis} game={game} onPractice={issue => startPractice(issue, Date.now())}/>}
