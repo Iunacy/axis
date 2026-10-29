@@ -35,6 +35,7 @@ function analysis(value: unknown): value is AnalysisSummary {
   if (value.totalPlies !== undefined && (!finite(value.totalPlies) || value.totalPlies < 0)) return false;
   if (value.acplSamples !== undefined && (!finite(value.acplSamples) || value.acplSamples < 0 || !Number.isInteger(value.acplSamples))) return false;
   if (value.engineId !== undefined && typeof value.engineId !== "string") return false;
+  if (value.ratingCoverageVersion !== undefined && value.ratingCoverageVersion !== 1) return false;
   if (value.analysisVersion !== undefined && !finite(value.analysisVersion)) return false;
   if (value.opening !== undefined && (!object(value.opening) || typeof value.opening.name !== "string" || !/^[A-E]\d{2}$/.test(String(value.opening.eco)))) return false;
   if (value.moveAssessments !== undefined && (!Array.isArray(value.moveAssessments) || !value.moveAssessments.every(row => object(row) && finite(row.ply) && row.ply > 0 && side(row.color) && (row.classification === null || classifications.includes(String(row.classification))) && (row.expectedLoss === null || finite(row.expectedLoss) && row.expectedLoss >= 0 && row.expectedLoss <= 1) && ["limited", "supported", "confirmed"].includes(String(row.confidence)) && typeof row.reason === "string" && finite(row.depth)))) return false;

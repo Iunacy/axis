@@ -103,3 +103,16 @@ export function verificationCandidates(fens: string[], moves: { uci: string; col
     return { index, priority: sacrifice ? 3 : opportunity ? 2 : loss >= .05 ? 1 + loss : uncertain ? .5 : 0 };
   }).filter(row => row.priority > 0).sort((a, b) => b.priority - a.priority || a.index - b.index).slice(0, 6).map(row => row.index).sort((a, b) => a - b);
 }
+
+/** Positions whose bounded first pass cannot yet support a move rating.
+ * Search each position once: adjacent moves share the same evidence. Terminal
+ * positions are exact at depth zero and must not trigger futile retries.
+ */
+export function ratingCoverageCandidates(fens: string[], evaluations: PositionEvaluation[]): number[] {
+  return fens.flatMap((fen, index) => {
+    const evaluation = evaluations[index];
+    if (evaluation && (evaluation.depth ?? 0) >= CLASSIFICATION_POLICY.minimumDepth) return [];
+    try { if (new Chess(fen).isGameOver()) return []; } catch { return []; }
+    return [index];
+  });
+}

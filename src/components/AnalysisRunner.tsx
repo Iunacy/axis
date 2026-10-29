@@ -7,7 +7,7 @@ import { summarizeGame, type PositionEval } from "@/lib/analysis";
 import { describeError } from "@/lib/errors";
 import { useI18n } from "@/lib/i18n";
 import { parsePgn } from "@/lib/pgn";
-import { verificationCandidates } from "@/lib/move-classification";
+import { CLASSIFICATION_POLICY, ratingCoverageCandidates, verificationCandidates } from "@/lib/move-classification";
 import {
   loadGames,
   loadAnalyses,
@@ -56,7 +56,7 @@ export default function AnalysisRunner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameId]);
 
-  async function run(restart = false) {
+  async function run(restart = false, fillMissing = false) {
     if (runningRef.current) return;
     runningRef.current = true;
     setStatus("running");
@@ -69,7 +69,7 @@ export default function AnalysisRunner({
     try {
       const settings = loadSettings();
       const search = { depth: 12, nodes: 40000, multiPv: 1 };
-      const engineLabel = "Stockfish 19 Lite · initial depth ≤12 · 40000 nodes · selective critical searches · 1 thread";
+      const engineLabel = "Stockfish 19 Lite · initial depth ≤12 · 40000 nodes · bounded rating coverage and critical searches · 1 thread";
       const games = loadGames()
         .filter((g) => (!gameId || g.id === gameId) && (!activeReviews.has(g.id) && (["pending", "failed", "skipped", "analyzing"].includes(g.analysis_status) || Boolean(gameId))))
         .slice(0, settings.analyzeLastN);
@@ -104,13 +104,29 @@ export default function AnalysisRunner({
           setLabel(
             `${t.analysis.progress(gi + 1, games.length)} — ${t.analysis.moveProgress(i + 1, parsed.fens.length)}`
           );
-          setProgress(Math.round(((gi + .8 * (i + 1) / parsed.fens.length) / games.length) * 100));
+          setProgress(Math.round(((gi + .6 * (i + 1) / parsed.fens.length) / games.length) * 100));
+        }
+        if (stopRef.current) { setGameStatus(game.id, "pending"); break; }
+
+        const stronger = (old: PositionEval, next: PositionEval) => (next.depth ?? 0) >= (old.depth ?? 0) ? next : old;
+        const coverage = ratingCoverageCandidates(parsed.fens, evals);
+        for (let index = 0; index < coverage.length; index++) {
+          if (stopRef.current) break;
+          const position = coverage[index];
+          setLabel(locale === "fr" ? `Complément des annotations ${index + 1} / ${coverage.length}…` : `Filling move ratings ${index + 1} / ${coverage.length}…`);
+          const history = { initialFen: parsed.fens[0], moves: parsed.moves.slice(0, position).map(move => move.uci) };
+          evals[position] = stronger(evals[position], await engine.analyze(parsed.fens[position], { depth: 16, nodes: fillMissing ? 2000000 : 200000, multiPv: 1 }, history));
+          if (!fillMissing && (evals[position].depth ?? 0) < CLASSIFICATION_POLICY.minimumDepth) {
+            evals[position] = stronger(evals[position], await engine.analyze(parsed.fens[position], { depth: 18, nodes: 600000, multiPv: 1 }, history));
+          }
+          const partial = summarizeGame({ fens: parsed.fens, moves: parsed.moves, userColor: game.user_color, evals, engineLabel }).summary;
+          saveAnalysis(game.id, { ...partial, complete: false, totalPlies: parsed.moves.length });
+          setProgress(Math.round((gi + .6 + .2 * (index + 1) / coverage.length) / games.length * 100));
         }
         if (stopRef.current) { setGameStatus(game.id, "pending"); break; }
 
         const candidates = verificationCandidates(parsed.fens, parsed.moves, evals);
         const confirmations: Record<number, PositionEval> = {};
-        const stronger = (old: PositionEval, next: PositionEval) => (next.depth ?? 0) >= (old.depth ?? 0) ? next : old;
         for (let index = 0; index < candidates.length; index++) {
           if (stopRef.current) break;
           const ply = candidates[index];
@@ -171,10 +187,16 @@ export default function AnalysisRunner({
     }
   }
 
+  const saved = gameId ? loadAnalyses()[gameId] : undefined;
+  const total = saved?.totalPlies ?? saved?.moveAssessments?.length ?? 0;
+  const rated = saved?.moveAssessments?.filter(move => move.classification !== null).length ?? 0;
+  const missing = Math.max(0, total - rated);
+
   if (gameId) return <div className="axis-analysis-runner" role="status" aria-live="polite">
     <div className="axis-runner-heading"><span>{status === "running" ? locale === "fr" ? "Stockfish · analyse en cours" : "Stockfish · reviewing" : status === "error" ? locale === "fr" ? "Analyse interrompue" : "Analysis failed" : pendingCount === 0 ? locale === "fr" ? "Revue en cache · vérification terminée" : "Cached review · verification complete" : locale === "fr" ? "Revue à reprendre" : "Review ready to resume"}</span>
       {status === "running" ? <button type="button" onClick={() => { stopRef.current = true; engineRef.current?.destroy(); }}>{t.analysis.stop}</button> : <button type="button" onClick={() => void run(pendingCount === 0)}>{status === "error" ? locale === "fr" ? "Réessayer" : "Retry analysis" : pendingCount === 0 ? locale === "fr" ? "Revoir" : "Review again" : locale === "fr" ? "Reprendre" : "Resume"}</button>}
     </div>
+    {status !== "running" && pendingCount === 0 && total > 0 && <p className="axis-rating-coverage">{locale === "fr" ? `${rated} / ${total} coups annotés` : `${rated} / ${total} moves rated`}{missing > 0 && <> · {locale === "fr" ? "Recherche trop limitée pour les autres coups." : "Remaining moves need more evidence."} <button type="button" className="axis-link" onClick={() => void run(false, true)}>{locale === "fr" ? "Vérifier les coups non annotés" : "Retry unrated moves"}</button></>}</p>}
     {status === "running" && <div className="axis-analysis-progress h-1 bg-accent overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100} aria-label={t.analysis.title}><div className="h-full bg-[var(--edit-accent)] transition-transform" style={{ transform: `scaleX(${progress / 100})`, transformOrigin: "left" }}/></div>}
     {(status === "running" || status === "error") && <p>{label || (status === "error" ? locale === "fr" ? "Réessayez pour reprendre les résultats conservés." : "Retry to resume saved results." : locale === "fr" ? "Préparation du moteur…" : "Preparing Stockfish…")}</p>}
   </div>;
