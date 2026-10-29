@@ -1325,3 +1325,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .edit-pattern-stages > button { min-height: 44px; text-align: left; cursor: pointer; }
 .edit-pattern-stages > button:hover { background: var(--edit-panel); }
+
+/* Keep profile saving visible within the settings scroll region. */
+.axis-settings-actions { grid-column: 1 / -1; position: static; z-index: 4; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px; background: var(--edit-paper); border: 1px solid var(--edit-line); }
+.axis-settings-actions > p { flex: 1 1 240px; margin: 0; font-size: .875rem; line-height: 1.5; }
+.axis-academy-next { display: flex; flex-wrap: wrap; gap: 12px; }
+
+@media (min-width: 781px) and (min-height: 621px) {
+  .axis-settings-actions { position: sticky; top: 0; }
+  .axis-settings-form { scroll-padding-top: 100px; }
+}
+
+.axis-quiz-question { border-top: 1px solid var(--edit-line); padding-block: 20px; }
+.axis-settings-actions { backdrop-filter: none; }

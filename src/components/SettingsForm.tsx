@@ -42,6 +42,7 @@ function SettingsFormInner() {
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
+    if (state === "saving") return;
     setState("saving"); setSaveError("");
     saveSettings({
       ...form,
@@ -60,8 +61,22 @@ function SettingsFormInner() {
     "axis-field";
 
   return (
-    <form onSubmit={save} className="axis-settings-form" onChange={() => setState("idle")}>
-      <fieldset className="axis-panel"><h2>{t.ui.accounts}</h2><p className="axis-muted text-sm leading-6">{t.ui.accountHelp}</p><p className="axis-muted text-sm leading-6">{locale === "fr" ? "À la prochaine importation réussie, changer de joueur remplacera les parties de l’ancien compte sur cette plateforme et ses données d’entraînement. Les fichiers PGN et l’autre plateforme sont conservés." : "On the next successful import, changing a player replaces that platform’s previous account games and their training data. PGN files and the other platform are kept."}</p><label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+    <form onSubmit={save} className="axis-settings-form" onChange={() => { if (state !== "saving") setState("idle"); setSaveError(""); }}>
+      <div className="axis-settings-actions" aria-busy={state === "saving"}>
+        <button
+          type="submit"
+          disabled={state === "saving"}
+          className="axis-button"
+        >
+          {state === "saving" ? locale === "fr" ? "Enregistrement…" : "Saving…" : t.settings.save}
+        </button>
+        <p className="axis-muted">{locale === "fr" ? "Enregistrez les profils et les préférences d’analyse ici. L’apparence et l’audio s’appliquent immédiatement." : "Save profile and analysis changes here. Appearance and audio apply immediately."}</p>
+        {saveError && <p role="alert">{saveError}</p>}
+        {state === "saved" && <span role="status" className="text-sm text-emerald-600 dark:text-emerald-400">{t.settings.saved}</span>}
+        {state === "cleared" && <span className="text-sm text-amber-600 dark:text-amber-400">{t.settings.cleared}</span>}
+      </div>
+
+      <fieldset disabled={state === "saving"} className="axis-panel"><h2>{t.ui.accounts}</h2><p className="axis-muted text-sm leading-6">{t.ui.accountHelp}</p><p className="axis-muted text-sm leading-6">{locale === "fr" ? "À la prochaine importation réussie, changer de joueur remplacera les parties de l’ancien compte sur cette plateforme et ses données d’entraînement. Les fichiers PGN et l’autre plateforme sont conservés." : "On the next successful import, changing a player replaces that platform’s previous account games and their training data. PGN files and the other platform are kept."}</p><label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.chesscom}
         <input
           className={input}
@@ -221,7 +236,7 @@ function SettingsFormInner() {
         )}
       </div>
 
-      </div></details><fieldset className="axis-panel"><h2>{t.ui.engineSettings}</h2><p className="axis-muted">{locale === "fr" ? "Une revue de partie utilise un budget de calcul fixe. La profondeur et les lignes alternatives se règlent dans l’explorateur de position." : "Game review uses a fixed search budget. Set depth and alternative lines in the position explorer."}</p>
+      </div></details><fieldset disabled={state === "saving"} className="axis-panel"><h2>{t.ui.engineSettings}</h2><p className="axis-muted">{locale === "fr" ? "Une revue de partie utilise un budget de calcul fixe. La profondeur et les lignes alternatives se règlent dans l’explorateur de position." : "Game review uses a fixed search budget. Set depth and alternative lines in the position explorer."}</p>
 
       <label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.analyzeLastN}
@@ -237,18 +252,6 @@ function SettingsFormInner() {
 
       </fieldset><section className="axis-panel"><h2 className="mb-5">{t.ui.advanced}</h2><ApiKeyField /></section>
 
-      <div className="axis-settings-actions">
-        <button
-          type="submit"
-          disabled={state === "saving"}
-          className="axis-button"
-        >
-          {state === "saving" ? locale === "fr" ? "Enregistrement…" : "Saving…" : t.settings.save}
-        </button>
-        {saveError && <p role="alert">{saveError}</p>}
-        {state === "saved" && <span className="text-sm text-emerald-600 dark:text-emerald-400">{t.settings.saved}</span>}
-        {state === "cleared" && <span className="text-sm text-amber-600 dark:text-amber-400">{t.settings.cleared}</span>}
-      </div>
 
       <div className="axis-panel axis-settings-data">
         <h2 className="mb-3">{t.ui.data}</h2><p>{t.settings.storageNote}</p>

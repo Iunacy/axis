@@ -18,11 +18,17 @@ export default function SyncButton({ onSynced }: { onSynced?: () => void }) {
     setProgress(locale === "fr" ? "Recherche des archives…" : "Finding game archives…");
     try {
       const { inserted, chesscom, lichess } = await syncGames(undefined, { fullHistory, signal: controller.current.signal, onProgress: value => setProgress(value.retrySeconds ? locale === "fr" ? `Limite du service · nouvel essai dans ${value.retrySeconds} s` : `Rate limited · retrying in ${value.retrySeconds}s` : locale === "fr" ? `${value.imported} nouvelles parties · ${value.pages} pages enregistrées` : `${value.imported} new games · ${value.pages} pages saved`) });
-      toast.success(t.sync.result(inserted, chesscom, lichess));
+      const message = t.sync.result(inserted, chesscom, lichess);
+      setProgress(message);
+      toast.success(message);
       onSynced?.();
     } catch (e) {
-      if (controller.current?.signal.aborted) toast.info(locale === "fr" ? "Import arrêté. Les pages enregistrées seront reprises." : "Import stopped. Saved pages will resume next time.");
-      else toast.error(e instanceof NoUsernamesError ? t.sync.noUsernames : describeError(e, t));
+      const message = controller.current?.signal.aborted
+        ? locale === "fr" ? "Import arrêté. Les pages enregistrées seront reprises." : "Import stopped. Saved pages will resume next time."
+        : e instanceof NoUsernamesError ? t.sync.noUsernames : describeError(e, t);
+      setProgress(message);
+      if (controller.current?.signal.aborted) toast.info(message);
+      else toast.error(message);
     } finally {
       setBusy(false);
     }
