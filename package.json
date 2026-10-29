@@ -1,6 +1,6 @@
 {
   "name": "axis",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,8 +14,9 @@
     "openings:verify": "tsx scripts/import-openings.ts --check",
     "engine:verify": "tsx scripts/verify-classification.ts",
     "typecheck": "tsc --noEmit",
-    "browser:verify": "node scripts/verify-browser.mjs && node scripts/verify-curriculum-browser.mjs",
-    "curriculum:verify": "node scripts/verify-curriculum-browser.mjs"
+    "browser:verify": "node scripts/verify-browser.mjs && node scripts/verify-curriculum-browser.mjs && node scripts/verify-consolidation-browser.mjs",
+    "curriculum:verify": "node scripts/verify-curriculum-browser.mjs",
+    "consolidation:verify": "node scripts/verify-consolidation-browser.mjs"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1",

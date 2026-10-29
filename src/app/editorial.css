@@ -879,16 +879,16 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .axis-move-badge { display: inline-flex; width: 18px; height: 18px; flex: 0 0 18px; align-items: center; justify-content: center; background: var(--grade-bg); color: var(--grade-ink); border-radius: 50%; font: 700 11px/1 var(--font-geist-mono), monospace; letter-spacing: -.04em; }
 .axis-move-badge svg { width: 75%; height: 75%; }
 /* Classification colors stay constant across board themes and application themes. */
-.axis-grade-brilliant { --grade-bg: #1baca6; --grade-ink: #fff; }
-.axis-grade-great { --grade-bg: #5c8bb0; --grade-ink: #fff; }
-.axis-grade-best { --grade-bg: #81b64c; --grade-ink: #fff; }
-.axis-grade-excellent { --grade-bg: #96bc4b; --grade-ink: #fff; }
-.axis-grade-good { --grade-bg: #96af8b; --grade-ink: #fff; }
-.axis-grade-book { --grade-bg: #a88865; --grade-ink: #fff; }
-.axis-grade-inaccuracy { --grade-bg: #f7c045; --grade-ink: #fff; }
-.axis-grade-mistake { --grade-bg: #ffa459; --grade-ink: #fff; }
-.axis-grade-miss { --grade-bg: #ff7769; --grade-ink: #fff; }
-.axis-grade-blunder { --grade-bg: #fa412d; --grade-ink: #fff; }
+.axis-grade-brilliant { --grade-bg: #1baca6; --grade-ink: #172019; }
+.axis-grade-great { --grade-bg: #5c8bb0; --grade-ink: #172019; }
+.axis-grade-best { --grade-bg: #81b64c; --grade-ink: #172019; }
+.axis-grade-excellent { --grade-bg: #96bc4b; --grade-ink: #172019; }
+.axis-grade-good { --grade-bg: #96af8b; --grade-ink: #172019; }
+.axis-grade-book { --grade-bg: #a88865; --grade-ink: #172019; }
+.axis-grade-inaccuracy { --grade-bg: #f7c045; --grade-ink: #172019; }
+.axis-grade-mistake { --grade-bg: #ffa459; --grade-ink: #172019; }
+.axis-grade-miss { --grade-bg: #ff7769; --grade-ink: #172019; }
+.axis-grade-blunder { --grade-bg: #fa412d; --grade-ink: #172019; }
 .axis-board-grade { position: absolute; right: 1px; top: 1px; z-index: 18; display: grid; width: 34%; min-width: 14px; max-width: 22px; aspect-ratio: 1; pointer-events: none; }
 .axis-board-grade .axis-move-badge { width: 100%; height: 100%; flex-basis: auto; }
 .axis-moves button { display: flex; align-items: center; justify-content: space-between; gap: .4rem; }
@@ -1157,3 +1157,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .axis-training .axis-puzzle-detail > div:first-child > h2 { margin-top: 0; }
   .axis-content .axis-training .axis-puzzle-detail h2 { font-size: clamp(1.5rem, 2.4vw, 2.2rem); }
 }
+
+.axis-unrated-move { display: inline-flex; align-items: center; justify-content: center; width: 16px; min-width: 16px; font-size: 12px; color: inherit; opacity: .75; }
+.axis-rating-coverage { line-height: 1.5; }
+.axis-rating-coverage .axis-link { text-decoration: underline; text-underline-offset: 3px; }
+
+/* Keep the hidden native selects used by Radix inside the scrolling settings form. */
+.axis-settings-form { position: relative; }

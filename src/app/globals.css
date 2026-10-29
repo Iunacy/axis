@@ -100,7 +100,7 @@
 }
 * { scrollbar-width: thin; }
 html { scrollbar-color: var(--input) var(--background); }
-body { background: var(--background); color: var(--foreground); font-family: var(--font-geist-sans), system-ui, sans-serif; transition: background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease); }
+body { background: var(--background); color: var(--foreground); font-family: Georgia, "Times New Roman", serif; transition: background-color var(--motion-fast) var(--motion-ease), color var(--motion-fast) var(--motion-ease); }
 ::selection { background: var(--primary); color: var(--primary-foreground); }
 :focus-visible { outline: 2px solid var(--ring); outline-offset: 4px; }
 input, button, select, textarea { accent-color: var(--ring); }
