@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Chess } from "chess.js";
 import reference from "../src/lib/data/openings.json";
-import { curatedOpeningSubset, parseOpeningTsv, openingPositionKey } from "../src/lib/opening-import";
+import { completeOpeningReference, parseOpeningTsv, openingPositionKey } from "../src/lib/opening-import";
 import { identifyOpening, isBookMove, lookupOpeningPosition } from "../src/lib/opening-book";
 
 test("the full opening reference retains all verified variations across 500 ECO codes", () => {
@@ -15,10 +15,10 @@ test("the full opening reference retains all verified variations across 500 ECO 
   }
 });
 
-test("opening import validates schema and chooses a reproducible subset without inventing book moves", () => {
+test("opening import validates schema and retains reproducible complete coverage without inventing book moves", () => {
   const rows = parseOpeningTsv("eco\tname\tpgn\nB00\tKing Pawn\t1. e4\nB00\tLonger line\t1. e4 e5");
-  assert.equal(curatedOpeningSubset(rows).length, 1);
-  assert.equal(curatedOpeningSubset([...rows].reverse())[0][1], "King Pawn");
+  assert.equal(completeOpeningReference(rows).length, 2);
+  assert.deepEqual(completeOpeningReference([...rows].reverse()), completeOpeningReference(rows));
   assert.throws(() => parseOpeningTsv("eco\tname\tpgn\nZ99\tInvalid\t1. e4"));
   assert.throws(() => parseOpeningTsv("eco\tname\tpgn\nB00\tIllegal\t1. e5"));
   assert.equal(identifyOpening(new Chess().fen(), ["e2e4", "c7c5"])?.eco, "B20");

@@ -20,7 +20,11 @@ try {
       for (const route of ["/dashboard","/games","/training","/lessons","/patterns","/patterns/back-rank","/patterns/review","/masters","/settings"]) {
         await page.goto(origin + route);
         await page.locator("main").waitFor();
-        await page.getByRole("combobox", { name: "Appearance", exact: true, includeHidden: true }).waitFor({ state: "attached" });
+        await page.locator(".edit-site-header").getByRole("combobox", { name: "Appearance", exact: true, includeHidden: true }).waitFor({ state: "attached" });
+        await page.waitForFunction(() => {
+          const appearance = document.querySelector('.edit-site-header select[aria-label="Appearance"]');
+          return appearance && !appearance.disabled && !document.querySelector(".axis-loading");
+        });
         await page.evaluate(async () => { await document.fonts.ready; await Promise.all(document.getAnimations().filter(a=>a.effect?.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{}))); });
         const box = await page.evaluate(() => {
           const shell = document.querySelector(".axis-content");

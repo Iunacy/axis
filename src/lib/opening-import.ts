@@ -16,14 +16,6 @@ export function parseOpeningTsv(text: string): OpeningEntry[] {
   });
 }
 
-export function curatedOpeningSubset(rows: OpeningEntry[]): OpeningEntry[] {
-  const selected = new Map<string, OpeningEntry>();
-  for (const row of [...rows].sort((a, b) => a[2].length - b[2].length || a[1].length - b[1].length || a[1].localeCompare(b[1], "en") || a[2].join(" ").localeCompare(b[2].join(" "), "en"))) {
-    if (!selected.has(row[0])) selected.set(row[0], row);
-  }
-  return [...selected.values()].sort((a, b) => a[0].localeCompare(b[0], "en"));
-}
-
 // Keep every named variation. ECO is a classification, not a unique line ID.
 export function completeOpeningReference(rows: OpeningEntry[]): OpeningEntry[] {
   return [...new Map(rows.map(row => [JSON.stringify(row), row])).values()]
