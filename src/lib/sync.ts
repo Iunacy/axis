@@ -13,7 +13,7 @@ export class NoUsernamesError extends Error {}
 let syncing = false;
 export async function syncGames(
   override?: Partial<Pick<Settings, "chesscomUsername" | "lichessUsername" | "analyzeLastN">>,
-  options: { signal?: AbortSignal; onProgress?: (progress: SyncProgress) => void } = {},
+  options: { fullHistory?: boolean; signal?: AbortSignal; onProgress?: (progress: SyncProgress) => void } = {},
 ): Promise<SyncResult> {
   if (syncing) throw new Error("A game import is already running.");
   const base = loadSettings();
@@ -30,7 +30,7 @@ export async function syncGames(
       const hasAccount = useStore.getState().games.some(game => game.platform === platform);
       const saved = hasAccount ? useStore.getState().syncAccounts[key] : undefined;
       const sameAccount = (platform === "chesscom" ? base.chesscomUsername : base.lichessUsername).toLowerCase() === username.toLowerCase();
-      const checkpoint = sameAccount ? saved : undefined;
+      const checkpoint = sameAccount && !options.fullHistory ? saved : undefined;
       const request = { signal: options.signal, onRetry: (retrySeconds: number) => options.onProgress?.({ platform, imported: result.inserted, pages, retrySeconds }) };
       let latest = checkpoint?.latest ?? 0;
       const commit = async (games: GameRow[], next: { latest: number; until?: number; archive?: string; complete: boolean }) => {

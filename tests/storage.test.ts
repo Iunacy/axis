@@ -44,3 +44,13 @@ test("10000 games persist as individual records and checkpoints survive reload w
   await indexedStorage.removeItem('cc:store');
   assert.equal(await indexedStorage.getItem('cc:store'),null);
 });
+
+test("an unreadable storage session cannot overwrite previously saved games", async () => {
+  const {protectUnreadableState,flushStoredState}=await import('../src/lib/indexed-storage');
+  const original=JSON.stringify({state:{games:[{id:'preserve-me'}],analyses:{}},version:1});
+  await indexedStorage.setItem('cc:store',original);
+  protectUnreadableState(new Error('Simulated blocked upgrade'));
+  await indexedStorage.setItem('cc:store',JSON.stringify({state:{games:[],analyses:{}},version:1}));
+  await assert.rejects(flushStoredState(),/Could not save/);
+  assert.equal(JSON.parse((await indexedStorage.getItem('cc:store'))!).state.games[0].id,'preserve-me');
+});

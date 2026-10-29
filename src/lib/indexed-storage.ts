@@ -3,6 +3,9 @@ import type { StateStorage } from "zustand/middleware";
 let database: Promise<IDBDatabase> | undefined;
 let writes = Promise.resolve();
 let lastError: unknown;
+let readFailure: unknown;
+export function protectUnreadableState(error: unknown) { readFailure = error; lastError = error; notify(); }
+let recordCache: Record<string, Map<string, string>> | undefined;
 function db(): Promise<IDBDatabase> {
   return database ??= new Promise((resolve, reject) => {
     const request = indexedDB.open("axis", 2);
@@ -26,7 +29,7 @@ async function read(key: string): Promise<string | null> {
       if (typeof value !== "string") { resolve(null); return; }
       let envelope;
       try { envelope = JSON.parse(value); } catch { resolve(value); return; }
-      if (envelope.recordsVersion === 1) {
+      if (envelope && typeof envelope === "object" && envelope.recordsVersion === 1 && envelope.state && typeof envelope.state === "object") {
         envelope!.state!.games = games.result;
         envelope!.state!.analyses = Object.fromEntries(analyses.result.map(row => [row.id, row.value]));
         delete envelope.recordsVersion;
@@ -42,13 +45,22 @@ async function write(key: string, value: string): Promise<void> {
   let envelope: { state?: { games: { id: string }[]; analyses: Record<string, unknown>; [key: string]: unknown }; [key: string]: unknown } | undefined;
   try { envelope = JSON.parse(value); } catch { /* Generic StateStorage values stay supported. */ }
   const split = envelope?.state && Array.isArray(envelope!.state!.games) && envelope!.state!.analyses && typeof envelope!.state!.analyses === "object";
+  const nextCache: Record<string, Map<string, string>> = {};
   await new Promise<void>((resolve, reject) => {
-    const tx = database.transaction(["state", "games", "analyses"], "readwrite");
+    const tx = database.transaction(["state", "games", "analyses"], "readwrite", {durability: "strict"});
     if (split) {
       // Cursor reconciliation writes only changed records. The metadata/checkpoint
       // and all new games commit atomically, including legacy blob migration.
       for (const [name, incoming] of [["games", envelope!.state!.games.map((game: { id: string }) => [game.id, game])], ["analyses", Object.entries(envelope!.state!.analyses).map(([id, value]) => [id, { id, value }])]] as [string, [string, unknown][]][]) {
         const store = tx.objectStore(name);
+        const serialized = new Map(incoming.map(([id, row]) => [id, JSON.stringify(row)]));
+        nextCache[name] = serialized;
+        const previous = recordCache?.[name];
+        if (previous) {
+          for (const id of previous.keys()) if (!serialized.has(id)) store.delete(id);
+          for (const [id, row] of incoming) if (previous.get(id) !== serialized.get(id)) store.put(row, id);
+          continue;
+        }
         const pending = new Map(incoming);
         const cursor = store.openCursor();
         cursor.onsuccess = () => {
@@ -67,7 +79,7 @@ async function write(key: string, value: string): Promise<void> {
       void _games; void _analyses;
       tx.objectStore("state").put(JSON.stringify({ ...envelope, recordsVersion: 1, state: metadata }), key);
     } else tx.objectStore("state").put(value, key);
-    tx.oncomplete = () => resolve();
+    tx.oncomplete = () => { if (split) recordCache = nextCache; resolve(); };
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error);
   });
@@ -81,10 +93,11 @@ export async function flushStoredState() {
 export const indexedStorage: StateStorage = {
   async getItem(key) {
     try { const fallback = localStorage.getItem(key); if (fallback !== null) return fallback; } catch {}
-    try { return await read(key); } catch { notify(); return null; }
+    try { return await read(key); } catch (error) { protectUnreadableState(error); return null; }
   },
   setItem(key, value) {
     writes = writes.catch(() => {}).then(async () => {
+      if (readFailure) { lastError = readFailure; notify(); return; }
       try {
         await write(key, value);
         // Once IndexedDB commits, failure to remove an old fallback must be visible.
@@ -104,12 +117,12 @@ export const indexedStorage: StateStorage = {
       try {
         const database = await db();
         await new Promise<void>((resolve, reject) => {
-          const tx = database.transaction(["state", "games", "analyses"], "readwrite");
+          const tx = database.transaction(["state", "games", "analyses"], "readwrite", {durability: "strict"});
           tx.objectStore("state").delete(key);
           tx.objectStore("games").clear(); tx.objectStore("analyses").clear();
           tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error); tx.onabort = () => reject(tx.error);
         });
-        localStorage.removeItem(key); lastError = undefined;
+        recordCache = undefined; localStorage.removeItem(key); lastError = undefined;
       } catch (error) { lastError = error; notify(); }
     });
     return writes;

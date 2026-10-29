@@ -12,12 +12,12 @@ export default function SyncButton({ onSynced }: { onSynced?: () => void }) {
   const [progress, setProgress] = useState("");
   const controller = useRef<AbortController | null>(null);
 
-  async function sync() {
+  async function sync(fullHistory = false) {
     setBusy(true);
     controller.current = new AbortController();
     setProgress(locale === "fr" ? "Recherche des archives…" : "Finding game archives…");
     try {
-      const { inserted, chesscom, lichess } = await syncGames(undefined, { signal: controller.current.signal, onProgress: value => setProgress(value.retrySeconds ? locale === "fr" ? `Limite du service · nouvel essai dans ${value.retrySeconds} s` : `Rate limited · retrying in ${value.retrySeconds}s` : locale === "fr" ? `${value.imported} nouvelles parties · ${value.pages} pages enregistrées` : `${value.imported} new games · ${value.pages} pages saved`) });
+      const { inserted, chesscom, lichess } = await syncGames(undefined, { fullHistory, signal: controller.current.signal, onProgress: value => setProgress(value.retrySeconds ? locale === "fr" ? `Limite du service · nouvel essai dans ${value.retrySeconds} s` : `Rate limited · retrying in ${value.retrySeconds}s` : locale === "fr" ? `${value.imported} nouvelles parties · ${value.pages} pages enregistrées` : `${value.imported} new games · ${value.pages} pages saved`) });
       toast.success(t.sync.result(inserted, chesscom, lichess));
       onSynced?.();
     } catch (e) {
@@ -30,11 +30,11 @@ export default function SyncButton({ onSynced }: { onSynced?: () => void }) {
 
   return (
     <div className="axis-sync-control"><button
-      onClick={sync}
+      onClick={() => void sync()}
       disabled={busy}
       className="axis-button"
     >
       {busy ? t.sync.syncing : t.sync.button}
-    </button>{busy && <button className="axis-button secondary" onClick={() => controller.current?.abort()}>{locale === "fr" ? "Annuler l’import" : "Cancel import"}</button>}{progress && <span role="status" aria-live="polite">{progress}</span>}</div>
+    </button><button className="axis-button secondary" disabled={busy} onClick={() => void sync(true)}>{locale === "fr" ? "Revérifier tout l’historique" : "Recheck full history"}</button>{busy && <button className="axis-button secondary" onClick={() => controller.current?.abort()}>{locale === "fr" ? "Annuler l’import" : "Cancel import"}</button>}{progress && <span role="status" aria-live="polite">{progress}</span>}</div>
   );
 }
