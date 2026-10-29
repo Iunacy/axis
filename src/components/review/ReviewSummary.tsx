@@ -25,6 +25,7 @@ export default function ReviewSummary({ analysis, game, onPractice }: { analysis
         <strong>{analysis.accuracyByColor?.[color] == null ? "—" : `${analysis.accuracyByColor[color]}%`}</strong>
         <span>{color === "w" ? t.axis.white : t.axis.black} · {t.games.accuracy}</span>
       </div>) : <div><strong>{analysis.accuracy}%</strong><span>{game.user_color === "w" ? t.axis.white : t.axis.black} · {t.games.accuracy}</span></div>}
+      {analysis.accuracySamples && <p className="axis-muted">{locale === "fr" ? "Précision calculée sur" : "Accuracy based on"} {analysis.accuracySamples.w + analysis.accuracySamples.b} / {analysis.moveAssessments?.length ?? 0} {locale === "fr" ? "coups suffisamment analysés ; les autres sont exclus." : "moves with sufficient evidence; other moves are excluded."}</p>}
       <div><strong>{analysis.blunders}</strong><span>{t.ui.classifications.blunder}</span></div>
     </div>
     {critical && onPractice && <div className="axis-review-next"><p>{locale === "fr" ? "Commencez par la plus grande perte d’évaluation de votre partie." : "Start with your largest evaluation drop in this game."}</p><button type="button" className="axis-button secondary" onClick={() => onPractice(critical)}>{locale === "fr" ? "Travailler la décision" : "Practice critical decision"} · {critical.san}</button></div>}

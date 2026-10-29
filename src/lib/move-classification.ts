@@ -1,5 +1,6 @@
 import { Chess } from "chess.js";
 import type { MoveAssessment, PositionEvaluation } from "./types";
+import { isBookContinuation } from "./opening-book";
 import { validCachedEvaluation } from "./engine-protocol";
 
 export const CLASSIFICATION_POLICY = {
@@ -60,22 +61,25 @@ export function classifyMove({ fen, fenAfter, uci, before, after, ply, book = fa
   const chess = new Chess(fen); const color = chess.turn();
   const depth = Math.min(before.depth ?? 0, after.depth ?? 0);
   const result: MoveAssessment = { ply, color, classification: null, expectedLoss: null, confidence: "limited", reason: "insufficient-evidence", depth };
-  if (!validCachedEvaluation(before, fen) || !validCachedEvaluation(after, fenAfter)) return result;
   try { chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] }); if (chess.fen() !== fenAfter) return result; } catch { return result; }
+  const referenced = book && isBookContinuation(fen, uci);
+  const evidence = validCachedEvaluation(before, fen) && validCachedEvaluation(after, fenAfter);
+  // Opening provenance does not depend on an engine search finishing successfully.
+  if (!evidence) return referenced ? { ...result, classification: "book", confidence: "supported", reason: "opening-reference" } : result;
   const best = uci === before.bestUci;
   const loss = best ? 0 : expectedLoss(before, after, color);
   const terminal = chess.isGameOver();
   const reliable = (before.depth ?? 0) >= CLASSIFICATION_POLICY.minimumDepth && ((after.depth ?? 0) >= CLASSIFICATION_POLICY.minimumDepth || terminal);
-  if (!reliable && !book) return result;
+  if (!reliable) return referenced ? { ...result, classification: "book", confidence: "supported", reason: "opening-reference" } : result;
   result.expectedLoss = Math.round(loss * 10000) / 10000;
   result.confidence = reliable ? "supported" : "limited";
   const set = (classification: NonNullable<MoveAssessment["classification"]>, reason: string, confirmed = false) => ({ ...result, classification, reason, confidence: confirmed ? "confirmed" as const : result.confidence });
+  if (referenced) return set("book", "opening-reference");
   if (reliable && before.mate?.moves === 1 && mateLine(fen, before, color) && !chess.isCheckmate()) return set("miss", "missed-mate-in-one");
   if (reliable && loss >= .05) {
     if ((after.depth ?? 0) >= 16 && mateLine(fen, before, color) && score(after, color, Boolean(after.wdlWhite)) <= .65) return set("miss", "missed-verified-mate");
     return loss >= .20 ? set("blunder", "expected-outcome-loss") : loss >= .10 ? set("mistake", "expected-outcome-loss") : set("inaccuracy", "expected-outcome-loss");
   }
-  if (book) return set("book", "opening-reference");
   if (best) {
     const second = before.lines?.[1];
     const confirmed = confirmation && validCachedEvaluation(confirmation, fen) && confirmation.bestUci === uci && (confirmation.depth ?? 0) >= (before.depth ?? 0) + 2 && Math.abs(score(confirmation, color, Boolean(confirmation.wdlWhite && before.wdlWhite)) - score(before, color, Boolean(confirmation.wdlWhite && before.wdlWhite))) <= .05;

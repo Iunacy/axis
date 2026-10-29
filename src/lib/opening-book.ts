@@ -3,7 +3,7 @@ import reference from "./data/openings.json";
 import { openingPositionKey } from "./opening-import";
 
 export const OPENING_REFERENCE = reference.source;
-export const OPENING_BOOK_VERSION = 2;
+export const OPENING_BOOK_VERSION = 3;
 export type OpeningIdentity = { eco: string; name: string };
 const positions = new Map((reference.positions as [string, string[], number[]][]).map(([key, moves, openings]) => [key, { moves, openings }]));
 

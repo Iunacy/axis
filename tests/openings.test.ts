@@ -57,3 +57,14 @@ test("position keys ignore clocks and irrelevant en passant, but retain turn and
   assert.notEqual(openingPositionKey(fen), openingPositionKey(fen.replace(" b ", " w ")));
   assert.deepEqual(lookupOpeningPosition("invalid").continuations, []);
 });
+
+test("eight named reference PGNs retain every documented continuation and final identity", async () => {
+  const fixtures = (await import('./fixtures/common-openings.json')).default;
+  assert.equal(fixtures.length,8);
+  for (const fixture of fixtures) {
+    const chess=new Chess();chess.loadPgn(fixture.pgn);
+    const moves=chess.history({verbose:true}).map(move=>move.lan);
+    for(let index=1;index<=moves.length;index++) assert.equal(isBookMove(new Chess().fen(),moves.slice(0,index)),true,`${fixture.family} ply ${index}`);
+    assert.ok(lookupOpeningPosition(chess.fen()).openings.some(opening=>opening.eco===fixture.eco&&opening.name===fixture.name),fixture.family);
+  }
+});
