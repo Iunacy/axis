@@ -176,6 +176,9 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     let severity: MoveIssue["severity"] | null = null;
     if (assessment.classification === "blunder" || assessment.classification === "mistake" || assessment.classification === "inaccuracy") severity = assessment.classification;
     else if (assessment.classification === "miss") severity = winDrop >= .2 ? "blunder" : winDrop >= .1 ? "mistake" : "inaccuracy";
+    // Provenance is orthogonal to playing strength: a documented gambit or
+    // historical trap can still lose expected outcome and deserve review.
+    if (!severity && assessment.classification === "book" && winDrop >= .05) severity = winDrop >= .20 ? "blunder" : winDrop >= .10 ? "mistake" : "inaccuracy";
     if (!severity) continue;
 
     if (severity === "blunder") byPhase[phase].blunders++;
@@ -209,7 +212,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
       bestUci: bestMoveUci,
       bestSan: bestMoveUci ? uciToSan(g.fens[i], bestMoveUci) : null,
       continuation: legalVariation(g.fens[i], evBefore.pvUci),
-      classification: assessment.classification ?? undefined,
+      classification: assessment.classification === "book" ? severity : assessment.classification ?? undefined,
     });
 
     if ((severity === "blunder" || severity === "mistake" || assessment.classification === "miss") && evBefore.pvUci.length > 0) {

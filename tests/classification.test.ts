@@ -133,3 +133,12 @@ test("documented book provenance survives shallow or unavailable engine evidence
   const off=new Chess('7k/8/8/8/8/8/P7/7K w - - 0 1');const offFen=off.fen();off.move('a3');
   assert.notEqual(classifyMove({fen:offFen,fenAfter:off.fen(),uci:'a2a3',before,after,ply:1,book:true}).classification,'book');
 });
+
+test("documented opening mistakes retain provenance but still create review issues",async()=>{
+ const {summarizeGame}=await import('../src/lib/analysis');
+ const before=simulated(start,['d2d4','d7d5'],[300,600,100]);
+ const after=simulated(e4.fen(),['e7e5','g1f3'],[0,400,600]);
+ const summary=summarizeGame({fens:[start,e4.fen()],moves:[{san:'e4',uci:'e2e4',color:'w'}],userColor:'w',evals:[before,after],engineLabel:'synthetic provenance regression'}).summary;
+ assert.equal(summary.moveAssessments?.[0].classification,'book');
+ assert.equal(summary.issues.length,1);assert.equal(summary.issues[0].severity,'blunder');assert.ok(summary.accuracy<100);
+});

@@ -40,8 +40,8 @@ export default function ReviewSummary({ analysis, game, onPractice }: { analysis
       <details>
         <summary>{locale === "fr" ? "Interpréter les annotations" : "About these annotations"}</summary>
         <p>{locale === "fr"
-          ? "Les annotations et la précision AXIS utilisent des estimations de résultat issues de recherches limitées de Stockfish, pas une mesure du niveau humain. Un mat en un manqué reste une occasion manquée même si la position reste gagnante. Les coups exceptionnels exigent une seconde recherche. Théorie indique une ligne référencée, sans garantir sa qualité."
-          : "AXIS annotations and accuracy use expected-outcome estimates from bounded Stockfish searches, not a measurement of human skill. An unplayed mate in one is a Miss even if the position remains winning. Exceptional moves require a second search. Book identifies a referenced opening line and does not guarantee its quality."}</p>
+          ? "Les annotations et la précision AXIS utilisent des estimations de résultat issues de recherches limitées de Stockfish, pas une mesure du niveau humain. Un mat en un manqué reste une occasion manquée même si la position reste gagnante. Les coups exceptionnels exigent une seconde recherche. Théorie indique une ligne référencée, sans garantir sa qualité ; une perte d’évaluation reste un point à revoir."
+          : "AXIS annotations and accuracy use expected-outcome estimates from bounded Stockfish searches, not a measurement of human skill. An unplayed mate in one is a Miss even if the position remains winning. Exceptional moves require a second search. Book identifies a referenced opening line and does not guarantee its quality; evaluation losses can still appear as review issues."}</p>
       </details>
     </details>}
   </>;
