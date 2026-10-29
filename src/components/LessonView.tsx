@@ -431,6 +431,7 @@ function QuizQuestion({
   answerIdx: number;
   explain: string;
 }) {
+  const { locale } = useI18n();
   const sounds = useLessonSounds();
   const [picked, setPicked] = useState<number | null>(null);
 
@@ -442,7 +443,7 @@ function QuizQuestion({
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-3">
+    <div className="axis-quiz-question flex flex-col gap-3">
       <p className="text-foreground font-medium">{q}</p>
       <div className="flex flex-col gap-2">
         {choices.map((choice, i) => {
@@ -453,20 +454,16 @@ function QuizQuestion({
             <button
               key={i}
               onClick={() => pick(i)}
-              className={[
-                "text-left rounded-lg border px-4 py-2.5 text-sm transition",
-                showResult && right ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200" : "",
-                showResult && isPicked && !right ? "border-red-500 bg-red-500/10 text-red-700 dark:text-red-200" : "",
-                !showResult ? "border-input text-foreground/90 hover:border-ring/60" : "",
-                showResult && !isPicked && !right ? "border-border text-muted-foreground" : "",
-              ].join(" ")}
+              disabled={showResult}
+              aria-pressed={isPicked}
+              className={`axis-quiz-answer${showResult && right ? " is-correct" : showResult && isPicked ? " is-wrong" : showResult ? " is-unselected" : ""}` }
             >
-              {choice}
+              {choice}{showResult && right && <span> · {locale === "fr" ? "Bonne réponse" : "Correct answer"}</span>}{showResult && isPicked && !right && <span> · {locale === "fr" ? "Votre réponse" : "Your answer"}</span>}
             </button>
           );
         })}
       </div>
-      {picked !== null && <p className="text-sm text-muted-foreground leading-relaxed">{explain}</p>}
+      {picked !== null && <div role="status"><p className="text-sm leading-relaxed"><strong>{picked === answerIdx ? "Correct." : locale === "fr" ? "Pas tout à fait." : "Not quite."}</strong> {explain}</p><button type="button" className="axis-link" onClick={() => setPicked(null)}>{locale === "fr" ? "Recommencer la question" : "Retry question"}</button></div>}
     </div>
   );
 }

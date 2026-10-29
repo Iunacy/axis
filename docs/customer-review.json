@@ -1,0 +1,257 @@
+{
+  "date": "2026-10-29",
+  "method": {
+    "reviewers": 1,
+    "customerPerspectives": 20,
+    "humanResearchParticipants": 0,
+    "approach": "Source review and browser task walkthroughs using twenty independent Playwright browser profiles. Cases are regression evidence rather than participant feedback.",
+    "script": "scripts/verify-customer-journeys.mjs",
+    "ci": "customers:verify is included in browser:verify."
+  },
+  "findings": [
+    {
+      "id": "settings-save",
+      "priority": "P1",
+      "problem": "Account and analysis changes required finding Save far below the edited profile fields.",
+      "change": "Move saving controls before the form sections, keep them visible in the desktop scroll region, explain immediate versus explicit saves, announce saved status, and disable profile/analysis edits while saving.",
+      "customers": [
+        8,
+        4
+      ]
+    },
+    {
+      "id": "import-status",
+      "priority": "P1",
+      "problem": "Failed or cancelled synchronization left a stale finding-archives or page-progress message after its toast disappeared.",
+      "change": "Retain the actual success, cancellation or error result in the page status region.",
+      "customers": [
+        9
+      ]
+    },
+    {
+      "id": "invalid-file-draft",
+      "priority": "P1",
+      "problem": "Choosing an invalid replacement file retained a previous valid PGN draft, allowing import of the wrong game. File-read errors were unhandled.",
+      "change": "Clear the old draft when selecting a new file, show validation/read errors, disable controls while reading, and reset the file input so the same file can be retried.",
+      "customers": [
+        10,
+        11
+      ]
+    },
+    {
+      "id": "quiz-feedback",
+      "priority": "P1",
+      "problem": "Quiz choices conveyed correctness through color and locked after selection without an explicit retry.",
+      "change": "Name the correct and selected answers in text, announce correct/incorrect explanations, expose selected state and disabled choices, and add Retry question.",
+      "customers": [
+        15
+      ]
+    },
+    {
+      "id": "course-progression",
+      "priority": "P2",
+      "problem": "Course readers could only advance, the final lesson had no onward practice action, and missing-lesson recovery was English-only.",
+      "change": "Add previous-lesson navigation, a final Continue to practice action, localized navigation labels and a curriculum recovery message.",
+      "customers": [
+        17,
+        5
+      ]
+    },
+    {
+      "id": "french-panel-close",
+      "priority": "P2",
+      "problem": "Contextual panels exposed an English Close panel accessible name in French.",
+      "change": "Localize the close-button name.",
+      "customers": [
+        5
+      ]
+    },
+    {
+      "id": "masters-platform",
+      "priority": "P2",
+      "problem": "The Masters platform control was announced as a provider, derived from an AI-provider label, and its inputs remained editable during a request.",
+      "change": "Name the control Chess platform and freeze platform, username and preset controls during import. Master study continues to leave the personal game library unchanged.",
+      "customers": [
+        20
+      ]
+    },
+    {
+      "id": "pattern-numbering",
+      "priority": "P2",
+      "problem": "The tenth pattern was labeled 010 because its number was constructed by prefixing zero.",
+      "change": "Use two-digit padding so the tenth path reads 10.",
+      "customers": [
+        18
+      ]
+    },
+    {
+      "id": "quiz-design",
+      "priority": "P2",
+      "problem": "Quiz content retained a rounded filled card treatment inconsistent with the editorial study surface.",
+      "change": "Use a ruled question section and square controls with minimum 44px touch targets. Use paired semantic foreground/background tokens for correct and wrong answers and verify at least 4.5:1 text contrast in both themes.",
+      "customers": [
+        15
+      ]
+    },
+    {
+      "id": "durable-pgn-completion",
+      "priority": "P1",
+      "problem": "A completed import could be shown before its IndexedDB transaction completed, permitting an immediate navigation/reload to lose the imported game.",
+      "change": "Await durable storage before clearing or closing the PGN form, report failure and remove newly inserted rows on failure. A delayed transaction browser regression verifies the completion boundary.",
+      "customers": [
+        10,
+        12,
+        13
+      ],
+      "pullRequest": "https://github.com/Iunacy/axis/pull/5"
+    }
+  ],
+  "journeys": [
+    {
+      "customer": 1,
+      "name": "First-time desktop visitor",
+      "task": "Find the journal and independent Academy at 1280 × 720",
+      "result": "passed"
+    },
+    {
+      "customer": 2,
+      "name": "Mobile commuter",
+      "task": "Navigate to settings and close the compact menu with Escape",
+      "result": "passed"
+    },
+    {
+      "customer": 3,
+      "name": "Keyboard-only visitor",
+      "task": "Skip repeated navigation and return focus after a method dialog",
+      "result": "passed"
+    },
+    {
+      "customer": 4,
+      "name": "Reader at 200% zoom",
+      "task": "Reach settings, lessons and pattern choices without horizontal scrolling",
+      "result": "passed"
+    },
+    {
+      "customer": 5,
+      "name": "French-speaking learner",
+      "task": "Use translated panel controls and see the English lesson disclosure",
+      "result": "passed"
+    },
+    {
+      "customer": 6,
+      "name": "Motion-sensitive visitor",
+      "task": "Read a stable landing page under reduced-motion preference",
+      "result": "passed"
+    },
+    {
+      "customer": 7,
+      "name": "Privacy-conscious player",
+      "task": "Cancel destructive clearing and retain imported games",
+      "result": "passed"
+    },
+    {
+      "customer": 8,
+      "name": "Player changing profile settings",
+      "task": "Save near the account fields and retain names after reload",
+      "result": "passed"
+    },
+    {
+      "customer": 9,
+      "name": "Player without an online account",
+      "task": "Receive a persistent actionable sync error",
+      "result": "passed"
+    },
+    {
+      "customer": 10,
+      "name": "PGN file owner",
+      "task": "Upload a completed PGN file and retain it after an immediate reload",
+      "result": "passed"
+    },
+    {
+      "customer": 11,
+      "name": "Player choosing the wrong file",
+      "task": "Reject an invalid replacement file without importing the prior draft",
+      "result": "passed"
+    },
+    {
+      "customer": 12,
+      "name": "Black-side player",
+      "task": "Keep the selected side, opponent and result when pasting PGN",
+      "result": "passed"
+    },
+    {
+      "customer": 13,
+      "name": "Returning PGN importer",
+      "task": "Import the same game twice without duplicate records",
+      "result": "passed"
+    },
+    {
+      "customer": 14,
+      "name": "Club archivist",
+      "task": "Browse more than twenty games and reset a zero-result filter",
+      "result": "passed"
+    },
+    {
+      "customer": 15,
+      "name": "Learner who answers incorrectly",
+      "task": "Read text feedback, identify the correct answer and retry a quiz",
+      "result": "passed"
+    },
+    {
+      "customer": 16,
+      "name": "Returning Academy student",
+      "task": "Record study and restore it after reloading the lesson",
+      "result": "passed"
+    },
+    {
+      "customer": 17,
+      "name": "Sequential course reader",
+      "task": "Find previous and next lessons and a practice destination after the final lesson",
+      "result": "passed"
+    },
+    {
+      "customer": 18,
+      "name": "Pattern specialist",
+      "task": "Find ten pattern paths, ten exercises and an explanatory guide",
+      "result": "passed"
+    },
+    {
+      "customer": 19,
+      "name": "Independent practice student",
+      "task": "Start curated practice and avoid unsupported personal recommendations",
+      "result": "passed"
+    },
+    {
+      "customer": 20,
+      "name": "Master-game student",
+      "task": "Search a curated game and identify the public import platform accessibly",
+      "result": "passed"
+    }
+  ],
+  "additionalCoverage": [
+    "Both online-platform account replacement, preserving manual PGNs and the other platform, failed-account safety and incremental deduplication.",
+    "Real Stockfish reviews including castling, en passant, underpromotion, sparse and damaged cache recovery, interrupted analysis and independent deep-engine download.",
+    "Sixteen desktop landing theme/locale layouts, mobile/zoom behavior, 108 consolidation route checks and 140 workspace checks.",
+    "One thousand rendered games, ten thousand storage records, legal replay of one hundred curated puzzle solutions and motif geometry."
+  ],
+  "designAssessment": {
+    "identity": "Preserved warm paper/graphite, olive, Georgia and ruled workspaces.",
+    "visualEvidence": [
+      "output/playwright/customer-desktop-cover.png",
+      "output/playwright/customer-settings-save.png",
+      "output/playwright/customer-quiz-feedback.png"
+    ],
+    "detector": {
+      "findings": 4,
+      "severity": "advisory",
+      "rule": "design-system-font-size",
+      "assessment": "Existing 11px technical-label utilities in edited components. DESIGN.md explicitly permits 10–11px technical labels; retained after source and rendered review."
+    }
+  },
+  "limits": [
+    "No sessions with real customers or assistive-technology users were conducted. Keyboard and semantic checks do not establish full screen-reader compatibility.",
+    "New Academy lesson prose and pattern guides remain English with an explicit French-language disclosure.",
+    "Engine ratings remain bounded-search heuristics, and practice effectiveness has not been independently measured.",
+    "Browser capacity and multi-tab concurrency limits are described in credibility-release.json."
+  ]
+}

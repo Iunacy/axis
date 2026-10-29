@@ -181,8 +181,8 @@ export default function MastersPage() {
           <p className="text-sm text-muted-foreground max-w-2xl">{t.masters.importSub}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Select value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
-            <SelectTrigger aria-label={t.settings.aiProvider.replace("AI", "")} className="w-[130px]">
+          <Select disabled={importing} value={platform} onValueChange={(v) => setPlatform(v as Platform)}>
+            <SelectTrigger aria-label={locale === "fr" ? "Plateforme de jeu" : "Chess platform"} className="w-[130px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -191,6 +191,7 @@ export default function MastersPage() {
             </SelectContent>
           </Select>
           <input
+            disabled={importing}
             value={handle}
             onChange={(e) => setHandle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && runImport()}
@@ -210,6 +211,7 @@ export default function MastersPage() {
           {PRESETS[platform].map((p) => (
             <button
               key={p.handle}
+              disabled={importing}
               onClick={() => setHandle(p.handle)}
               title={p.handle}
               className="axis-choice"
