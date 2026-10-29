@@ -34,7 +34,7 @@ try{
  await page.screenshot({path:'output/playwright/release-curated-training.png'});
  // Real reviewed game produces recommendations, never an automatic personal puzzle.
  await page.goto(origin+'/games');await page.getByRole('textbox',{name:'Paste PGN here'}).fill(readFileSync(new URL('../tests/fixtures/boden-continuation.pgn',import.meta.url),'utf8'));
- await page.getByRole('button',{name:'Import games',exact:true}).click();await page.getByRole('link',{name:'Boden study',exact:true}).click();await page.getByText('Cached review · verification complete',{exact:true}).waitFor({timeout:180000});
+ await page.getByRole('button',{name:'Import games',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.axis-import')?.open);await page.getByRole('link',{name:'Boden study',exact:true}).click();await page.getByText('Cached review · verification complete',{exact:true}).waitFor({timeout:180000});
  const after=await readEnvelope(page);assert.ok(after.state.puzzles.every(p=>p.source==='lichess'),'analysis must not insert personal-game puzzles');
  await page.goto(origin+'/training');await page.getByRole('button',{name:'Personalized training',exact:true}).click();
  await page.getByRole('dialog').getByText('See the evidence',{exact:true}).first().waitFor();assert.ok(await page.getByRole('dialog').locator('a[href^="/academy/"]').count());

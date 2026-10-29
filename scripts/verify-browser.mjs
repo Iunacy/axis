@@ -12,8 +12,24 @@ import assert from 'node:assert/strict';
  await page.goto(origin+'/dashboard');await page.getByRole('heading',{name:'Your next move.'}).waitFor();await fit();
  const font=await page.locator('.axis-connect-form input').first().evaluate(el=>getComputedStyle(el).fontFamily);assert.match(font,/Georgia/);
  await page.goto(origin+'/games');
- await page.getByRole('textbox',{name:'Paste PGN here'}).fill('[Event "Engine smoke"]\n[White "Study"]\n[Black "Fools mate"]\n[Result "0-1"]\n\n1. f3 e5 2. g4 Qh4# 0-1');
- await page.getByRole('button',{name:'Import games',exact:true}).click();await page.getByRole('link',{name:'Fools mate',exact:true}).waitFor();
+ // Hold transaction acknowledgment until the busy state is asserted; this
+ // reproduces an early success race independently of runner/storage speed.
+ await page.evaluate(()=>{
+   window.__axisHoldWrites=true;window.__axisPendingWrites=[];
+   const original=IDBDatabase.prototype.transaction;
+   const descriptor=Object.getOwnPropertyDescriptor(IDBTransaction.prototype,'oncomplete');
+   IDBDatabase.prototype.transaction=function(...args){
+     const transaction=original.apply(this,args);
+     if(args[1]==='readwrite')Object.defineProperty(transaction,'oncomplete',{
+       configurable:true,
+       get(){return descriptor.get.call(transaction);},
+       set(handler){descriptor.set.call(transaction,event=>{if(window.__axisHoldWrites)window.__axisPendingWrites.push(()=>handler?.call(transaction,event));else handler?.call(transaction,event);});},
+     });
+     return transaction;
+   };
+ });
+ await page.getByRole('textbox' ,{name:'Paste PGN here'}).fill('[Event "Engine smoke"]\n[White "Study"]\n[Black "Fools mate"]\n[Result "0-1"]\n\n1. f3 e5 2. g4 Qh4# 0-1');
+ await page.getByRole('button',{name:'Import games',exact:true}).click();await page.getByRole('button',{name:'Importing…',exact:true}).waitFor();assert.equal(await page.locator('.axis-import form').getAttribute('aria-busy'),'true');await page.evaluate(()=>{window.__axisHoldWrites=false;window.__axisPendingWrites.splice(0).forEach(release=>release());});await page.waitForFunction(()=>!document.querySelector('.axis-import')?.open);await page.reload();await page.getByRole('link',{name:'Fools mate',exact:true}).waitFor();
  await page.goto(origin+'/dashboard');await page.getByRole('button',{name:'Choose a game',exact:true}).click();
  const dialog=page.getByRole('dialog',{name:'Choose a game'});await dialog.waitFor();await page.getByRole('textbox',{name:'Search opponents or openings'}).fill('No matches');await page.getByText('No games match your search.',{exact:true}).first().waitFor();
  await page.keyboard.press('Shift+Tab');assert.ok(await page.evaluate(()=>Boolean(document.activeElement?.closest('dialog'))));
@@ -40,14 +56,14 @@ import assert from 'node:assert/strict';
   await page.goto(origin+'/games');
   const importer=page.locator('.axis-import');if (!await importer.evaluate(el => el.open)) await importer.locator('summary').click();
   await page.getByRole('textbox',{name:'Paste PGN here'}).fill(`[Event "${name}"]\n[White "Study"]\n[Black "${name}"]\n[SetUp "1"]\n[FEN "${fen}"]\n[Result "1/2-1/2"]\n\n${moves}`);
-  await page.getByRole('button',{name:'Import games',exact:true}).click();await page.getByRole('link',{name,exact:true}).click();
+  await page.getByRole('button',{name:'Import games',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.axis-import')?.open);await page.getByRole('link',{name,exact:true}).click();
   await page.getByText('Cached review · verification complete',{exact:true}).waitFor({timeout:90000});
   await page.getByRole('button',{name:'End',exact:true}).click();
  }
  console.log('PASS: browser reviews castling, en passant, underpromotion and pawn ending');
  await page.goto(origin+'/games');await page.locator('.axis-import summary').click();
  await page.getByRole('textbox',{name:'Paste PGN here'}).fill('[Event "Recovery study"]\n[White "Study"]\n[Black "Recovery study"]\n[Result "1/2-1/2"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Nb8 1/2-1/2');
- await page.getByRole('button',{name:'Import games',exact:true}).click();await page.getByRole('link',{name:'Recovery study',exact:true}).click();
+ await page.getByRole('button',{name:'Import games',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.axis-import')?.open);await page.getByRole('link',{name:'Recovery study',exact:true}).click();
  await page.waitForFunction(()=>Number(document.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow'))>=25,{},{timeout:60000});
  await page.getByRole('button',{name:'Stop',exact:true}).click();await page.getByRole('button',{name:'Resume',exact:true}).waitFor();
  await page.reload();await page.getByText('Cached review · verification complete',{exact:true}).waitFor({timeout:120000});

@@ -93,7 +93,8 @@
       "Browser storage and memory remain finite; this release validates a 10000-record storage fixture and a 502-game browser import, not unlimited physical capacity.",
       "Lichess incremental sync is by game creation time. Recheck full history discovers older correspondence games that completed later.",
       "A non-advancing timestamp page stops explicitly with its checkpoint preserved; no ambiguous boundary is silently skipped."
-    ]
+    ],
+    "pgnCompletion": "PGN import remains busy and keeps its draft until IndexedDB acknowledges the write. Only then does it report success and close. Storage failure removes only newly added PGN rows. Browser regression holds transaction acknowledgment, checks busy feedback, then releases and immediately reloads to verify persistence."
   },
   "learning": {
     "curatedSnapshot": "src/lib/data/puzzles.json",

@@ -24,7 +24,7 @@ await page.route('https://lichess.org/api/games/user/**',async route=>{
 async function settings(chess,lichess){await page.goto(origin+'/settings');await page.getByRole('textbox',{name:'Chess.com username',exact:true}).fill(chess);await page.getByRole('textbox',{name:'Lichess username',exact:true}).fill(lichess);await page.locator('.axis-settings-actions button[type=submit]').click();await page.getByText('Saved',{exact:true}).waitFor();}
 async function sync(){await page.goto(origin+'/games');await page.getByRole('button',{name:'Sync games',exact:true}).click();await page.getByRole('button',{name:'Cancel import',exact:true}).waitFor({state:'hidden',timeout:60000});}
 try{
- await page.goto(origin+'/games');await page.getByRole('textbox',{name:'Paste PGN here'}).fill('[Black "Manual study"]\n\n1. e4 e5 1/2-1/2');await page.getByRole('button',{name:'Import games',exact:true}).click();
+ await page.goto(origin+'/games');await page.getByRole('textbox',{name:'Paste PGN here'}).fill('[Black "Manual study"]\n\n1. e4 e5 1/2-1/2');await page.getByRole('button',{name:'Import games',exact:true}).click();await page.waitForFunction(()=>!document.querySelector('.axis-import')?.open);
  await settings('oldchess','oldlichess');await sync();let state=(await readEnvelope(page)).state;
  assert.equal(state.games.length,503);assert.ok(state.games.every(game=>game.analysis_status==='pending'));assert.deepEqual(state.analyses,{});
  assert.equal(await page.locator('.axis-table tbody tr').count(),20);
