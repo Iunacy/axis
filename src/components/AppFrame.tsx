@@ -6,5 +6,5 @@ import type { ReactNode } from "react";
 export default function AppFrame({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const application = pathname !== "/" && pathname !== "/licenses";
-  return <div className={application ? "axis-app-frame" : "axis-public-frame"}>{children}</div>;
+  return <div className={application ? "axis-app-frame" : pathname === "/" ? "axis-public-frame axis-landing-frame" : "axis-public-frame"}>{children}</div>;
 }

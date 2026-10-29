@@ -1264,3 +1264,39 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .axis-app-frame .axis-content main.axis-lesson-reader { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 12px; }
   .axis-lesson-reader > .axis-reading { flex: 1; min-height: 0; overflow: auto; padding-right: 16px; }
 }
+
+/* The cover is one editorial spread. Supplementary method content lives in a
+   keyboard-accessible reader; narrow/zoomed viewports keep normal page flow. */
+.edit-cover { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 7%; }
+.edit-cover-study { display: flex; flex-direction: column; align-items: center; gap: 24px; min-width: 0; }
+.edit-cover-study .edit-cover-plate { width: min(100%, 390px); }
+.edit-cover-study .axis-board-root { max-width: none; }
+.edit-cover-study .edit-chapter-strip { width: 100%; }
+.edit-cover-study .edit-chapter-strip button { min-height: 72px; padding: 12px; gap: 4px; }
+.edit-cover-study .edit-chapter-strip strong { font-size: 18px; line-height: 1.1; margin: 0; }
+.edit-cover-study .edit-chapter-strip small { display: none; }
+.edit-cover-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.edit-cover-copy > .edit-text-link { margin-top: 16px; min-height: 44px; align-items: center; }
+.axis-context-body .edit-method { display: block; padding: 0; border-top: 0; }
+.axis-context-body .edit-method h2 { font-size: 2.5rem; margin: 12px 0 24px; }
+.axis-sync-control { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.axis-sync-control > span { font-size: .85rem; color: var(--edit-muted); }
+@media (min-width: 1280px) and (min-height: 720px) {
+  .axis-landing-frame { min-height: 100dvh; }
+  .axis-landing-frame > .edit-site-header { min-height: 64px; padding-block: 8px; }
+  .axis-landing-frame > .axis-content { display: flex; }
+  .axis-landing-frame .axis-content main.edit-public-page {
+    min-height: 0; padding: 0; display: grid; grid-template-rows: auto 1fr auto;
+  }
+  .axis-landing-frame .edit-cover { min-height: 0; padding-block: 20px; }
+  .axis-landing-frame .edit-cover-copy { padding-bottom: 0; }
+  .axis-landing-frame .edit-cover h1 { font-size: clamp(4.3rem, min(7.6vw, 12vh), 8rem); margin-block: 20px; }
+  .axis-landing-frame .edit-cover-study .edit-cover-plate { width: min(390px, 42dvh); }
+  .axis-landing-frame .edit-cover-study { gap: 20px; }
+  .axis-landing-frame .edit-public-note { padding-block: 10px 16px; align-items: center; }
+  .axis-landing-frame > .axis-footer { padding-block: 10px; }
+}
+@media (max-width: 1000px) {
+  .edit-cover { grid-template-columns: minmax(0, 1fr); }
+  .edit-cover-study { width: min(100%, 530px); margin-inline: auto; }
+}
