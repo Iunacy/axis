@@ -2,12 +2,12 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Chess } from "chess.js";
 import reference from "../src/lib/data/openings.json";
-import { curatedOpeningSubset, parseOpeningTsv } from "../src/lib/opening-import";
-import { identifyOpening, isBookMove } from "../src/lib/opening-book";
+import { curatedOpeningSubset, parseOpeningTsv, openingPositionKey } from "../src/lib/opening-import";
+import { identifyOpening, isBookMove, lookupOpeningPosition } from "../src/lib/opening-book";
 
-test("the compact opening reference has 500 distinct ECO codes and entirely legal lines", () => {
+test("the full opening reference retains all verified variations across 500 ECO codes", () => {
   assert.equal(reference.source.license, "CC0-1.0");
-  assert.equal(reference.rows.length, 500);
+  assert.equal(reference.rows.length, 3865);
   assert.equal(new Set(reference.rows.map(row => row[0])).size, 500);
   for (const [, , moves] of reference.rows as [string, string, string[]][]) {
     const chess = new Chess();
@@ -24,4 +24,36 @@ test("opening import validates schema and chooses a reproducible subset without 
   assert.equal(identifyOpening(new Chess().fen(), ["e2e4", "c7c5"])?.eco, "B20");
   assert.equal(isBookMove("7k/P7/8/8/8/8/8/7K w - - 0 1", ["e2e4"]), false);
   assert.equal(isBookMove(new Chess().fen(), ["e2e4", "e7e5", "d1h5", "b8c6", "h5e5"]), false);
+});
+
+function after(sans: string[]) { const chess = new Chess(); for (const san of sans) chess.move(san); return chess; }
+
+test("transposed positions expose the same source-supported continuations and identities", () => {
+  const first = after(["d4", "Nf6", "c4", "e6", "Nf3", "d5", "g3"]);
+  const second = after(["Nf3", "d5", "d4", "Nf6", "c4", "e6", "g3"]);
+  assert.equal(openingPositionKey(first.fen()), openingPositionKey(second.fen()));
+  assert.deepEqual(lookupOpeningPosition(first.fen()), lookupOpeningPosition(second.fen()));
+  assert.ok(lookupOpeningPosition(first.fen()).continuations.includes("f8e7"));
+  for (const chess of [first, second]) assert.ok(isBookMove(new Chess().fen(), [...chess.history({verbose:true}).map(m=>m.lan), "f8e7"]));
+});
+
+test("deep named variations stay in the book; off-book legal moves are not invented", () => {
+  const row = [...reference.rows as [string,string,string[]][]].sort((a,b)=>b[2].length-a[2].length)[0];
+  assert.ok(row[2].length > 30);
+  assert.ok(isBookMove(new Chess().fen(), row[2]));
+  assert.ok(identifyOpening(new Chess().fen(), row[2]));
+  const opening = lookupOpeningPosition(new Chess().fen());
+  assert.ok(opening.continuations.length > 10);
+  const chess = after(["e4", "e5", "Qh5", "Nc6", "Qxe5+"]);
+  assert.equal(isBookMove(new Chess().fen(), chess.history({verbose:true}).map(m=>m.lan)), false);
+});
+
+test("position keys ignore clocks and irrelevant en passant, but retain turn and castling rights", () => {
+  const chess = after(["e4"]);
+  const fen = chess.fen();
+  assert.equal(openingPositionKey(fen), openingPositionKey(fen.replace(/0 1$/, "23 45")));
+  assert.equal(openingPositionKey(fen), openingPositionKey(fen.replace(" - ", " e3 ")));
+  assert.notEqual(openingPositionKey(fen), openingPositionKey(fen.replace("KQkq", "-")));
+  assert.notEqual(openingPositionKey(fen), openingPositionKey(fen.replace(" b ", " w ")));
+  assert.deepEqual(lookupOpeningPosition("invalid").continuations, []);
 });

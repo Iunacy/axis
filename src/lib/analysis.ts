@@ -2,7 +2,7 @@ import { ENGINE_ID } from "./engine-protocol";
 import { Chess, type Square } from "chess.js";
 import type { AnalysisSummary, Motif, MoveIssue, Phase, PositionEvaluation, MoveAssessment } from "./types";
 import { classifyMove, expectedLoss } from "./move-classification";
-import { identifyOpening, isBookMove } from "./opening-book";
+import { identifyOpening, isBookContinuation, OPENING_BOOK_VERSION } from "./opening-book";
 
 export type PositionEval = PositionEvaluation;
 
@@ -157,7 +157,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     const moverDrop = isEngineBest ? 0 : expectedLoss(evBefore, evAfter, move.color);
     accuracyByColor[move.color].sum += moveAccuracy(moverDrop * 100);
     accuracyByColor[move.color].count += 1;
-    const assessment = classifyMove({ fen: g.fens[i], fenAfter: g.fens[i + 1], uci: move.uci, before: evBefore, after: evAfter, ply: i + 1, book: isBookMove(g.fens[0], g.moves.slice(0, i + 1).map(move => move.uci)), confirmation: g.confirmations?.[i] });
+    const assessment = classifyMove({ fen: g.fens[i], fenAfter: g.fens[i + 1], uci: move.uci, before: evBefore, after: evAfter, ply: i + 1, book: isBookContinuation(g.fens[i], move.uci), confirmation: g.confirmations?.[i] });
     assessments.push(assessment);
     if (move.color !== g.userColor) continue;
 
@@ -276,6 +276,7 @@ export function summarizeGame(g: GameForAnalysis): { summary: AnalysisSummary; p
     accuracyByColor: { w: accuracyByColor.w.count ? Math.round(accuracyByColor.w.sum / accuracyByColor.w.count * 10) / 10 : null, b: accuracyByColor.b.count ? Math.round(accuracyByColor.b.sum / accuracyByColor.b.count * 10) / 10 : null },
     analysisVersion: 3,
     ratingCoverageVersion: 1,
+    openingBookVersion: OPENING_BOOK_VERSION,
     engineId: g.evals.every(evaluation => evaluation.engineId === ENGINE_ID) ? ENGINE_ID : undefined,
     moveAssessments: assessments,
     opening: identifyOpening(g.fens[0], g.moves.map(move => move.uci)),

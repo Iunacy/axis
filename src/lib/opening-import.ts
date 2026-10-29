@@ -23,3 +23,32 @@ export function curatedOpeningSubset(rows: OpeningEntry[]): OpeningEntry[] {
   }
   return [...selected.values()].sort((a, b) => a[0].localeCompare(b[0], "en"));
 }
+
+// Keep every named variation. ECO is a classification, not a unique line ID.
+export function completeOpeningReference(rows: OpeningEntry[]): OpeningEntry[] {
+  return [...new Map(rows.map(row => [JSON.stringify(row), row])).values()]
+    .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b), "en"));
+}
+
+export function openingPositionKey(fen: string): string {
+  // chess.js emits an en-passant square only when a legal capture exists.
+  return new Chess(fen).fen().split(" ").slice(0, 4).join(" ");
+}
+
+export function indexOpeningPositions(rows: OpeningEntry[]) {
+  const nodes = new Map<string, { moves: Set<string>; openings: Set<number> }>();
+  const node = (fen: string) => {
+    const key = fen.split(" ").slice(0, 4).join(" ");
+    if (!nodes.has(key)) nodes.set(key, { moves: new Set(), openings: new Set() });
+    return nodes.get(key)!;
+  };
+  rows.forEach((row, index) => {
+    const chess = new Chess();
+    for (const uci of row[2]) {
+      node(chess.fen()).moves.add(uci);
+      chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+    }
+    node(chess.fen()).openings.add(index);
+  });
+  return [...nodes].map(([key, value]) => [key, [...value.moves].sort(), [...value.openings]] as [string, string[], number[]]);
+}

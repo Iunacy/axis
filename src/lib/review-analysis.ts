@@ -1,3 +1,4 @@
+import { OPENING_BOOK_VERSION } from "./opening-book";
 import { parsePgn } from "./pgn";
 import { ENGINE_ID, validCachedEvaluation } from "./engine-protocol";
 import type { AnalysisSummary, GameRow, PositionEvaluation } from "./types";
@@ -5,6 +6,7 @@ import type { AnalysisSummary, GameRow, PositionEvaluation } from "./types";
 export function needsAutomaticReview(game: GameRow, saved?: AnalysisSummary): boolean {
   if (["failed", "skipped"].includes(game.analysis_status)) return false;
   if (game.analysis_status !== "done" || !saved || saved.complete === false || saved.engineId !== ENGINE_ID) return true;
+  if (saved.openingBookVersion !== OPENING_BOOK_VERSION) return true;
   const parsed = parsePgn(game.pgn);
   if (!parsed || saved.positionEvals?.length !== parsed.fens.length || saved.evaluations?.length !== parsed.fens.length || saved.moveAssessments?.length !== parsed.moves.length) return true;
   if (!saved.positionEvals.every((evaluation, index) => validCachedEvaluation(evaluation, parsed.fens[index]) && evaluation.engineId === ENGINE_ID && evaluation.cpWhite === saved.evaluations![index])) return true;

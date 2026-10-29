@@ -13,7 +13,7 @@ const positionEvals = parsedGame.fens.map(fen => {
   const uci = moves.length ? `${moves[0].from}${moves[0].to}${moves[0].promotion ?? ""}` : null;
   return { ...parseEngineResult(fen, uci ? [`info depth 12 score cp 25 nodes 40000 pv ${uci}`, `bestmove ${uci}`] : []), engineId: ENGINE_ID };
 });
-const saved = { complete: true, engineId: ENGINE_ID, positionEvals, evaluations: positionEvals.map(evaluation => evaluation.cpWhite), moveAssessments: parsedGame.moves.map((move,index) => ({ply:index+1,color:move.color,classification:"good",confidence:"supported",depth:12,reason:"test",expectedLoss:0})) } as AnalysisSummary;
+const saved = { openingBookVersion: 2, complete: true, engineId: ENGINE_ID, positionEvals, evaluations: positionEvals.map(evaluation => evaluation.cpWhite), moveAssessments: parsedGame.moves.map((move,index) => ({ply:index+1,color:move.color,classification:"good",confidence:"supported",depth:12,reason:"test",expectedLoss:0})) } as AnalysisSummary;
 test("automatic review respects saved, interrupted, partial, and failed states", () => {
   assert.equal(needsAutomaticReview(game), true);
   assert.equal(needsAutomaticReview({ ...game, analysis_status: "analyzing" }), true);
@@ -53,4 +53,9 @@ test("older sparse ratings get one coverage upgrade, while bounded uncertainty s
   const sparse = { ...saved, moveAssessments: saved.moveAssessments!.map(move => ({ ...move, classification: null, confidence: "limited" as const })) };
   assert.equal(needsAutomaticReview(done, sparse), true);
   assert.equal(needsAutomaticReview(done, { ...sparse, ratingCoverageVersion: 1 }), false);
+});
+
+test("old opening labels refresh using cached engine evidence", () => {
+  assert.equal(needsAutomaticReview({ ...game, analysis_status: "done" }, { ...saved, openingBookVersion: undefined }), true);
+  assert.equal(resumableEvaluations(parsedGame.fens, saved).length, parsedGame.fens.length);
 });

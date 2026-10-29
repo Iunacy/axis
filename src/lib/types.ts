@@ -80,6 +80,7 @@ export interface AnalysisSummary {
   totalPlies?: number;
   analysisVersion?: number;
   ratingCoverageVersion?: number;
+  openingBookVersion?: number;
   moveAssessments?: MoveAssessment[];
   opening?: { eco: string; name: string };
 }

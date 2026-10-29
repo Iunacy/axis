@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { OPENING_SOURCE, parseOpeningTsv, curatedOpeningSubset } from "../src/lib/opening-import";
+import { OPENING_SOURCE, parseOpeningTsv, completeOpeningReference, indexOpeningPositions } from "../src/lib/opening-import";
 
 async function main() {
   const tables = await Promise.all(["a", "b", "c", "d", "e"].map(async volume => {
@@ -7,9 +7,9 @@ async function main() {
     if (!response.ok) throw new Error(`Opening source returned ${response.status}.`);
     return parseOpeningTsv(await response.text());
   }));
-  const rows = curatedOpeningSubset(tables.flat());
-  if (rows.length !== 500) throw new Error(`Expected 500 ECO references; found ${rows.length}.`);
-  const content = `${JSON.stringify({ source: OPENING_SOURCE, rows })}\n`;
+  const rows = completeOpeningReference(tables.flat());
+  if (new Set(rows.map(row => row[0])).size !== 500) throw new Error(`Expected 500 ECO references; found ${rows.length}.`);
+  const content = `${JSON.stringify({ source: OPENING_SOURCE, rows, positions: indexOpeningPositions(rows) })}\n`;
   const path = "src/lib/data/openings.json";
   if (process.argv.includes("--check")) {
     if (await readFile(path, "utf8") !== content) throw new Error("Opening reference does not match the verified source.");

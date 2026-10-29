@@ -1,23 +1,44 @@
 import { Chess } from "chess.js";
 import reference from "./data/openings.json";
+import { openingPositionKey } from "./opening-import";
 
 export const OPENING_REFERENCE = reference.source;
-const start = new Chess().fen();
-const prefixes = new Set<string>();
-const names = new Map<string, { eco: string; name: string }>();
-for (const [eco, name, moves] of reference.rows as [string, string, string[]][]) {
-  for (let index = 1; index <= moves.length; index++) prefixes.add(moves.slice(0, index).join(" "));
-  names.set(moves.join(" "), { eco, name });
+export const OPENING_BOOK_VERSION = 2;
+export type OpeningIdentity = { eco: string; name: string };
+const positions = new Map((reference.positions as [string, string[], number[]][]).map(([key, moves, openings]) => [key, { moves, openings }]));
+
+/** Source-supported outgoing edges and named positions; no engine/popularity inference. */
+export function lookupOpeningPosition(fen: string): { continuations: string[]; openings: OpeningIdentity[]; source: typeof OPENING_REFERENCE } {
+  let node;
+  try { node = positions.get(openingPositionKey(fen)); } catch {}
+  return {
+    continuations: node?.moves.slice() ?? [],
+    openings: node?.openings.map(index => ({ eco: reference.rows[index][0] as string, name: reference.rows[index][1] as string })) ?? [],
+    source: OPENING_REFERENCE,
+  };
+}
+
+export function isBookContinuation(fen: string, uci: string): boolean {
+  return lookupOpeningPosition(fen).continuations.includes(uci);
 }
 
 export function isBookMove(initialFen: string, playedMoves: string[]): boolean {
-  return initialFen === start && prefixes.has(playedMoves.join(" "));
+  if (!playedMoves.length) return false;
+  try {
+    const chess = new Chess(initialFen);
+    for (const uci of playedMoves.slice(0, -1)) chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+    return isBookContinuation(chess.fen(), playedMoves.at(-1)!);
+  } catch { return false; }
 }
 
-export function identifyOpening(initialFen: string, playedMoves: string[]): { eco: string; name: string } | undefined {
-  if (initialFen !== start) return;
-  for (let length = playedMoves.length; length > 0; length--) {
-    const known = names.get(playedMoves.slice(0, length).join(" "));
-    if (known) return known;
-  }
+export function identifyOpening(initialFen: string, playedMoves: string[]): OpeningIdentity | undefined {
+  try {
+    const chess = new Chess(initialFen);
+    let latest = lookupOpeningPosition(chess.fen()).openings[0];
+    for (const uci of playedMoves) {
+      chess.move({ from: uci.slice(0, 2), to: uci.slice(2, 4), promotion: uci[4] });
+      latest = lookupOpeningPosition(chess.fen()).openings[0] ?? latest;
+    }
+    return latest;
+  } catch { return undefined; }
 }
