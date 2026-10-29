@@ -4,7 +4,7 @@ import type { SkillId } from "./curriculum";
 import { create } from "zustand";
 import type { ReviewLocation } from "./game-library";
 import type { SavedReviewBranch } from "./review-position";
-import { indexedStorage } from "./indexed-storage";
+import { indexedStorage, protectUnreadableState } from "./indexed-storage";
 import { identifyPattern, scheduleReview } from "./training";
 import { restorePersistedState } from "./state-validation";
 import { clearEvaluationCache } from "./evaluation-cache";
@@ -68,6 +68,8 @@ interface StoreState extends PersistedState {
 
   setSettings: (settings: Settings) => void;
   saveReviewLocation: (id: string, ply: number, variations?: SavedReviewBranch[]) => void;
+  academyCompleted: string[];
+  completeAcademyLesson: (id: string) => void;
   syncAccounts: Record<string, { latest: number; until?: number; archive?: string; complete: boolean }>;
   importAccountPage: (platform: "chesscom" | "lichess", username: string, incoming: GameRow[], checkpoint: { latest: number; until?: number; archive?: string; complete: boolean }) => number;
   setGames: (games: GameRow[]) => void;
@@ -124,6 +126,8 @@ export const useStore = create<StoreState>()(
         set({ reviewLocations: { ...get().reviewLocations, [id]: { ...get().reviewLocations[id], ply, at: new Date().toISOString(), ...(variations ? { variations } : {}) } } });
       },
 
+      academyCompleted: [],
+      completeAcademyLesson: id => set({academyCompleted: [...new Set([...get().academyCompleted, id])]}),
       syncAccounts: {},
       importAccountPage: (platform, username, incoming, checkpoint) => {
         const state = get();
@@ -250,13 +254,14 @@ export const useStore = create<StoreState>()(
 
       clearApiKeyAction: () => set({ apiKey: null }),
 
-      clearAllAction: () => { void clearEvaluationCache(); set({ ...initialPersisted, syncAccounts: {} }); },
+      clearAllAction: () => { void clearEvaluationCache(); set({ ...initialPersisted, syncAccounts: {}, academyCompleted: [] }); },
     }),
     {
       name: STORE_KEY,
       version: 1,
       storage: createJSONStorage(() => indexedStorage),
       partialize: ({
+        academyCompleted,
         syncAccounts,
         settings,
         games,
@@ -271,6 +276,7 @@ export const useStore = create<StoreState>()(
         apiKey,
         onboardedFlag,
       }) => ({
+        academyCompleted,
         syncAccounts,
         settings,
         games,
@@ -375,7 +381,14 @@ export function hydrateStore(): void {
   if (typeof window === "undefined") return;
   hydration ??= (async () => {
     try {
-      if (!await indexedStorage.getItem(STORE_KEY)) {
+      const snapshot = await indexedStorage.getItem(STORE_KEY);
+      if (snapshot) {
+        try {
+          const parsed = JSON.parse(snapshot);
+          if (!parsed || typeof parsed !== "object" || !parsed.state || typeof parsed.state !== "object") throw new Error("Unreadable saved state");
+        } catch (error) { protectUnreadableState(error); }
+      }
+      if (!snapshot) {
         const migrated = readLegacy();
         if (migrated) await indexedStorage.setItem(STORE_KEY, JSON.stringify({ state: migrated, version: 1 }));
       }

@@ -22,8 +22,9 @@ export default function DashboardPage() {
   const games = useGames();
   const analyses = useAnalyses();
   const puzzles = useStore(state => state.puzzles);
+  const curatedPuzzles = useMemo(() => puzzles.filter(puzzle => puzzle.source === "lichess"), [puzzles]);
   const history = useMemo(() => curriculumHistory(games, analyses), [games, analyses]);
-  const plan = useMemo(() => buildCurriculum(games, analyses, puzzles, new Date(), history), [games, analyses, puzzles, history]);
+  const plan = useMemo(() => buildCurriculum(games, analyses, curatedPuzzles, new Date(), history), [games, analyses, curatedPuzzles, history]);
   const setPreference = useStore(state => state.setCurriculumPreference);
   const session = useStore(state => state.trainingSession);
   const [panel, setPanel] = useState<"games" | "progress" | null>(null);
@@ -31,17 +32,17 @@ export default function DashboardPage() {
   if (!hydrated) return <WorkspaceLoading/>;
   const fr = locale === "fr";
   const stats = computeDashboardStats(games, analyses);
-  const due = duePuzzles(puzzles.filter(puzzle => puzzle.source !== "lichess"));
+  const due = duePuzzles(curatedPuzzles);
   const priority = plan.items.find(item => item.skill.id === plan.nextSkillId);
   const evidence = priority?.evidence[0];
   const matching = filterGames(games, analyses, { query, sort: "newest", result: "all", platform: "all", status: "all" });
-  const practice = practiceEvidence(puzzles);
+  const practice = practiceEvidence(curatedPuzzles);
   return <main className="edit-workspace axis-dashboard">
     <header className="axis-dashboard-heading"><div><h1>{fr ? "Votre prochain coup." : "Your next move."}</h1><p>{fr ? "Une partie. Une décision. Une meilleure habitude." : "One game. One decision. A better habit."}</p></div><span>{t.ui.localOnly}</span></header>
     {!games.length ? <GettingStarted/> : <>
       <div className="axis-dashboard-actions">
         <section><h2>{t.ui.reviewGame}</h2><p>{fr ? "Choisissez la partie à comprendre. L’analyse démarre à l’ouverture." : "Choose the game you want to understand. Analysis starts when you open it."}</p><button className="axis-button" onClick={() => setPanel("games")}>{fr ? "Choisir une partie" : "Choose a game"}<ArrowUpRight size={16}/></button></section>
-        <section><h2>{t.ui.continueTraining}</h2><p>{session?.remainingIds.length ? `${session.remainingIds.length} ${fr ? "positions dans votre session enregistrée." : "positions in your saved session."}` : due.length ? `${due.length} ${fr ? "positions prêtes à revoir." : "positions ready for review."}` : fr ? "Votre pratique découle de vos décisions analysées." : "Your practice starts with decisions from your reviewed games."}</p><Link className="axis-button secondary" href="/training">{t.ui.continueTraining}<ArrowUpRight size={16}/></Link></section>
+        <section><h2>{t.ui.continueTraining}</h2><p>{session?.remainingIds.length ? `${session.remainingIds.length} ${fr ? "positions dans votre session enregistrée." : "positions in your saved session."}` : due.length ? `${due.length} ${fr ? "positions prêtes à revoir." : "positions ready for review."}` : fr ? "Des exercices vérifiés sont disponibles sans parties personnelles." : "Verified exercises are available with or without personal games."}</p><Link className="axis-button secondary" href="/training">{t.ui.continueTraining}<ArrowUpRight size={16}/></Link></section>
       </div>
       <div className="axis-dashboard-study"><section><h2>{fr ? "Votre prochaine priorité" : "Your next priority"}</h2>{evidence ? <><h3>{fr ? priority!.skill.fr : priority!.skill.title}</h3><p>{fr ? priority!.skill.objectiveFr : priority!.skill.objective}</p><p className="axis-muted">{priority!.mistakes} {fr ? "décisions dans" : "decisions across"} {priority!.games} {fr ? "parties" : "games"}. {priority!.status === "recurring" ? fr ? "Un besoin récurrent observé, à tester par la pratique." : "A recurring observed need, ready to test in practice." : fr ? "Échantillon encore limité : pratique exploratoire." : "The sample is still limited: exploratory practice."}</p><Link className="axis-link" onClick={() => setPreference(priority!.skill.id)} href="/training">{t.ui.continueTraining}<ArrowUpRight size={16}/></Link></> : <><p>{fr ? "Analysez vos parties pour trouver des décisions à travailler." : "Review your games to find decisions worth practicing."}</p><button className="axis-link" onClick={() => setPanel("games")}>{t.ui.reviewGame}<ArrowUpRight size={16}/></button></>}</section>{evidence ? <div className="axis-dashboard-board"><Board fen={evidence.issue.fenBefore} orientation={evidence.game.user_color} size="sm" showOverlayControls={false}/></div> : <div className="axis-dashboard-note"><strong>{stats.analyzedCount} / {games.length}</strong><p>{fr ? "parties analysées" : "games reviewed"}</p></div>}</div>
       <section className="axis-dashboard-progress"><div><h2>{fr ? "Progrès récents" : "Recent progress"}</h2><p>{stats.analyzedCount} {t.dashboard.analyzed} · {stats.avgAccuracy == null ? "—" : `${stats.avgAccuracy}%`} {t.games.accuracy}</p></div><p>{practice.attempts ? `${practice.independentSuccesses}/${practice.attempts} ${fr ? "tentatives indépendantes réussies" : "attempts solved independently"} · ${practice.retainedPositions} ${fr ? "positions retenues" : "positions retained"}` : fr ? "Pas encore de tentatives indépendantes." : "No independent practice attempts yet."}</p><button className="axis-link" onClick={() => setPanel("progress")}>{fr ? "Voir les détails" : "View details"}<ArrowUpRight size={16}/></button></section>

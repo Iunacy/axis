@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useStore } from "@/lib/store";
 import Board from "./Board";
 import BoardFocusMode from "./BoardFocusMode";
+import { findPattern } from "@/lib/pattern-catalog";
 import { useI18n } from "@/lib/i18n";
 import { playPuzzleMove, preparePuzzle, replayPuzzlePath } from "@/lib/puzzle-solution";
 import { recordReview } from "@/lib/storage";
@@ -274,7 +275,7 @@ function SinglePuzzle({
           </p>
         )}
 
-        {state === "playing" && hintLevel > 0 && <p className="axis-puzzle-hint" role="status">{hintLevel === 1 ? locale === "fr" ? "Comparez les échecs, les prises et les menaces immédiates." : "Compare checks, captures, and immediate threats." : locale === "fr" ? `Regardez la pièce sur ${expected?.slice(0, 2) ?? "?"}.` : `Look closely at the piece on ${expected?.slice(0, 2) ?? "?"}.`}</p>}
+        {state === "playing" && hintLevel > 0 && <p className="axis-puzzle-hint" role="status">{hintLevel === 1 ? puzzle.pattern ? findPattern(puzzle.pattern)?.principle[locale] : locale === "fr" ? "Comparez les échecs, les prises et les menaces immédiates." : "Compare checks, captures, and immediate threats." : locale === "fr" ? `Regardez la pièce sur ${expected?.slice(0, 2) ?? "?"}.` : `Look closely at the piece on ${expected?.slice(0, 2) ?? "?"}.`}</p>}
 
         <div className="flex flex-wrap gap-2">
           {state === "playing" && hintLevel < 2 && <button type="button" className="axis-button secondary" disabled={waiting} onClick={() => { const next = hintLevel + 1; setHintLevel(next); persistAttempt("playing", path, next); }}>{locale === "fr" ? "Indice" : "Hint"} {hintLevel + 1}/2</button>}

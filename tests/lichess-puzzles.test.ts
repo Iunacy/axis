@@ -12,7 +12,7 @@ const source = {
 };
 
 test("Lichess import replays the source game and validates a real mating pattern", () => {
-  const parsed = parseLichessPuzzle(source, boden, 0, new Date("2026-01-01T00:00:00Z"))!;
+  const parsed = parseLichessPuzzle(source, boden, boden.ids.indexOf(source.puzzle.id), new Date("2026-01-01T00:00:00Z"))!;
   assert.ok(parsed);
   assert.equal(parsed.source, "lichess");
   assert.equal(parsed.pattern, "boden");
@@ -26,7 +26,7 @@ test("Lichess import replays the source game and validates a real mating pattern
 });
 
 test("Lichess import rejects mismatched themes, illegal lines and invented game context", () => {
-  assert.equal(parseLichessPuzzle({ ...source, puzzle: { ...source.puzzle, themes: ["mateIn1"] } }, boden, 0), null);
-  assert.equal(parseLichessPuzzle({ ...source, puzzle: { ...source.puzzle, solution: ["d3c4"] } }, boden, 0), null);
-  assert.equal(parseLichessPuzzle({ ...source, puzzle: { ...source.puzzle, initialPly: 22 } }, boden, 0), null);
+  assert.equal(parseLichessPuzzle({ ...source, puzzle: { ...source.puzzle, themes: ["mateIn1"] } }, boden, boden.ids.indexOf(source.puzzle.id)), null);
+  assert.equal(parseLichessPuzzle({ ...source, puzzle: { ...source.puzzle, solution: ["d3c4"] } }, boden, boden.ids.indexOf(source.puzzle.id)), null);
+  assert.equal(parseLichessPuzzle({ ...source, puzzle: { ...source.puzzle, initialPly: 22 } }, boden, boden.ids.indexOf(source.puzzle.id)), null);
 });

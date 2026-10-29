@@ -8,7 +8,7 @@ import type { AiLessonRow, AnalysisSummary, GameRow, GeneratedLesson, MasterAnno
 const motifs = ["hanging_piece", "missed_tactic", "allowed_fork", "allowed_mate", "missed_mate", "bad_trade", "other"];
 const severities = ["blunder", "mistake", "inaccuracy"];
 const phases = ["opening", "middlegame", "endgame"];
-const patterns = ["back-rank", "smothered", "arabian", "anastasia", "boden", "swallows-tail"];
+const patterns = ["back-rank", "smothered", "arabian", "anastasia", "boden", "swallows-tail", "dovetail", "epaulette", "hook", "vukovic"];
 const classifications = ["brilliant", "great", "best", "excellent", "good", "book", "inaccuracy", "mistake", "miss", "blunder"];
 const object = (value: unknown): value is Record<string, unknown> => Boolean(value && typeof value === "object" && !Array.isArray(value));
 const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value);
@@ -30,6 +30,8 @@ function analysis(value: unknown): value is AnalysisSummary {
   if (!phases.every(phase => { const item = byPhase[phase]; return object(item) && finite(item.blunders) && finite(item.mistakes) && finite(item.moves); })) return false;
   if (value.evaluations !== undefined && (!Array.isArray(value.evaluations) || !value.evaluations.every(finite))) return false;
   if (value.positionEvals !== undefined && (!Array.isArray(value.positionEvals) || !value.positionEvals.every(row => object(row) && finite(row.cpWhite) && strings(row.pvUci) && (row.bestUci === null || typeof row.bestUci === "string")))) return false;
+  if (value.accuracySampleCount !== undefined && (!finite(value.accuracySampleCount) || value.accuracySampleCount < 0)) return false;
+  if (value.accuracySamples !== undefined && (!object(value.accuracySamples) || ![value.accuracySamples.w,value.accuracySamples.b].every(value => finite(value) && Number.isInteger(value) && value >= 0))) return false;
   if (value.accuracyByColor !== undefined && (!object(value.accuracyByColor) || ![value.accuracyByColor.w, value.accuracyByColor.b].every(score => score === null || finite(score)))) return false;
   if (value.complete !== undefined && typeof value.complete !== "boolean") return false;
   if (value.totalPlies !== undefined && (!finite(value.totalPlies) || value.totalPlies < 0)) return false;
@@ -129,5 +131,5 @@ export function restorePersistedState(value: unknown, defaults: Settings) {
     trainingSession = { ...(isSkillId(rawSession.skillId) ? { skillId: rawSession.skillId } : {}), id: rawSession.id, startedAt: rawSession.startedAt, remainingIds, active };
   }
   const syncAccounts = (object(saved.syncAccounts) ? Object.fromEntries(Object.entries(saved.syncAccounts).filter(([key, row]) => /^(chesscom|lichess):/.test(key) && object(row) && finite(row.latest) && row.latest >= 0 && typeof row.complete === "boolean" && (row.until === undefined || finite(row.until) && row.until >= 0) && (row.archive === undefined || typeof row.archive === "string"))) : {}) as Record<string, { latest: number; until?: number; archive?: string; complete: boolean }>;
-  return { syncAccounts, settings, games, analyses, puzzles, trainingSession, curriculumPreference: isSkillId(saved.curriculumPreference) ? saved.curriculumPreference : null, reviewLocations: restoreReviewLocations(saved.reviewLocations, games), lessons: list(saved.lessons, lesson), aiLessons: list(saved.aiLessons, aiLesson), masterAnnotations: list(saved.masterAnnotations, annotation), apiKey, onboardedFlag: saved.onboardedFlag === true };
+  return { academyCompleted: strings(saved.academyCompleted) ? [...new Set(saved.academyCompleted)] : [], syncAccounts, settings, games, analyses, puzzles, trainingSession, curriculumPreference: isSkillId(saved.curriculumPreference) ? saved.curriculumPreference : null, reviewLocations: restoreReviewLocations(saved.reviewLocations, games), lessons: list(saved.lessons, lesson), aiLessons: list(saved.aiLessons, aiLesson), masterAnnotations: list(saved.masterAnnotations, annotation), apiKey, onboardedFlag: saved.onboardedFlag === true };
 }

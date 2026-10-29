@@ -13,12 +13,12 @@ export default function Nav() {
   const { t, locale, setLocale } = useI18n();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
-  const learning = ["/lessons", "/patterns", "/masters"].some(route => pathname.startsWith(route));
+  const learning = ["/academy", "/lessons", "/patterns", "/masters"].some(route => pathname.startsWith(route));
   const links = [
     { href: "/dashboard", label: locale === "fr" ? "Accueil" : "Home", active: pathname === "/dashboard" },
     { href: "/games", label: locale === "fr" ? "Mes parties" : "My Games", active: pathname.startsWith("/games") || pathname.startsWith("/review/") },
     { href: "/training", label: locale === "fr" ? "S’entraîner" : "Train", active: pathname === "/training" },
-    { href: "/lessons", label: locale === "fr" ? "Apprendre" : "Learn", active: learning },
+    { href: "/academy", label: locale === "fr" ? "Apprendre" : "Learn", active: learning },
   ];
   useEffect(() => {
     const header = headerRef.current;
@@ -43,6 +43,6 @@ export default function Nav() {
       <div id="editorial-controls" className="edit-site-controls"><Link href="https://github.com/Iunacy/axis/releases/tag/v4.0.1" className="axis-version" aria-label="AXIS version 4.0.1 release notes">v4.0.1</Link><Link href="/settings" aria-current={pathname === "/settings" ? "page" : undefined}>{t.nav.settings}</Link><AppearanceControl/><label className="edit-site-language"><span className="sr-only">{t.settings.language}</span><select aria-label={t.settings.language} value={locale} onChange={event => setLocale(event.target.value as Locale)}><option value="en">EN</option><option value="fr">FR</option></select></label></div>
     </div>
   </header>{learning && <nav className="axis-learn-navigation" aria-label={locale === "fr" ? "Apprendre" : "Learning resources"}>
-    {[{ href: "/lessons", label: t.nav.lessons }, { href: "/patterns", label: locale === "fr" ? "Motifs" : "Patterns" }, { href: "/masters", label: t.nav.masters }].map(link => <Link key={link.href} href={link.href} aria-current={pathname.startsWith(link.href) ? "page" : undefined}>{link.label}</Link>)}
+    {[{ href: "/academy", label: "Chess Academy" }, { href: "/lessons", label: locale === "fr" ? "Notes de revue" : "Review notes" }, { href: "/patterns", label: locale === "fr" ? "Motifs" : "Patterns" }, { href: "/masters", label: t.nav.masters }].map(link => <Link key={link.href} href={link.href} aria-current={pathname.startsWith(link.href) ? "page" : undefined}>{link.label}</Link>)}
   </nav>}</>;
 }
