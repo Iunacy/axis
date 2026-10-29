@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Chess } from "chess.js";
 import { ChevronLeft, ChevronRight, Play, Telescope } from "lucide-react";
 import Board from "./Board";
+import BoardFocusMode from "./BoardFocusMode";
 import SpeakButton from "./SpeakButton";
 import { Engine } from "@/lib/engine";
 import { useI18n } from "@/lib/i18n";
@@ -80,7 +81,7 @@ export function LessonContentView({
           </span>
         )}
         <h1 className="text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
-        <div className="rounded-xl border-l-4 border-emerald-500 bg-card p-5">
+        <div className="rounded-xl border-y border-emerald-500 bg-card p-5">
           <div className="flex items-start justify-between gap-3">
             <p className="text-foreground leading-relaxed">
               <strong className="text-emerald-600 dark:text-emerald-400">{t.lessons.mentalModel}: </strong>
@@ -242,7 +243,7 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
   }
 
   return (
-    <section className="flex flex-col gap-3">
+    <BoardFocusMode layout="lesson"><section className="axis-lesson-board-task flex flex-col gap-3">
       <h2 className="text-xl font-medium text-foreground">
         {section.heading ?? (section.exampleIndex ? t.lessons.fromYourGame(section.exampleIndex) : "")}
       </h2>
@@ -302,7 +303,7 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
           )}
 
           {section.explain && (
-            <div className="rounded-xl border-l-4 border-violet-500 bg-card p-4">
+            <div className="rounded-xl border-y border-violet-500 bg-card p-4">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-sm text-foreground/90 leading-relaxed">
                   <strong className="text-violet-600 dark:text-violet-400">{t.lessons.whyItWorks}: </strong>
@@ -403,7 +404,7 @@ function BoardSection({ section }: { section: LessonSectionBoard }) {
           {t.puzzles.fromGame}
         </a>
       )}
-    </section>
+    </section></BoardFocusMode>
   );
 }
 

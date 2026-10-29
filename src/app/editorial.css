@@ -1164,3 +1164,103 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 /* Keep the hidden native selects used by Radix inside the scrolling settings form. */
 .axis-settings-form { position: relative; }
+
+/* Boards keep the same mounted task and controls in normal and expanded views. */
+.axis-board-focus.is-immersive { display: flex; flex-direction: column; }
+.axis-board-focus.is-immersive .axis-focus-toolbar { width: 100%; max-width: 1600px; flex: 0 0 auto; }
+.axis-board-focus.is-immersive .axis-focus-content { min-height: 0; overflow: auto; }
+.axis-focus-task:not(.is-immersive) > .axis-focus-content { height: calc(100% - 52px); }
+.axis-focus-task.is-immersive .axis-focus-content { width: min(100%, 1600px); max-width: none; flex: 1; container-type: size; }
+.axis-focus-task.is-immersive .axis-puzzle { height: 100%; grid-template-columns: minmax(0, 1.6fr) minmax(280px, .8fr); gap: clamp(20px, 4vw, 60px); }
+.axis-focus-task.is-immersive .axis-puzzle > .axis-board-root { width: min(100%, calc(100cqh - 70px)); max-width: none; justify-self: center; }
+.axis-focus-task.is-immersive .axis-puzzle-detail { max-height: 100%; overflow: auto; }
+.axis-focus-study.is-immersive .axis-focus-content { width: min(100%, calc(100dvh - 210px)); max-width: none; }
+.axis-focus-study .axis-master-board { max-width: none; }
+.axis-focus-lesson.is-immersive .axis-focus-content { width: min(100%, 1400px); max-width: none; }
+.axis-focus-lesson.is-immersive .axis-lesson-board-task { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .8fr); align-content: start; gap: 16px 32px; }
+.axis-focus-lesson.is-immersive .axis-lesson-board-task > .axis-board-root { grid-column: 1; grid-row: 1 / span 12; width: min(100%, calc(100dvh - 140px)); max-width: none; }
+.axis-focus-lesson.is-immersive .axis-lesson-board-task > :not(.axis-board-root) { grid-column: 2; }
+@media (min-width: 781px) and (min-height: 621px) {
+  .axis-app-frame > .axis-content { display: flex; flex-direction: column; }
+  .axis-learn-navigation { flex: 0 0 auto; }
+  .axis-app-frame .axis-content main:is(.axis-games, .axis-lessons, .edit-pattern-library, .edit-pattern-detail, .axis-master-study) { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+  .axis-app-frame .axis-content main > :is(.edit-folio, .edit-route-heading, .edit-pattern-intro, .edit-pattern-detail-head) { flex: 0 0 auto; }
+  .axis-games > .axis-panel, .axis-lessons > section, .edit-pattern-index { flex: 1; min-height: 0; overflow: auto; }
+  .axis-games .axis-resume-review { padding-block: 8px; }
+  .axis-games .axis-game-filters { padding-block: 8px; }
+  .axis-games .axis-import[open] { max-height: 45dvh; overflow: auto; flex-shrink: 0; }
+  .edit-pattern-intro, .edit-pattern-detail-head { padding: 0 0 12px; gap: 12px 32px; }
+  .axis-app-frame .axis-content :is(.edit-pattern-intro, .edit-pattern-detail-head) h1 { font-size: clamp(2rem, 3.5vw, 3.5rem); letter-spacing: -.04em; }
+  .edit-pattern-intro > .edit-kicker, .edit-pattern-detail-head .edit-kicker { display: none; }
+  .edit-pattern-row { padding-block: 16px; }
+  .axis-content .edit-pattern-row h2 { font-size: 1.6rem; letter-spacing: -.03em; }
+  .edit-pattern-review-link { margin: 0; padding-block: 12px; }
+  .edit-source-note { margin: 0; padding-block: 4px; }
+  .edit-pattern-detail > .edit-pattern-back { margin: 0; }
+  .edit-pattern-session, .edit-mixed-stage { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+  .edit-pattern-stages > div { padding-block: 8px; }
+  .edit-pattern-prompt { margin: 0; padding: 0; }
+  :is(.edit-pattern-session, .edit-mixed-stage) > .axis-focus-task { flex: 1; min-height: 0; container-type: size; }
+  .edit-pattern-session .axis-puzzle { border: 0; padding: 0; }
+  :is(.axis-training-stage, .edit-pattern-session, .edit-mixed-stage) .axis-focus-task:not(.is-immersive) { height: 100%; }
+  :is(.axis-training-stage, .edit-pattern-session, .edit-mixed-stage) .axis-focus-task:not(.is-immersive) .axis-puzzle { height: 100%; min-height: 0; container-type: size; grid-template-columns: minmax(0, 1.5fr) minmax(280px, .9fr); }
+  :is(.axis-training-stage, .edit-pattern-session, .edit-mixed-stage) .axis-puzzle > .axis-board-root { max-width: min(100%, calc(100cqh - 58px)); justify-self: center; }
+  :is(.axis-training-stage, .edit-pattern-session, .edit-mixed-stage) .axis-puzzle-detail { overflow: auto; min-height: 0; max-height: 100%; gap: 14px; }
+  .axis-training-stage { min-height: 0; }
+  .axis-content .axis-puzzle-detail h2 { font-size: clamp(1.5rem, 2.4vw, 2.2rem); }
+  .axis-workspace-grid { grid-template-columns: minmax(0, 1.65fr) minmax(320px, 1fr); }
+  .axis-workspace .axis-board-focus:not(.is-immersive), .axis-workspace .axis-graph { width: min(100%, calc(100cqh - 188px)); }
+  .axis-workspace .axis-board-focus:not(.is-immersive) .axis-focus-toolbar { position: static; height: 44px; padding: 0; }
+  .axis-workspace .axis-board-focus:not(.is-immersive) .axis-focus-toolbar button { min-height: 40px; border: 1px solid var(--edit-line); padding: 6px 10px; }
+  .axis-workspace .axis-board-focus:not(.is-immersive) .axis-focus-toolbar button > span { display: inline; }
+  .axis-workspace .axis-board-focus:not(.is-immersive) .axis-focus-toolbar > span { display: inline; }
+  .axis-master-study > a { margin: 0; }
+  .axis-master-study > .axis-master-workspace { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); }
+  .axis-master-workspace > .axis-focus-study:not(.is-immersive) { height: 100%; min-height: 0; container-type: size; }
+  .axis-focus-study:not(.is-immersive) > .axis-focus-content { width: min(100%, calc(100cqh - 235px)); margin-inline: auto; }
+  .axis-master-move-index { max-height: 64px; padding: 4px; }
+  .axis-master-notes { overflow: auto; min-height: 0; }
+  .axis-content .axis-master-title h2 { font-size: 2.4rem; letter-spacing: -.04em; }
+}
+@media (max-width: 780px), (max-height: 620px) {
+  .axis-focus-task.is-immersive .axis-puzzle, .axis-focus-lesson.is-immersive .axis-lesson-board-task { display: flex; flex-direction: column; }
+  .axis-focus-task.is-immersive .axis-puzzle > .axis-board-root { width: min(100%, 75dvh); max-width: none; }
+  .axis-focus-task.is-immersive .axis-puzzle-detail { overflow: visible; }
+}
+.axis-learning-guide, .axis-opening-reference { border-block: 1px solid var(--edit-line); padding-block: 8px; }
+:is(.axis-learning-guide, .axis-opening-reference) > summary { cursor: pointer; padding-block: 10px; color: var(--edit-accent); }
+.axis-learning-guide[open] { max-height: 40dvh; overflow: auto; flex-shrink: 0; }
+.axis-learning-guide dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 20px; padding-block: 12px; }
+.axis-learning-guide dt { font-size: 1.2rem; margin-bottom: 8px; }
+.axis-learning-guide dt a { text-decoration: underline; text-underline-offset: 4px; }
+.axis-learning-guide dd { color: var(--edit-muted); line-height: 1.5; }
+.axis-opening-moves { display: flex; flex-wrap: wrap; gap: 8px; }
+.axis-opening-reference p { margin-block: 12px; font-size: 13px; line-height: 1.5; }
+.axis-master-notation summary { cursor: pointer; padding-block: 8px; font-size: 13px; }
+.axis-library-start { color: var(--edit-muted); line-height: 1.5; }
+.axis-library-start a { text-decoration: underline; margin-left: 8px; }
+@media (min-width: 781px) and (min-height: 621px) {
+  .axis-app-frame .axis-content main:is(.axis-masters, .axis-settings) { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 12px; }
+  .axis-masters > .axis-catalog, .axis-settings > .axis-settings-form { flex: 1; min-height: 0; overflow: auto; }
+  .axis-masters > section { flex-shrink: 0; max-height: 30dvh; overflow: auto; }
+  .axis-app-frame .axis-content main.axis-dashboard { min-height: 0; flex: 1; }
+  .axis-games .axis-import[open] { max-height: none; }
+  .axis-master-study > .edit-issue-line { display: none; }
+  .axis-focus-study:not(.is-immersive) > .axis-focus-content { width: min(100%, calc(100cqh - 195px)); }
+  .axis-master-board { gap: 8px; }
+  .axis-master-study > .axis-master-workspace { overflow: visible; }
+}
+/* Workspace entrance transforms otherwise create transient overflow and fixed-position containing blocks. */
+.axis-app-frame .axis-content > main { animation: none; }
+.axis-puzzle-detail .axis-curriculum-focus { display: block; border-top: 0; padding: 0 0 12px; }
+.axis-puzzle-detail .axis-curriculum-focus > div { display: block; }
+.axis-puzzle-detail .axis-curriculum-focus h2 { font-size: 1.25rem; }
+.axis-puzzle-detail .axis-curriculum-focus summary { min-height: 36px; }
+@media (min-width: 781px) and (min-height: 621px) {
+  :is(.axis-training-stage, .edit-pattern-session, .edit-mixed-stage) .axis-puzzle > .axis-board-root { max-width: min(100%, 100cqh); }
+  .axis-training .axis-curriculum-focus h2 { font-size: 1.25rem; }
+}
+@media (min-width: 781px) and (min-height: 621px) {
+  .axis-app-frame .axis-content main.axis-lesson-reader { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 12px; }
+  .axis-lesson-reader > .axis-reading { flex: 1; min-height: 0; overflow: auto; padding-right: 16px; }
+}

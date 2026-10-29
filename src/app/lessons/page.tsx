@@ -29,6 +29,12 @@ export default function LessonsPage() {
       <PageHeader title={t.lessons.title} description={t.lessons.classicSub} actions={<GenerateLessonsButton/>}/>
 
 
+      <details className="axis-learning-guide"><summary>{locale === "fr" ? "Choisir son activité" : "Choose your practice"}</summary><dl>
+        <div><dt><Link href="/training">{locale === "fr" ? "Entraînement personnalisé" : "Personalized training"}</Link></dt><dd>{locale === "fr" ? "Rejouez vos erreurs. Trouvez la suite sans indice ; votre parcours mesure les réussites et programme les révisions." : "Replay decisions from your games. Find the continuation without hints; your plan tracks independent solves and schedules reviews."}</dd></div>
+        <div><dt><Link href="/patterns">{locale === "fr" ? "Reconnaissance et calcul" : "Recognition & calculation"}</Link></dt><dd>{locale === "fr" ? "Apprenez une configuration de mat, puis calculez une suite plus longue. La révision mélangée vérifie aussi le nom du motif." : "Learn a mating shape, then calculate longer forcing lines. Mixed review also checks whether you can name the pattern."}</dd></div>
+        <div><dt>{locale === "fr" ? "Leçons" : "Lessons"}</dt><dd>{locale === "fr" ? "Comprenez une idée issue de vos parties, puis essayez les positions. Lire une leçon ne signifie pas maîtriser la compétence." : "Understand an idea from your games, then try its positions. Completing a lesson records study; independent practice provides skill evidence."}</dd></div>
+        <div><dt><Link href="/masters">{locale === "fr" ? "Parties de maîtres et ouvertures" : "Master games & openings"}</Link></dt><dd>{locale === "fr" ? "Parcourez des parties annotées. Dans la revue de vos parties, Explorer affiche les suites d’ouverture vérifiées séparément des lignes moteur." : "Step through annotated games. In your game review, Explore shows verified opening continuations separately from engine lines."}</dd></div>
+      </dl></details>
       <section className="flex flex-col gap-5">
         {lessons.length === 0 ? (
           <EmptyState icon={<BookOpen size={28}/>} title={t.lessons.empty} description={t.axis.noTraining}><Link href="/games" className="axis-button">{t.ui.reviewGame}</Link></EmptyState>

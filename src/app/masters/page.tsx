@@ -112,7 +112,7 @@ export default function MastersPage() {
 
   if (selected) {
     return (
-      <main className="mx-auto max-w-5xl px-4 py-10 flex flex-col gap-6">
+      <main className="axis-master-study">
         <button
           onClick={() => setSelected(null)}
           className="text-sm text-muted-foreground hover:text-foreground w-fit"

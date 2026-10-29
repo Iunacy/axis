@@ -30,6 +30,7 @@ export default function PgnImporter({ defaultOpen = false }: { defaultOpen?: boo
       toast.success(t.axis.imported(count));
       setError("");
       setPgn("");
+      setOpen(false);
     } catch (cause) { setError(cause instanceof Error ? cause.message : t.axis.invalidPgn); }
     finally { setBusy(false); }
   }

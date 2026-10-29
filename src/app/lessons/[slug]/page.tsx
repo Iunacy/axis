@@ -29,7 +29,8 @@ export default function LessonPage({ params }: { params: Promise<{ slug: string 
   if (found === undefined) return null;
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
+    <main className="axis-lesson-reader">
+      <Link href="/lessons" className="axis-link">← {t.lessons.title}</Link>
       {found === null ? (
         <div className="text-muted-foreground">
           {t.lessons.empty}{" "}

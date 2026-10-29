@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import ApiKeyField from "./ApiKeyField";
 import Board from "./Board";
+import BoardFocusMode from "./BoardFocusMode";
 import SpeakButton from "./SpeakButton";
 import { CometSpinner } from "./ui/comet-spinner";
 import { Engine } from "@/lib/engine";
@@ -172,6 +173,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
 
   return (
     <div className="axis-master-workspace edit-master-study">
+      <BoardFocusMode layout="study">
       <div className="axis-master-board">
         <Board
           fen={fen}
@@ -237,7 +239,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
           {plyIdx}/{total}
         </p>
 
-        <div className="axis-master-move-index flex flex-wrap gap-1 rounded-xl border border-border bg-card p-3 max-h-44 overflow-y-auto">
+        <details className="axis-master-notation"><summary>{locale === "fr" ? "Liste des coups" : "Move list"}</summary><div className="axis-master-move-index flex flex-wrap gap-1 rounded-xl border border-border bg-card p-3 max-h-44 overflow-y-auto">
           {moves.map((m, i) => (
             <button
               key={i}
@@ -255,6 +257,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
           ))}
         </div>
 
+        </details>
         {engineLine === null ? (
           <button
             onClick={exploreLine}
@@ -280,6 +283,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
         )}
       </div>
 
+      </BoardFocusMode>
       <div className="axis-master-notes flex-1 flex flex-col gap-4 min-w-0">
         <div className="axis-master-title">
           <h2 className="text-xl font-semibold text-foreground">
@@ -329,7 +333,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
         ) : (
           <>
             {plyIdx === 0 ? (
-              <div className="rounded-xl border-l-4 border-violet-500 bg-card p-4">
+              <div className="rounded-xl border-y border-violet-500 bg-card p-4">
                 <div className="flex items-start justify-between gap-3">
                   <p className="text-foreground/90 leading-relaxed">
                     {annotation.intro}
@@ -343,7 +347,7 @@ export default function MasterGameView({ game }: { game: MasterGame }) {
                 </div>
               </div>
             ) : currentNote ? (
-              <div className="rounded-xl border-l-4 border-emerald-500 bg-card p-4 flex flex-col gap-2">
+              <div className="rounded-xl border-y border-emerald-500 bg-card p-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                     {t.masters.moveLabel(

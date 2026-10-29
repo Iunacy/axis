@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Chess } from "chess.js";
 import { Check, X, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import Board from "./Board";
+import BoardFocusMode from "./BoardFocusMode";
 import { useI18n } from "@/lib/i18n";
 import { playPuzzleMove, preparePuzzle, replayPuzzlePath } from "@/lib/puzzle-solution";
 import { recordReview } from "@/lib/storage";
@@ -13,7 +14,7 @@ import type { PuzzleRow, TrainingAttempt } from "@/lib/types";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress, hideTheme = false, postSolveText, blind = false, recognitionPrompt = false, nextDisabled = false, requireAttempt = false }: { puzzles: PuzzleRow[]; onAdvance?: (id: string) => void; progress?: TrainingAttempt; onProgress?: (attempt: TrainingAttempt) => void; hideTheme?: boolean; postSolveText?: string; blind?: boolean; recognitionPrompt?: boolean; nextDisabled?: boolean; requireAttempt?: boolean }) {
+export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress, hideTheme = false, postSolveText, blind = false, recognitionPrompt = false, nextDisabled = false, requireAttempt = false, context }: { context?: ReactNode; puzzles: PuzzleRow[]; onAdvance?: (id: string) => void; progress?: TrainingAttempt; onProgress?: (attempt: TrainingAttempt) => void; hideTheme?: boolean; postSolveText?: string; blind?: boolean; recognitionPrompt?: boolean; nextDisabled?: boolean; requireAttempt?: boolean }) {
   const { t } = useI18n();
   const [idx, setIdx] = useState(0);
 
@@ -23,6 +24,7 @@ export default function PuzzlePlayer({ puzzles, onAdvance, progress, onProgress,
   return (
     <SinglePuzzle
       key={`${puzzle.id}-${idx}`}
+      context={context}
       puzzle={puzzle}
       index={(idx % puzzles.length) + 1}
       total={puzzles.length}
@@ -52,7 +54,9 @@ function SinglePuzzle({
   recognitionPrompt,
   nextDisabled,
   requireAttempt,
+  context,
 }: {
+  context?: ReactNode;
   puzzle: PuzzleRow;
   index: number;
   total: number;
@@ -201,6 +205,7 @@ function SinglePuzzle({
   if (!prepared) return <div className="axis-puzzle-detail"><p role="alert">{locale === "fr" ? "Cette position ne peut pas être vérifiée." : "This position could not be verified."}</p><button type="button" className="axis-button secondary" onClick={onNext}>{t.puzzles.next}</button></div>;
 
   return (
+    <BoardFocusMode layout="task">
     <div className="axis-puzzle">
       <Board
         key={boardKey}
@@ -213,6 +218,7 @@ function SinglePuzzle({
       />
 
       <div className="axis-puzzle-detail">
+        {context}
         <div>
           <div className="flex flex-wrap gap-1.5 mb-2">
             {!hideTheme && !blind && <span className="inline-block rounded-full bg-accent px-3 py-1 text-xs text-foreground/90">
@@ -298,5 +304,6 @@ function SinglePuzzle({
         </div>
       </div>
     </div>
+    </BoardFocusMode>
   );
 }

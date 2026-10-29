@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import assert from "node:assert/strict";
 import { Chess } from "chess.js";
+import { checkBoardFocus } from "./check-board-focus.mjs";
 import { chromium } from "playwright";
 mkdirSync("output/playwright", { recursive: true });
 const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH, args: ["--no-sandbox"] });
@@ -36,6 +37,8 @@ try {
   const reveal = page.getByRole("button", { name: "Show solution", exact: true });
   assert.ok(await reveal.isDisabled(), "answers require an attempt or progressively revealed hints");
   const initial = await readState();
+  await checkBoardFocus(page, "training");
+  assert.deepEqual(await readState(), initial, "fullscreen cannot mutate learning state");
   const chosen = initial.trainingSession.skillId === "king-safety" ? { id: "opening-decisions", title: "Opening decisions" } : { id: "king-safety", title: "King safety" };
   await page.getByRole("button", { name: "Your learning plan", exact: true }).click();
   await plan.getByText(/1 distinct reviewed games/).waitFor();
@@ -66,6 +69,11 @@ try {
   await page.reload();
   await page.locator(".axis-puzzle-result").waitFor();
   state = await readState();
+  const beforeHistory = await readState();
+  await page.getByRole("button", { name: "History", exact: true }).click();
+  await page.getByRole("dialog", { name: "History", exact: true }).waitFor();
+  await page.keyboard.press("Escape");
+  assert.deepEqual(await readState(), beforeHistory, "progress drawer cannot mutate the active attempt");
   const saved = state.puzzles.find(row => row.id === id);
   assert.equal(saved.reviews.length, 1, "reload cannot duplicate solve evidence");
   assert.equal(saved.reviews[0].solved, true);
@@ -88,6 +96,7 @@ try {
   await plan.waitFor();
   await page.keyboard.press("Escape");
   await page.setViewportSize({ width: 1280, height: 720 }); await fit();
+  assert.ok((await page.locator(".axis-training-stage .axis-board-root").boundingBox()).width >= 380, "laptop board remains usable without fullscreen");
   await page.screenshot({ path: "output/playwright/v4-training-720.png" });
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
@@ -97,6 +106,11 @@ try {
   await page.getByText(/sample is still limited/).waitFor(); await fit();
   await page.locator("main").evaluate(el => Promise.all(el.getAnimations().map(animation => animation.finished)));
   await page.screenshot({ path: "output/playwright/v4-dashboard.png" });
+  await page.goto(origin + "/lessons");
+  await page.getByRole("button", { name: "Generate lessons from my weaknesses", exact: true }).click();
+  await page.locator(".axis-lesson-link").first().click();
+  await page.locator(".axis-focus-lesson").first().waitFor();
+  await checkBoardFocus(page, "lesson");
   assert.deepEqual(errors, []);
   console.log("PASS: empty/sparse curriculum, real engine evidence, preserved override/session, interactive solution, recorded evidence, reload, review scheduling, honest transfer/mastery, desktop/mobile layout");
 } catch (error) {
