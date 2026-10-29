@@ -8,6 +8,7 @@ import { indexedStorage } from "./indexed-storage";
 import { identifyPattern, scheduleReview } from "./training";
 import { restorePersistedState } from "./state-validation";
 import { clearEvaluationCache } from "./evaluation-cache";
+import { accountReplacement } from "./import-account";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { type AiProviderId, isProviderId } from "./providers";
 import type {
@@ -67,6 +68,8 @@ interface StoreState extends PersistedState {
 
   setSettings: (settings: Settings) => void;
   saveReviewLocation: (id: string, ply: number, variations?: SavedReviewBranch[]) => void;
+  syncAccounts: Record<string, { latest: number; until?: number; archive?: string; complete: boolean }>;
+  importAccountPage: (platform: "chesscom" | "lichess", username: string, incoming: GameRow[], checkpoint: { latest: number; until?: number; archive?: string; complete: boolean }) => number;
   setGames: (games: GameRow[]) => void;
   upsertGames: (incoming: GameRow[]) => number;
   setGameStatus: (id: string, status: GameRow["analysis_status"], accuracy?: number | null) => void;
@@ -121,6 +124,20 @@ export const useStore = create<StoreState>()(
         set({ reviewLocations: { ...get().reviewLocations, [id]: { ...get().reviewLocations[id], ply, at: new Date().toISOString(), ...(variations ? { variations } : {}) } } });
       },
 
+      syncAccounts: {},
+      importAccountPage: (platform, username, incoming, checkpoint) => {
+        const state = get();
+        const patch = accountReplacement(state, platform, username);
+        const retained = patch.games ?? state.games;
+        const seen = new Set(retained.map(game => game.id));
+        const fresh = incoming.filter(game => { if (seen.has(game.id)) return false; seen.add(game.id); return true; });
+        const key = `${platform}:${username.toLowerCase()}`;
+        const accountSetting = platform === "chesscom" ? "chesscomUsername" : "lichessUsername";
+        set({ ...patch, games: [...retained, ...fresh].sort((a,b) => Date.parse(b.played_at) - Date.parse(a.played_at)),
+          settings: { ...state.settings, [accountSetting]: username },
+          syncAccounts: { ...Object.fromEntries(Object.entries(state.syncAccounts).filter(([account]) => !account.startsWith(`${platform}:`) || account === key)), [key]: checkpoint } });
+        return fresh.length;
+      },
       setGames: (games) => set({ games }),
 
       upsertGames: (incoming) => {
@@ -233,13 +250,14 @@ export const useStore = create<StoreState>()(
 
       clearApiKeyAction: () => set({ apiKey: null }),
 
-      clearAllAction: () => { void clearEvaluationCache(); set({ ...initialPersisted }); },
+      clearAllAction: () => { void clearEvaluationCache(); set({ ...initialPersisted, syncAccounts: {} }); },
     }),
     {
       name: STORE_KEY,
       version: 1,
       storage: createJSONStorage(() => indexedStorage),
       partialize: ({
+        syncAccounts,
         settings,
         games,
         analyses,
@@ -253,6 +271,7 @@ export const useStore = create<StoreState>()(
         apiKey,
         onboardedFlag,
       }) => ({
+        syncAccounts,
         settings,
         games,
         analyses,

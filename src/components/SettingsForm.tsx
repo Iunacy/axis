@@ -57,7 +57,7 @@ function SettingsFormInner() {
 
   return (
     <form onSubmit={save} className="axis-settings-form" onChange={() => setState("idle")}>
-      <fieldset className="axis-panel"><h2>{t.ui.accounts}</h2><p className="axis-muted text-sm leading-6">{t.ui.accountHelp}</p><label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
+      <fieldset className="axis-panel"><h2>{t.ui.accounts}</h2><p className="axis-muted text-sm leading-6">{t.ui.accountHelp}</p><p className="axis-muted text-sm leading-6">{locale === "fr" ? "À la prochaine importation réussie, changer de joueur remplacera les parties de l’ancien compte sur cette plateforme et ses données d’entraînement. Les fichiers PGN et l’autre plateforme sont conservés." : "On the next successful import, changing a player replaces that platform’s previous account games and their training data. PGN files and the other platform are kept."}</p><label className="flex flex-col gap-1.5 text-sm text-muted-foreground">
         {t.settings.chesscom}
         <input
           className={input}

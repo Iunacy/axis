@@ -1,4 +1,4 @@
-import { AppError } from "../errors";
+import { importRequest, type ImportOptions } from "./request";
 import { normalizeTimeClass, openingNameFromEcoUrl, resultForUser } from "../pgn";
 import type { GameRow, Platform } from "../types";
 
@@ -19,34 +19,29 @@ interface ChesscomGame {
   eco?: string;
 }
 
-async function getJson<T>(url: string): Promise<T | null> {
-  const res = await fetch(url, { signal: AbortSignal.timeout(20000) });
-  if (res.status === 429) throw new AppError("syncRateLimit");
-  if (!res.ok) throw new AppError("network");
-  return (await res.json()) as T;
+export interface ChesscomPage { games: GameRow[]; archive: string; oldest: number; complete: boolean }
+export async function* chesscomPages(username: string, options: ImportOptions & { since?: number; beforeArchive?: string } = {}): AsyncGenerator<ChesscomPage> {
+  const res = await importRequest(`${BASE}/player/${encodeURIComponent(username.trim())}/games/archives`, options);
+  const archives = (await res.json()) as { archives: string[] };
+  if (!Array.isArray(archives.archives) || !archives.archives.every(url => typeof url === "string" && /^https:\/\/api\.chess\.com\/pub\/player\/[^/]+\/games\/\d{4}\/\d{2}$/.test(url))) throw new Error("Chess.com returned an invalid archive list.");
+  const since = options.since ?? 0;
+  const sinceMonth = since > 0 ? new Date(since).toISOString().slice(0, 7).replace("-", "/") : null;
+  const selected = [...archives.archives].sort().reverse().filter(url => (!sinceMonth || url.slice(-7) >= sinceMonth) && (!options.beforeArchive || url <= options.beforeArchive));
+  if (!selected.length) { yield { games: [], archive: "", oldest: 0, complete: true }; return; }
+  for (let index = 0; index < selected.length; index++) {
+    const archive = selected[index];
+    const response = await importRequest(archive, options);
+    const month = await response.json();
+    if (!Array.isArray(month.games)) throw new Error("Chess.com returned an invalid game archive.");
+    const games = parseChesscomGames(month.games, username, since);
+    yield { games, archive, oldest: games.reduce((oldest, game) => Math.min(oldest, Date.parse(game.played_at)), Infinity), complete: index === selected.length - 1 };
+  }
 }
 
-export async function fetchChesscomGames(username: string, maxGames = 300, since = 0): Promise<GameRow[]> {
-  const res = await fetch(`${BASE}/player/${encodeURIComponent(username.trim())}/games/archives`, { signal: AbortSignal.timeout(20000) });
-  if (res.status === 404) throw new AppError("syncUserNotFound");
-  if (res.status === 429) throw new AppError("syncRateLimit");
-  if (!res.ok) throw new AppError("network");
-  const archives = (await res.json()) as { archives: string[] };
-  if (!archives?.archives?.length) return [];
-
+function parseChesscomGames(games: ChesscomGame[], username: string, since: number): GameRow[] {
   const out: GameRow[] = [];
   const lower = username.trim().toLowerCase();
-  const sinceMonth = since > 0 ? new Date(since).toISOString().slice(0, 7).replace("-", "/") : null;
-
-  for (const archiveUrl of [...archives.archives].reverse()) {
-    if (out.length >= maxGames) break;
-    const archiveMonth = archiveUrl.match(/\/(\d{4}\/\d{2})$/)?.[1];
-    if (sinceMonth && archiveMonth && archiveMonth < sinceMonth) continue;
-    const month = await getJson<{ games: ChesscomGame[] }>(archiveUrl);
-    if (!month) continue;
-
-    for (const g of [...month.games].reverse()) {
-      if (out.length >= maxGames) break;
+  for (const g of [...games].reverse()) {
       if (g.rules !== "chess" || !g.pgn || !g.end_time || g.end_time * 1000 < since || !/\[Result "(?:1-0|0-1|1\/2-1\/2)"\]/.test(g.pgn)) continue;
       if (![g.white.username.toLowerCase(), g.black.username.toLowerCase()].includes(lower)) continue;
       const userIsWhite = g.white.username.toLowerCase() === lower;
@@ -79,7 +74,16 @@ export async function fetchChesscomGames(username: string, maxGames = 300, since
         opening_name: openingNameFromEcoUrl(ecoUrlMatch?.[1]),
         accuracy_user: userIsWhite ? g.accuracies?.white ?? null : g.accuracies?.black ?? null,
       });
-    }
   }
   return out;
+}
+
+// Compatibility helper; synchronization consumes durable monthly pages directly.
+export async function fetchChesscomGames(username: string, maxGames = Infinity, since = 0): Promise<GameRow[]> {
+  const games: GameRow[] = [];
+  for await (const page of chesscomPages(username, { since })) {
+    games.push(...page.games);
+    if (games.length >= maxGames) break;
+  }
+  return games.slice(0, maxGames);
 }
