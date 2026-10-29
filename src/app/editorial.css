@@ -1338,3 +1338,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .axis-quiz-question { border-top: 1px solid var(--edit-line); padding-block: 20px; }
 .axis-settings-actions { backdrop-filter: none; }
+
+.axis-quiz-question button { min-height: 44px; }
+.axis-quiz-answer { text-align: left; padding: 10px 16px; border: 1px solid var(--input); color: var(--edit-ink); background: transparent; font-size: .875rem; }
+.axis-quiz-answer.is-correct { color: var(--success); background: var(--success-bg); border-color: var(--success); }
+.axis-quiz-answer.is-wrong { color: var(--error); background: var(--error-bg); border-color: var(--error); }
+.axis-quiz-answer.is-unselected { color: var(--edit-muted); }

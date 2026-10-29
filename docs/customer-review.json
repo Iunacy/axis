@@ -88,7 +88,7 @@
       "id": "quiz-design",
       "priority": "P2",
       "problem": "Quiz content retained a rounded filled card treatment inconsistent with the editorial study surface.",
-      "change": "Use a ruled question section and square answer controls, preserving the existing palette and typography.",
+      "change": "Use a ruled question section and square controls with minimum 44px touch targets. Use paired semantic foreground/background tokens for correct and wrong answers and verify at least 4.5:1 text contrast in both themes.",
       "customers": [
         15
       ]

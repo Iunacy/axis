@@ -456,13 +456,7 @@ function QuizQuestion({
               onClick={() => pick(i)}
               disabled={showResult}
               aria-pressed={isPicked}
-              className={[
-                "text-left border px-4 py-2.5 text-sm transition",
-                showResult && right ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-200" : "",
-                showResult && isPicked && !right ? "border-red-500 bg-red-500/10 text-red-700 dark:text-red-200" : "",
-                !showResult ? "border-input text-foreground/90 hover:border-ring/60" : "",
-                showResult && !isPicked && !right ? "border-border text-muted-foreground" : "",
-              ].join(" ")}
+              className={`axis-quiz-answer${showResult && right ? " is-correct" : showResult && isPicked ? " is-wrong" : showResult ? " is-unselected" : ""}` }
             >
               {choice}{showResult && right && <span> · {locale === "fr" ? "Bonne réponse" : "Correct answer"}</span>}{showResult && isPicked && !right && <span> · {locale === "fr" ? "Votre réponse" : "Your answer"}</span>}
             </button>

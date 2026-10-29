@@ -122,12 +122,27 @@ try {
     await page.getByRole('button', { name: 'Reset filters', exact: true }).click(); assert.equal(await page.locator('.axis-table tbody tr').count(), 20);
   });
   await customer('Learner who answers incorrectly', 'Read text feedback, identify the correct answer and retry a quiz', async page => {
-    await go(page, '/academy/recognizing-mating-nets');
-    await page.getByRole('button', { name: 'The attacker has fewer pawns', exact: true }).click();
-    await page.getByRole('status').filter({ hasText: 'Not quite.' }).waitFor();
-    assert.ok(await page.getByRole('button', { name: /Correct answer/ }).isDisabled());
-    await page.getByRole('button', { name: 'Retry question', exact: true }).click();
-    assert.ok(await page.getByRole('button', { name: 'The attacker has fewer pawns', exact: true }).isEnabled());
+    for (const theme of ['dark', 'light']) {
+      await go(page, '/academy/recognizing-mating-nets');
+      await page.evaluate(theme => localStorage.setItem('theme', theme), theme); await page.reload();
+      const choice = page.getByRole('button', { name: 'The attacker has fewer pawns', exact: true });
+      assert.ok((await choice.boundingBox()).height >= 44);
+      await choice.click(); await page.getByRole('status').filter({ hasText: 'Not quite.' }).waitFor();
+      assert.ok(await page.getByRole('button', { name: /Correct answer/ }).isDisabled());
+      const contrasts = await page.locator('.axis-quiz-answer.is-correct, .axis-quiz-answer.is-wrong').evaluateAll(elements => {
+        const luminance = value => {
+          const channels = value.match(/[\d.]+/g).slice(0, 3).map(Number).map(c => c / 255).map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4);
+          return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+        };
+        return elements.map(element => {
+          const style = getComputedStyle(element); const a = luminance(style.color); const b = luminance(style.backgroundColor);
+          return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+        });
+      });
+      assert.equal(contrasts.length, 2); assert.ok(contrasts.every(value => value >= 4.5), `${theme}: ${contrasts}`);
+      const retry = page.getByRole('button', { name: 'Retry question', exact: true }); assert.ok((await retry.boundingBox()).height >= 44);
+      await retry.click(); assert.ok(await page.getByRole('button', { name: 'The attacker has fewer pawns', exact: true }).isEnabled());
+    }
   });
   await customer('Returning Academy student', 'Record study and restore it after reloading the lesson', async page => {
     await go(page, '/academy/recognizing-mating-nets'); await page.getByRole('button', { name: 'Mark as completed', exact: true }).click();
