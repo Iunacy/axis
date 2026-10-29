@@ -1,0 +1,170 @@
+{
+  "date": "2026-10-29",
+  "baseline": {
+    "commit": "286f110",
+    "unitTests": 82,
+    "lint": "pass",
+    "typecheck": "pass"
+  },
+  "engineeringWorkflow": {
+    "reviewed": [
+      "https://github.com/affaan-m/ECC/blob/main/.codex/AGENTS.md",
+      "https://github.com/affaan-m/ECC/blob/main/skills/verification-loop/SKILL.md",
+      "https://github.com/affaan-m/ECC/blob/main/agents/code-reviewer.md"
+    ],
+    "adopted": [
+      "reproduce bugs with fixtures before fixes",
+      "build, types, lint, tests, browser and diff verification",
+      "specific evidence-backed review findings",
+      "separate reviewable phase commits"
+    ],
+    "notAdopted": [
+      "global instructions",
+      "framework installation",
+      "additional MCP servers",
+      "model overrides"
+    ]
+  },
+  "analysis": {
+    "engine": "Stockfish.js 19.0.1 Lite single-thread; optional full engine only in position explorer",
+    "threads": 1,
+    "hashMiB": 32,
+    "firstPass": {
+      "depthMaximum": 12,
+      "nodes": 40000,
+      "multiPV": 1
+    },
+    "ratingCoverage": {
+      "minimumSupportedDepth": 12,
+      "firstRetry": {
+        "depthMaximum": 16,
+        "nodes": 200000
+      },
+      "secondRetry": {
+        "depthMaximum": 18,
+        "nodes": 600000
+      },
+      "explicitRetryNodeMaximum": 2000000
+    },
+    "criticalVerification": {
+      "maximumMovesPerGame": 6,
+      "root": {
+        "depthMaximum": 20,
+        "nodes": 600000,
+        "multiPV": 2
+      },
+      "confirmation": {
+        "depthMaximum": 22,
+        "nodes": 1500000,
+        "multiPV": 2
+      }
+    },
+    "openingSource": {
+      "url": "https://github.com/lichess-org/chess-openings",
+      "revision": "f06a50d5c7c140e50b068049fa31d289e2c3d347",
+      "license": "CC0-1.0",
+      "lines": 3865,
+      "bookPolicyVersion": 3,
+      "normalization": "Piece placement, side to move, castling rights, legal en-passant square; clocks excluded. Documented outgoing position edges recognize transpositions.",
+      "supplement": {
+        "file": "src/lib/opening-supplement.ts",
+        "source": "https://www.chess.com/openings/London-System",
+        "scope": "Four explicitly published London mainline/setup sequences. Only factual move sequences are retained with attribution; article prose is not reproduced. Named ECO identities continue to come from the CC0 reference."
+      }
+    },
+    "classification": "Book is source provenance, independent of engine completion. Documented moves may still create review issues from outcome loss. Other ratings require legal position-matched evidence and depth >=12, with exact terminal exceptions. Brilliant requires confirmed root/second-choice separation and a sustained material sacrifice at depths >=20 and >=22. No proprietary platform parity claimed.",
+    "accuracy": "Expected-outcome loss uses White-normalized WDL when both evaluations provide it, otherwise logistic centipawn estimates. Engine first-choice moves have zero attributed loss to avoid capped child-search horizon penalties. Per-move score = clamp(103.1668 * exp(-0.04354 * lossPercentagePoints) - 3.1669, 0, 100). Game score is the arithmetic mean of supported mover samples. Unsupported moves are excluded; sample counts are exposed. This is an AXIS heuristic, not the Lichess game aggregator or a calibrated measure of human skill.",
+    "sources": [
+      "https://official-stockfish.github.io/docs/stockfish-wiki/UCI-Protocol-and-Stockfish-Commands.html",
+      "https://lichess.org/page/accuracy"
+    ],
+    "fixtures": [
+      "tests/fixtures/common-openings.json",
+      "tests/fixtures/opening-games.json",
+      "tests/fixtures/boden-review.json"
+    ]
+  },
+  "imports": {
+    "architecture": "Monthly Chess.com pages and bounded 100-game Lichess pages. Page checkpoints, game records, analyses and metadata commit atomically in IndexedDB v2. Incremental sync is independent of analysis. Changed records are persisted individually.",
+    "accountSwitch": "After a valid page is fetched, replace the selected platform’s prior player games and linked evidence; preserve manually imported PGNs and the other platform. Failed account lookup preserves the old library. Old platform checkpoints are removed. AI review notes lack provenance and are cleared when an account is replaced.",
+    "durability": "Await each page before fetching the next; use strict transaction durability; retain legacy data during migration. If storage cannot be read, block writes for that session to avoid overwriting an unreadable library. Surface quota/persistence failures and restore the prior in-memory page.",
+    "retries": "At most two bounded retries for 429/502/503/504, honoring Retry-After. Long delays stop with a resumable error. Cancellation uses AbortController.",
+    "limits": [
+      "Browser storage and memory remain finite; this release validates a 10000-record storage fixture and a 502-game browser import, not unlimited physical capacity.",
+      "Lichess incremental sync is by game creation time. Recheck full history discovers older correspondence games that completed later.",
+      "A non-advancing timestamp page stops explicitly with its checkpoint preserved; no ambiguous boundary is silently skipped."
+    ]
+  },
+  "learning": {
+    "curatedSnapshot": "src/lib/data/puzzles.json",
+    "source": "https://database.lichess.org/#puzzles",
+    "license": "CC0-1.0",
+    "retrieved": "2026-10-29",
+    "patterns": 10,
+    "exercisesPerPattern": 10,
+    "verification": "Source game replay, source theme tag, legal published solution through actual checkmate, explicit terminal motif geometry and unique normalized puzzle positions. Ambiguous epaulette tags were rejected. Difficulty progression uses line length followed by source rating.",
+    "corridor": "Taught as another name for back-rank mate; no duplicate path or inflated exercise count.",
+    "explanations": "Final king square, checker, blocked and unavailable flights are derived from the board. Verifiable one-move checking alternatives include a legal refutation where available. No claim that every move outside the source line loses.",
+    "academy": {
+      "lessons": 10,
+      "subjects": [
+        "Tactical calculation",
+        "Pattern recognition",
+        "Opening principles and theory",
+        "Positional strategy",
+        "Pawn structures",
+        "Piece activity",
+        "Exchanges and imbalances",
+        "Endgame fundamentals",
+        "Calculation discipline",
+        "Practical decision-making"
+      ],
+      "examples": "Guided examples explicitly name the move being demonstrated and do not claim unique best play. Includes intermediate minor-piece exchanges, Carlsbad plans, a multi-move Arabian mating line, reserve tempi and sixth-rank rook defense.",
+      "language": "New prose is English and labeled accordingly in the French interface. Full French lesson translation is deferred.",
+      "progress": "Study completion persists; reading does not establish mastery."
+    },
+    "personalization": "Recommendations use verified completed game-review observations, show the source decisions, and link to existing Academy lessons. Personal engine lines no longer enter the default structured puzzle queue. Historical personal attempts and explicit game-review drills are retained.",
+    "limits": [
+      "Legal and geometric validation does not prove unique best play or all defensive branches.",
+      "No controlled learning-outcome evaluation or independent chess-educator review has been completed."
+    ]
+  },
+  "acceptance": {
+    "analysis": [
+      "eight named opening PGNs and transposition regressions",
+      "book evidence independent of engine recommendation",
+      "uncertain evaluations excluded from accuracy with sample counts",
+      "real Stockfish classification verification"
+    ],
+    "landing": [
+      "document scroll height and width fit at 1280x720, 1366x768, 1440x900, 1920x1080 in both themes and locales",
+      "method panel keyboard interaction and focus return",
+      "small and zoomed screens retain reachable content"
+    ],
+    "imports": [
+      "more than 200 games across multiple bounded pages",
+      "durable page checkpoints and retry without duplicates",
+      "cancellation and bounded rate-limit retry",
+      "per-record persistent storage and 10000-game regression",
+      "20-row paginated game table"
+    ],
+    "learning": [
+      "curated default exercises with legal mate lines and source attribution",
+      "10 distinct exercises for each supported motif",
+      "standalone academy with all requested subject areas and interactive legal examples",
+      "personal recommendations linked to reviewed evidence and curated lessons"
+    ]
+  },
+  "verificationCommands": [
+    "npm test",
+    "npm run lint",
+    "npm run typecheck",
+    "npm run openings:verify",
+    "npm run puzzles:verify",
+    "npm run engine:verify",
+    "npm run build",
+    "npm run browser:verify"
+  ],
+  "browserCoverage": "Both themes, English/French landing, 1280x720 through 1920x1080 desktop, mobile/zoom-equivalent layouts, 502-game imports, account replacement/failure/reload, 20-row lists, real engine reviews, recovery, full-engine isolation, fullscreen/fallback controls, Academy interaction/quiz/progress, curated sessions, recommendations, and a 1000-game rendered fixture.",
+  "releaseGate": "Merge only after these checks pass on the PR. Verify the deployed commit metadata and smoke-test the production URL. Do not describe unvalidated capacity or pedagogical effectiveness as production-ready."
+}

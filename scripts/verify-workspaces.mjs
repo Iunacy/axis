@@ -17,7 +17,7 @@ try {
     for (const [width, height] of [[1920,1080],[1440,900],[1366,768],[1280,720],[390,844],[375,667],[683,384]]) {
       await page.setViewportSize({ width, height });
       console.log(`Checking ${theme} ${width}×${height}`);
-      for (const route of ["/dashboard","/games","/training","/lessons","/patterns","/patterns/back-rank","/patterns/review","/masters","/settings"]) {
+      for (const route of ["/dashboard","/games","/training","/academy","/lessons","/patterns","/patterns/back-rank","/patterns/review","/masters","/settings"]) {
         await page.goto(origin + route);
         await page.locator("main").waitFor();
         await page.locator(".edit-site-header").getByRole("combobox", { name: "Appearance", exact: true, includeHidden: true }).waitFor({ state: "attached" });
