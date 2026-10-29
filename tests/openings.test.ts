@@ -68,3 +68,25 @@ test("eight named reference PGNs retain every documented continuation and final 
     assert.ok(lookupOpeningPosition(chess.fen()).openings.some(opening=>opening.eco===fixture.eco&&opening.name===fixture.name),fixture.family);
   }
 });
+
+test("real game PGNs from all eight families replay legally and recognize their documented opening moves", async()=>{
+  const fixtures=(await import('./fixtures/opening-games.json')).default;
+  assert.equal(fixtures.length,8);
+  for(const fixture of fixtures){
+    const chess=new Chess();chess.loadPgn(fixture.pgn,{strict:true});
+    assert.ok(chess.history().length>fixture.referencePrefix.length,fixture.family);
+    assert.ok(chess.getHeaders().White&&chess.getHeaders().Black);
+    assert.match(fixture.source,/^https:\/\//);
+    const moves=chess.history({verbose:true}).map(move=>move.lan);
+    for(let ply=1;ply<=fixture.referencePrefix.length;ply++)assert.equal(isBookMove(new Chess().fen(),moves.slice(0,ply)),true,`${fixture.family}: documented move ${ply}`);
+  }
+});
+
+test("the published London supplement fills the accelerated move-order gap with explicit provenance",()=>{
+  const chess=after(['d4','d5','Bf4']);
+  const position=lookupOpeningPosition(chess.fen());
+  assert.ok(position.continuations.includes('g8f6'));
+  assert.ok(position.references.some(source=>source.url==='https://www.chess.com/openings/London-System'));
+  chess.move('Nf6');assert.ok(lookupOpeningPosition(chess.fen()).continuations.includes('e2e3'));
+  assert.equal(isBookMove(new Chess().fen(),['d2d4','d7d5','c1f4','g8f6','e2e3']),true);
+});

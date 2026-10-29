@@ -1,0 +1,88 @@
+[
+  {
+    "family": "Italian",
+    "source": "https://raw.githubusercontent.com/tonymorris/immortalgames/master/immortal_games.pgn",
+    "referencePrefix": [
+      "e2e4",
+      "e7e5",
+      "g1f3",
+      "b8c6",
+      "f1c4"
+    ],
+    "pgn": "[Event \"Casual Game\"]\n[Site \"Berlin GER\"]\n[Date \"1852.??.??\"]\n[EventDate \"?\"]\n[Round \"?\"]\n[Result \"1-0\"]\n[White \"Adolf Anderssen\"]\n[Black \"Jean Dufresne\"]\n[ECO \"C52\"]\n[WhiteElo \"?\"]\n[BlackElo \"?\"]\n[PlyCount \"47\"]\n\n1.e4 e5 2.Nf3 Nc6 3.Bc4 Bc5 4.b4 Bxb4 5.c3 Ba5 6.d4 exd4 7.O-O\nd3 8.Qb3 Qf6 9.e5 Qg6 10.Re1 Nge7 11.Ba3 b5 12.Qxb5 Rb8 13.Qa4\nBb6 14.Nbd2 Bb7 15.Ne4 Qf5 16.Bxd3 Qh5 17.Nf6+ gxf6 18.exf6\nRg8 19.Rad1 Qxf3 20.Rxe7+ Nxe7 21.Qxd7+ Kxd7 22.Bf5+ Ke8\n23.Bd7+ Kf8 24.Bxe7# 1-0\n"
+  },
+  {
+    "family": "Ruy Lopez",
+    "source": "https://www.chessgames.com/perl/chessgame?gid=1778970",
+    "referencePrefix": [
+      "e2e4",
+      "e7e5",
+      "g1f3",
+      "b8c6",
+      "f1b5"
+    ],
+    "pgn": "[Event \"World Championship, Sochi\"]\n[Site \"?\"]\n[Date \"2014.??.??\"]\n[Round \"?\"]\n[White \"Magnus Carlsen\"]\n[Black \"Viswanathan Anand\"]\n[Result \"1-0\"]\n\n1. e4 e5 2. Nf3 Nc6 3. Bb5 Nf6 4. O-O Nxe4 5. d4 Nd6 6. Bxc6 dxc6 7. dxe5 Nf5 8. Qxd8+ Kxd8 9. h3 Bd7 10. Nc3 h6 11. b3 Kc8 12. Bb2 c5 13. Rad1 b6 14. Rfe1 Be6 15. Nd5 g5 16. c4 Kb7 17. Kh2 a5 18. a4 Ne7 19. g4 Ng6 20. Kg3 Be7 21. Nd2 Rhd8 22. Ne4 Bf8 23. Nef6 b5 24. Bc3 bxa4 25. bxa4 Kc6 26. Kf3 Rdb8 27. Ke4 Rb4 28. Bxb4 cxb4 29. Nh5 Kb7 30. f4 gxf4 31. Nhxf4 Nxf4 32. Nxf4 Bxc4 33. Rd7 Ra6 34. Nd5 Rc6 35. Rxf7 Bc5 36. Rxc7+ Rxc7 37. Nxc7 Kc6 38. Nb5 Bxb5 39. axb5+ Kxb5 40. e6 b3 41. Kd3 Be7 42. h4 a4 43. g5 hxg5 44. hxg5 a3 45. Kc3 1-0\n"
+  },
+  {
+    "family": "Sicilian",
+    "source": "https://www.chessgames.com/perl/chessgame?gid=1795096",
+    "referencePrefix": [
+      "e2e4",
+      "c7c5"
+    ],
+    "pgn": "[Event \"Hainan Danzhou GM\"]\n[Site \"?\"]\n[Date \"2015.??.??\"]\n[Round \"?\"]\n[White \"Wei Yi\"]\n[Black \"Lazaro Bruzon Batista\"]\n[Result \"1-0\"]\n\n1. e4 c5 2. Nf3 e6 3. Nc3 a6 4. Be2 Nc6 5. d4 cxd4 6. Nxd4 Qc7 7. O-O Nf6 8. Be3 Be7 9. f4 d6 10. Kh1 O-O 11. Qe1 Nxd4 12. Bxd4 b5 13. Qg3 Bb7 14. a3 Rad8 15. Rae1 Rd7 16. Bd3 Qd8 17. Qh3 g6 18. f5 e5 19. Be3 Re8 20. fxg6 hxg6 21. Nd5 Nxd5 22. Rxf7 Kxf7 23. Qh7+ Ke6 24. exd5+ Kxd5 25. Be4+ Kxe4 26. Qf7 Bf6 27. Bd2+ Kd4 28. Be3+ Ke4 29. Qb3 Kf5 30. Rf1+ Kg4 31. Qd3 Bxg2+ 32. Kxg2 Qa8+ 33. Kg1 Bg5 34. Qe2+ Kh4 35. Bf2+ Kh3 36. Be1 1-0\n"
+  },
+  {
+    "family": "French",
+    "source": "https://raw.githubusercontent.com/tonymorris/immortalgames/master/immortal_games.pgn",
+    "referencePrefix": [
+      "e2e4",
+      "e7e6"
+    ],
+    "pgn": "[Event \"Composition\"]\n[Site \"Copenhagen\"]\n[Date \"1927.??.??\"]\n[EventDate \"?\"]\n[Round \"?\"]\n[Result \"1-0\"]\n[White \"Aron Nimzowitsch\"]\n[Black \"Systemsson\"]\n[ECO \"C00\"]\n[WhiteElo \"?\"]\n[BlackElo \"?\"]\n[PlyCount \"48\"]\n\n1.e4 {AN INGENIOUS EXAMPLE OF MY SYSTEM by Aaron Nimzowitsch -\nAnderssen started the sacrificial style, Morphy and Gruenfeld\nthe pure attacking style, Steinitz the positional style,\nTarrasch the scientific style, Lasker the style of styles,\nCapablanca the mechanical style, Alekhine a style as brilliant\nas sunlight. But it is a generally known fact that originality\nand modernism were introduced by me as my own personal\ninventions and enthusiastically imitated (without being fully\nunderstood) by the whole world of chess. For the ridiculously\nsmall sum of ten marks, the reader can confirm all this in my\nmonumental work, My System, published by B. Kagan. Before my\ntime, chess was so naive and undistinguished! One or two\nbrutal opening moves, each one involving a vulgar, obvious\nthreat, a common, banal sacrifice, a painfully elementary,\nbestially raw checkmate - such, more or less, was the course\nof chess games before my heyday set in. Then I appeared on the\nscene and the chess world paid heed. The hegemony of matter\nwas shattered at a stroke and the era of the spiritual\nbegan. Under my creative guidance, the chessmen, hitherto\nnothing but highwaymen, pirates and butcher boys, became\nsensitive artists and subtle instruments of immeasurable\nprofundity. But why waste words!--accompany me, dear reader to\nthe dizzy heights of the following game.} e6 2.h4 $1 {My very\noldest and latest thought in this opening. To the chess addict\nnurtured on spineless convention, this move comes like a slap\nin the face--but calm down, dear reader; after all, you cannot\nbe expected to understand such moves. (Forgive me - it is not\nyour fault, until now no one has opened your eyes and ears.)\nWait just a little while, and there will pass before you a\nmiracle of overprotection of more than earthly beauty. (I\nassume that I rightly surmise that you are quite familiar with\nmy great theory of overprotection.)} 2...d5 { Black of course\nhas no suspicion of What is coming and continues serenely in\nclassical style. } 3.e5 $1 {A move of elemental delicacy. (We\ndetest, as a matter of principle, such words as \"power\" and\n\"strength\"; in the first place, such banal expressions make us\nuncomfortable; and, in the second place, we like even less the\nbrutalizing tendency which such words imply.) Wherein lies the\nbeauty of 3.e5? Why is this move so strong? The answer is as\nsimple as it is astonishing. The move is strong because it is\nweak! Weak, that is, only in the traditional sense! In\nreality, that is to say, it is not the move but the Pawn on e5\nthat is weak--a tremendous difference! In former times, it is\ntrue, it was customary to reject any move which created a\nweakness. Today, thanks to me, this view is obsolete. For,\nlook, my dear reader, the fact that the Pawn on e5 is weak\nobliges White to protect the Pawn more and more until at last\nthe state of overprotection arises as it were of itself. But,\nas we have seen (cf. My System), overprotection is practically\nequivalent to victory. Hence it follows automatically that the\n\"weak\" move, 3.e5, is a certain road to triumph. The rest is\nmore or less a matter of technique. } 3...c5 { All according\nto a famous precedent.} 4.d4 {Here it is quite clear that it\nis more profitable for White first to provoke c5 and then play\nd4, rather than the other way round, which is the customary\ncourse. For, if White first plays d4, there follows c5 and\nWhite's d-pawn is under attack. But my clever transposition of\nmoves changes the situation completely. For now Black's c-pawn\nis suddenly attacked by White's d-pawn!} 4...cxd4 {What else\ncan Black do?} 5.h5 $1 {All very clever, original and\ndecisive! Of course the ordinary run of people who envy my\nevery spark of genius but cannot follow my line of reasoning\nfor even three paces, outdo themselves in sneering at me with\nthe poison-dripping epithet, \"bizarre.\" The text move creates\nconfusion in the whole Black army and prepares for the\nannihilating invasion by the Queen 18 moves later.} 5...Qb6\n{Naturally not 5...Nc6 6 Bb5! etc. Why should Black play the\nFrench Defence only to allow the Ruy Lopez Bishop move after\nall?!} 6.h6 $1 {An avaricious dullard would never hit on this\ndeeply conceived Pawn sacrifice.} 6...Nxh6 {After 6...gxh6,\nWhite has an even more comfortable game.} 7.Qh5 $1 {The reason\nfor this becomes clear after next move.} 7...g6 {Black\nthreatens to begin a successful siege of the weakling at e5\nwith Bg7. But White forestalls this.} 8.Qh2 $1 {To every\nfair-minded observer, this move must come as a revelation! All\nthe previous manoeuvres now become clear! White has completed\nhis development brilliantly and proceeds to overprotect\ne5. Against this, Black is helpless.} 8...Nf5 9.Bd3 {Note the\nsplendid cooperation of White's forces: while the e-pawn and\nthe King Bishop completely blockade Black's position, the\ndevelopment of the overprotective forces takes place behind\nthe broad backs of these sturdy blockaders.} 9...Nc6 10.Nf3\n{As a rule this is a routine move. But here it is strikingly\noriginal and as such occupies a place in the treasury of my\nintellectual property.} 10...h5 {Old stuff!} 11.b3 {A deep\ntrap, as will soon become apparent!} 11...Bg7 {How Black must\nhave rejoiced when he anticipated his formidable opponent in\nthe occupation of the long diagonal. But...} 12.Bf4 $1 {...how\nbitterly disappointed he must have been to realize that 11.b3\nhad only been a trap and Bb2 had not been intended at all. The\nposition of Black's Bishop at g7 is now quite\npointless. 11...Be7 would have been relatively better.}\n12...Bd7 13.Nbd2 Rc8 {Black no longer has any good moves!}\n14.Ke2 $1 {Again, an extraordinarily deep move. White sees\nthrough Black's plans, and in addition he prepares a\nparticularly powerful continuation of his strategy of\noverprotection.} 14...Nb4 {Just what White was waiting for.}\n15.Ne1 $1 {This was the point of his previous move! Black is\nnow forced to exchange off the attacking Bishop at d3. But,\nwith that, even White's King Knight enters the fray with\nfearful effect at d3, while the square f3 becomes available to\nthe Queen Knight. Surely a grandiose piece of strategy. The\nfact is that I'm a marvellous player, even if the whole chess\nworld bursts with envy.} 15...Nxd3 16.Nxd3 $1 {Naturally not\n16 cxd3? which would have been quite inconsistent. The Pawn on\nc2 is unimportant, and Black only wastes precious time by\ncapturing it.} 16...Rxc2 17.Rae1 $1 {White continues his\noverprotection without much ado.} 17...a5 {This counterattack\nhas no punch. Black would naturally like to get a passed Pawn\nplus a Rook on the seventh, but it is too late for that.}\n18.Kd1 $1 {Now the menaced Rook must scurry back, for capture\non a2 would be much too dangerous.} 18...Rc6 $1 {At last,\nBlack gets the right idea: overprotecting his Pawn at e6. But\nit is already too late.} 19.Re2 Ke7 {Introduced into\ntournament play by myself. See note to White's 14th move. The\nKing overprotects e6.} 20.Rhe1 Re8 $1 21.Nf3 $1 {Completing\nthe overprotection of e5 and thus deciding the fate of the\ngame. Black has no defence. Note the aesthetic effect created\nby White's position.} 21...Bf8 {Now Black threatens to\ncomplete the overprotection of e6 by playing Ng7. But White\nhas prepared a brilliant combination.} 22.g4 $1 {Much stronger\nthan the obvious Bg5+ etc.} 22...hxg4 23.Qh7 $1 {Now one\nclearly realizes the masterly understanding of position which\nwent into White's eighth move (Qh2!).} 23...gxf3 {Had Black\ncontinued overprotecting by 23...Ng7 there would have followed\n24.Bg5+ f6 25.Bxf6+ Kf7 26.Ng5 mate. Black's basic error was\nthat he started overprotecting much too late.} 24.Bg5# {One of\nmy best games! I am proud of it if only because Herr\nSystemsson is one of the strongest Scandinavian players. The\ngame made an overwhelming impression on the players and\nspectators as well as on my opponent. The game has become\nfamous in Denmark as \"the immortal overprotection game.\"} 1-0\n"
+  },
+  {
+    "family": "Caro-Kann",
+    "source": "https://raw.githubusercontent.com/tonymorris/immortalgames/master/immortal_games.pgn",
+    "referencePrefix": [
+      "e2e4",
+      "c7c6"
+    ],
+    "pgn": "[Event \"European Clubs Cup (Men)\"]\n[Site \"Rethymnon GRE\"]\n[Date \"2003.10.04\"]\n[EventDate \"2003.09.28\"]\n[Round \"7\"]\n[Result \"1-0\"]\n[White \"Baadur Jobava\"]\n[Black \"Evgeny Bareev\"]\n[ECO \"B19\"]\n[WhiteElo \"2596\"]\n[BlackElo \"2721\"]\n[PlyCount \"67\"]\n\n1. e4 c6 2. d4 d5 3. Nd2 dxe4 4. Nxe4 Bf5 5. Ng3 Bg6 6. h4 h6\n7. Nf3 Nd7 8. h5 Bh7 9. Bd3 Bxd3 10. Qxd3 Ngf6 11. Bd2 e6\n12. O-O-O Be7 13. Qe2 O-O 14. Kb1 c5 15. d5 exd5 16. Bxh6 gxh6\n17. Nf5 Re8 18. Nxh6+ Kf8 19. Ng5 Qb6 20. Qf3 Ne5 21. Qg3 Bd6\n22. Nf5 Qxb2+ 23. Kxb2 Nc4+ 24. Kb3 Bxg3 25. h6 Na5+ 26. Ka4\nb5+ 27. Kxa5 Bc7+ 28. Kxb5 Rab8+ 29. Ka4 Ne4 30. Rxd5 Nc3+\n31. Ka3 Nb5+ 32. Kb2 Nd4+ 33. Kc3 Nb5+ 34.Kd3 1-0\n"
+  },
+  {
+    "family": "Queen's Gambit",
+    "source": "https://www.chessgames.com/perl/chessgame?gid=1704763",
+    "referencePrefix": [
+      "d2d4",
+      "d7d5",
+      "c2c4"
+    ],
+    "pgn": "[Event \"Tata Steel, Wijk aan Zee\"]\n[Site \"?\"]\n[Date \"2013.??.??\"]\n[Round \"?\"]\n[White \"Levon Aronian\"]\n[Black \"Viswanathan Anand\"]\n[Result \"0-1\"]\n\n1. d4 d5 2. c4 c6 3. Nf3 Nf6 4. Nc3 e6 5. e3 Nbd7 6. Bd3 dxc4 7. Bxc4 b5 8. Bd3 Bd6 9. O-O O-O 10. Qc2 Bb7 11. a3 Rc8 12. Ng5 c5 13. Nxh7 Ng4 14. f4 cxd4 15. exd4 Bc5 16. Be2 Nde5 17. Bxg4 Bxd4+ 18. Kh1 Nxg4 19. Nxf8 f5 20. Ng6 Qf6 21. h3 Qxg6 22. Qe2 Qh5 23. Qd3 Be3 0-1\n"
+  },
+  {
+    "family": "King's Indian",
+    "source": "https://www.chessgames.com/perl/chessgame?gid=1567841",
+    "referencePrefix": [
+      "d2d4",
+      "g8f6",
+      "c2c4",
+      "g7g6",
+      "b1c3",
+      "f8g7"
+    ],
+    "pgn": "[Event \"World Team Championship, Bursa\"]\n[Site \"?\"]\n[Date \"2010.??.??\"]\n[Round \"?\"]\n[White \"Boris Gelfand\"]\n[Black \"Hikaru Nakamura\"]\n[Result \"0-1\"]\n\n1. d4 Nf6 2. c4 g6 3. Nc3 Bg7 4. e4 d6 5. Nf3 O-O 6. Be2 e5 7. O-O Nc6 8. d5 Ne7 9. Nd2 Ne8 10. b4 f5 11. c5 Nf6 12. f3 f4 13. Nc4 g5 14. a4 Ng6 15. Ba3 Rf7 16. b5 dxc5 17. Bxc5 h5 18. a5 g4 19. b6 g3 20. Kh1 Bf8 21. d6 axb6 22. Bg1 Nh4 23. Re1 Nxg2 24. dxc7 Nxe1 25. Qxe1 g2+ 26. Kxg2 Rg7+ 27. Kh1 Bh3 28. Bf1 Qd3 29. Nxe5 Bxf1 30. Qxf1 Qxc3 31. Rc1 Qxe5 32. c8=Q Rxc8 33. Rxc8 Qe6 0-1\n"
+  },
+  {
+    "family": "London",
+    "source": "https://lichess.org/game/export/69SEyvqY",
+    "referencePrefix": [
+      "d2d4",
+      "d7d5",
+      "c1f4",
+      "g8f6",
+      "e2e3"
+    ],
+    "pgn": "[Event \"rated blitz game\"]\n[Site \"https://lichess.org/game/69SEyvqY\"]\n[Date \"2023.10.31\"]\n[Round \"-\"]\n[White \"k_aisen\"]\n[Black \"RNAV30Z\"]\n[Result \"1-0\"]\n[GameId \"69SEyvqY\"]\n[UTCDate \"2023.10.31\"]\n[UTCTime \"00:15:48\"]\n[WhiteElo \"2292\"]\n[BlackElo \"2475\"]\n[WhiteRatingDiff \"+13\"]\n[BlackRatingDiff \"-8\"]\n[Variant \"Standard\"]\n[TimeControl \"180+2\"]\n[ECO \"D00\"]\n[Opening \"Queen's Pawn Game: Accelerated London System\"]\n[Termination \"Normal\"]\n\n1. d4 d5 2. Bf4 Nf6 3. e3 c5 4. c3 Nc6 5. Nf3 Bg4 6. Nbd2 e6 7. Bb5 Bd6 8. Bg3 O-O 9. Bxc6 bxc6 10. Qa4 Bxg3 11. hxg3 Qb6 12. b3 cxd4 13. cxd4 c5 14. Ne5 Bf5 15. Ndf3 cxd4 16. Nxd4 Qc7 17. Nxf5 Qc3+ 18. Ke2 Qc2+ 19. Ke1 Ne4 20. Ne7+ Kh8 21. Nd3 Qxd3 22. Qd4 Qxd4 23. exd4 a5 24. f3 Nd6 25. Kd2 Ra7 26. Rxh7+ Kxh7 27. Rh1# 1-0\n\n\n"
+  }
+]
