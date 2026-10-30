@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
 import AppearanceControl from "./AppearanceControl";
+import AnimatedNav from "./AnimatedNav";
 import { useI18n, type Locale } from "@/lib/i18n";
 
 export default function Nav() {
@@ -37,12 +38,12 @@ export default function Nav() {
     <span className="edit-site-edition">{locale === "fr" ? "Un journal de décisions" : "A journal of decisions"}</span>
     <button className="edit-site-menu" type="button" onClick={() => setOpenPath(open ? null : pathname)} aria-label={t.ui.menu} aria-expanded={open} aria-controls="editorial-controls">{open ? <X size={22}/> : <Menu size={22}/>}</button>
     <div id="editorial-navigation" className={`edit-site-navigation${open ? " is-open" : ""}`}>
-      <nav aria-label={t.ui.workspace}>{links.map(({ href, label, active }) => {
+      <AnimatedNav label={t.ui.workspace} selection={`${pathname}:${locale}`}>{links.map(({ href, label, active }) => {
         return <Link key={href} href={href} aria-current={active ? "page" : undefined} onClick={() => setOpenPath(null)}>{label}</Link>;
-      })}</nav>
+      })}</AnimatedNav>
       <div id="editorial-controls" className="edit-site-controls"><Link href="https://github.com/Iunacy/axis/releases/tag/v4.0.1" className="axis-version" aria-label="AXIS version 4.0.1 release notes">v4.0.1</Link><Link href="/settings" aria-current={pathname === "/settings" ? "page" : undefined}>{t.nav.settings}</Link><AppearanceControl/><label className="edit-site-language"><span className="sr-only">{t.settings.language}</span><select aria-label={t.settings.language} value={locale} onChange={event => setLocale(event.target.value as Locale)}><option value="en">EN</option><option value="fr">FR</option></select></label></div>
     </div>
-  </header>{learning && <nav className="axis-learn-navigation" aria-label={locale === "fr" ? "Apprendre" : "Learning resources"}>
+  </header>{learning && <AnimatedNav className="axis-learn-navigation" selection={`${pathname}:${locale}`} label={locale === "fr" ? "Apprendre" : "Learning resources"}>
     {[{ href: "/academy", label: "Chess Academy" }, { href: "/lessons", label: locale === "fr" ? "Notes de revue" : "Review notes" }, { href: "/patterns", label: locale === "fr" ? "Motifs" : "Patterns" }, { href: "/masters", label: t.nav.masters }].map(link => <Link key={link.href} href={link.href} aria-current={pathname.startsWith(link.href) ? "page" : undefined}>{link.label}</Link>)}
-  </nav>}</>;
+  </AnimatedNav>}</>;
 }
