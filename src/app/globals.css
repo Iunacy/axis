@@ -31,8 +31,9 @@
   --success-bg: #e0e8d4;
   --radius: 5px;
   --radius-control: 4px;
-  --motion-fast: 180ms;
-  --motion-panel: 280ms;
+  --motion-fast: 140ms;
+  --motion-panel: 220ms;
+  --motion-exit: 120ms;
   --motion-entrance: 800ms;
   --motion-stagger: 60ms;
   --motion-ease: cubic-bezier(.2,.8,.2,1);
@@ -373,8 +374,8 @@ input::placeholder, textarea::placeholder { color: var(--muted-foreground); opac
 .axis-catalog { display: grid; gap: 0; }
 .axis-catalog > li { border-top: 1px solid var(--border); position: relative; }
 .axis-masters .axis-catalog { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; }
-.axis-catalog > li > a { display: block; padding: 22px 36px 22px 0; transition: padding var(--motion-fast) var(--motion-ease), background var(--motion-fast) var(--motion-ease); }
-.axis-catalog > li > a:hover { padding-left: 12px; background: var(--glass); }
+.axis-catalog > li > a { display: block; padding: 22px 36px 22px 0; transition: background var(--motion-fast) var(--motion-ease); }
+.axis-catalog > li > a:hover { background: var(--glass); }
 .axis-catalog h3 { font-size: 1rem; }
 .axis-catalog p { max-width: 75ch; font-size: .85rem; color: var(--muted-foreground); line-height: 1.7; margin-top: 8px; }
 .axis-master-workspace { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); align-items: start; gap: 32px; }
